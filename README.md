@@ -61,7 +61,7 @@ unicorns_pwa/
 
 1. Sklonuj repozytorium
 ```bash
-git clone <repository-url>
+git clone https://github.com/skrzypczykt/unicorns_pwa.git
 cd unicorns_pwa
 ```
 
