@@ -5,7 +5,7 @@ import { UnicornButton } from '@/components/common/UnicornButton'
 import { UnicornCard } from '@/components/common/UnicornCard'
 import { useAuth } from '@/hooks/useAuth'
 
-export const LoginPage: React.FC = () => {
+const LoginPage: React.FC = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { signIn } = useAuth()
@@ -139,3 +139,5 @@ export const LoginPage: React.FC = () => {
     </div>
   )
 }
+
+export default LoginPage
