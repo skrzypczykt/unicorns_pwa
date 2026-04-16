@@ -40,7 +40,11 @@ const SimpleLoginPage = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="text-8xl mb-4">🦄</div>
+          <img
+            src="/unicorns-logo.png"
+            alt="Unicorns Łódź"
+            className="h-32 w-auto mx-auto mb-4"
+          />
           <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
             Unicorns Łódź
           </h1>

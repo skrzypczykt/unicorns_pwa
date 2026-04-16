@@ -106,7 +106,11 @@ function App() {
                 onClick={() => window.location.href = '/'}
                 className="flex items-center gap-3 hover:opacity-80 transition-opacity"
               >
-                <span className="text-5xl">🦄</span>
+                <img
+                  src="/unicorns-logo.png"
+                  alt="Unicorns Łódź"
+                  className="h-16 w-auto"
+                />
                 <div>
                   <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
                     Unicorns Łódź
@@ -192,25 +196,30 @@ function App() {
                     href="https://www.facebook.com/groups/604562728465563"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs transition-all"
+                    className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs transition-all"
+                    title="Facebook"
                   >
+                    <img src="/facebook-icon.svg" alt="Facebook" className="h-4 w-4" />
                     Facebook
                   </a>
                   <a
                     href="https://www.instagram.com/unicorns_lodz"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-xs transition-all"
+                    className="flex items-center gap-2 px-3 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-xs transition-all"
+                    title="Instagram"
                   >
+                    <img src="/instagram-icon.svg" alt="Instagram" className="h-4 w-4" />
                     Instagram
                   </a>
                   <a
                     href="https://www.unicorns.org.pl"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-xs transition-all"
+                    className="flex items-center gap-2 px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-xs transition-all"
+                    title="Strona WWW"
                   >
-                    Strona WWW
+                    🌐 Strona WWW
                   </a>
                 </div>
               </div>

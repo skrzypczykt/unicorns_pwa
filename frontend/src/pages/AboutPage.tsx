@@ -20,7 +20,11 @@ const AboutPage = () => {
 
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 rounded-xl border-2 border-purple-300 p-8 mb-8 text-center">
-        <div className="text-8xl mb-4">🦄</div>
+        <img
+          src="/unicorns-logo.png"
+          alt="Unicorns Łódź"
+          className="h-40 w-auto mx-auto mb-4"
+        />
         <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
           Unicorns Łódź
         </h2>
@@ -108,29 +112,32 @@ const AboutPage = () => {
                 href="https://www.facebook.com/groups/604562728465563"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-all"
               >
-                📘 Grupa Facebook
+                <img src="/facebook-icon.svg" alt="" className="h-5 w-5" />
+                Grupa Facebook
               </a>
               <a
                 href="https://www.instagram.com/unicorns_lodz"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-sm transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-sm transition-all"
               >
-                📸 Instagram
+                <img src="/instagram-icon.svg" alt="" className="h-5 w-5" />
+                Instagram
               </a>
               <a
                 href="https://www.unicorns.org.pl"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm transition-all"
               >
                 🌐 Strona WWW
               </a>
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              💬 Dostępna również grupa WhatsApp - zapytaj na Facebooku!
+              <img src="/whatsapp-icon.svg" alt="" className="inline h-4 w-4 mr-1" />
+              Dostępna również grupa WhatsApp - zapytaj na Facebooku!
             </p>
           </div>
         </div>
