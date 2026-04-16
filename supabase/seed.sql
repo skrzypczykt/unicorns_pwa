@@ -17,7 +17,7 @@
 
 -- Admin user
 INSERT INTO public.users (id, email, display_name, role, balance, balance_updated_at) VALUES
-  ('00000000-0000-0000-0000-000000000001'::UUID, 'admin@unicorn.test', 'Admin Jednorożec', 'admin', 1000.00, NOW())
+  ('76646c78-4818-4132-88d0-cb76b70e69f4'::UUID, 'admin@unicorn.test', 'Admin Jednorożec', 'admin', 1000.00, NOW())
 ON CONFLICT (id) DO UPDATE SET
   email = EXCLUDED.email,
   display_name = EXCLUDED.display_name,
@@ -26,7 +26,7 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- Trainer 1
 INSERT INTO public.users (id, email, display_name, role, balance, balance_updated_at) VALUES
-  ('00000000-0000-0000-0000-000000000002'::UUID, 'trener1@unicorn.test', 'Anna Kowalska', 'trainer', 500.00, NOW())
+  ('a79f8dad-a98d-4bfc-9433-6847560f0ed4'::UUID, 'trener1@unicorn.test', 'Anna Kowalska', 'trainer', 500.00, NOW())
 ON CONFLICT (id) DO UPDATE SET
   email = EXCLUDED.email,
   display_name = EXCLUDED.display_name,
@@ -35,7 +35,7 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- Trainer 2
 INSERT INTO public.users (id, email, display_name, role, balance, balance_updated_at) VALUES
-  ('00000000-0000-0000-0000-000000000003'::UUID, 'trener2@unicorn.test', 'Piotr Nowak', 'trainer', 300.00, NOW())
+  ('c602cfb7-e33b-4281-927e-bebd013b66ae'::UUID, 'trener2@unicorn.test', 'Piotr Nowak', 'trainer', 300.00, NOW())
 ON CONFLICT (id) DO UPDATE SET
   email = EXCLUDED.email,
   display_name = EXCLUDED.display_name,
@@ -44,9 +44,9 @@ ON CONFLICT (id) DO UPDATE SET
 
 -- Regular users
 INSERT INTO public.users (id, email, display_name, role, balance, balance_updated_at) VALUES
-  ('00000000-0000-0000-0000-000000000004'::UUID, 'user1@unicorn.test', 'Jan Wiśniewski', 'user', 150.00, NOW()),
-  ('00000000-0000-0000-0000-000000000005'::UUID, 'user2@unicorn.test', 'Maria Lewandowska', 'user', 200.00, NOW()),
-  ('00000000-0000-0000-0000-000000000006'::UUID, 'user3@unicorn.test', 'Tomasz Dąbrowski', 'user', 50.00, NOW())
+  ('8affa9fc-2838-4b9d-8619-9fab6a488b24'::UUID, 'user1@unicorn.test', 'Jan Wiśniewski', 'user', 150.00, NOW()),
+  ('f567925b-a95f-4a63-98e7-713450ef2c5b'::UUID, 'user2@unicorn.test', 'Maria Lewandowska', 'user', 200.00, NOW()),
+  ('a252c475-ff59-4d58-9d15-705109203529'::UUID, 'user3@unicorn.test', 'Tomasz Dąbrowski', 'user', 50.00, NOW())
 ON CONFLICT (id) DO UPDATE SET
   email = EXCLUDED.email,
   display_name = EXCLUDED.display_name,
@@ -79,7 +79,7 @@ BEGIN
       'Poranna Joga dla Początkujących',
       'Relaksujące zajęcia jogi dla osób rozpoczynających swoją przygodę z jogą. Skupimy się na podstawowych pozycjach i oddechu.',
       yoga_id,
-      '00000000-0000-0000-0000-000000000002'::UUID, -- Anna Kowalska
+      'a79f8dad-a98d-4bfc-9433-6847560f0ed4'::UUID, -- Anna Kowalska
       (CURRENT_DATE + INTERVAL '2 days' + TIME '08:00:00')::TIMESTAMP WITH TIME ZONE,
       60,
       15,
@@ -93,7 +93,7 @@ BEGIN
       'Trening Piłki Nożnej - Dzieci',
       'Zajęcia piłki nożnej dla dzieci w wieku 8-12 lat. Rozwijamy umiejętności techniczne i pracę zespołową.',
       football_id,
-      '00000000-0000-0000-0000-000000000003'::UUID, -- Piotr Nowak
+      'c602cfb7-e33b-4281-927e-bebd013b66ae'::UUID, -- Piotr Nowak
       (CURRENT_DATE + INTERVAL '3 days' + TIME '16:00:00')::TIMESTAMP WITH TIME ZONE,
       90,
       20,
@@ -107,7 +107,7 @@ BEGIN
       'Trening Siłowy dla Średnio Zaawansowanych',
       'Intensywny trening siłowy z wykorzystaniem wolnych ciężarów i maszyn. Wymagane doświadczenie.',
       gym_id,
-      '00000000-0000-0000-0000-000000000003'::UUID, -- Piotr Nowak
+      'c602cfb7-e33b-4281-927e-bebd013b66ae'::UUID, -- Piotr Nowak
       (CURRENT_DATE + INTERVAL '4 days' + TIME '18:00:00')::TIMESTAMP WITH TIME ZONE,
       75,
       10,
@@ -121,7 +121,7 @@ BEGIN
       'Bieganie - Technika i Wytrzymałość',
       'Grupowy trening biegowy z naciskiem na technikę biegu i budowanie wytrzymałości.',
       running_id,
-      '00000000-0000-0000-0000-000000000002'::UUID, -- Anna Kowalska
+      'a79f8dad-a98d-4bfc-9433-6847560f0ed4'::UUID, -- Anna Kowalska
       (CURRENT_DATE + INTERVAL '5 days' + TIME '07:00:00')::TIMESTAMP WITH TIME ZONE,
       60,
       25,
@@ -135,7 +135,7 @@ BEGIN
       'Wieczorna Joga Relaksacyjna',
       'Łagodna joga wieczorna, idealna na zakończenie dnia. Ćwiczenia rozciągające i oddechowe.',
       yoga_id,
-      '00000000-0000-0000-0000-000000000002'::UUID, -- Anna Kowalska
+      'a79f8dad-a98d-4bfc-9433-6847560f0ed4'::UUID, -- Anna Kowalska
       (CURRENT_DATE + INTERVAL '6 days' + TIME '19:00:00')::TIMESTAMP WITH TIME ZONE,
       60,
       12,
@@ -149,7 +149,7 @@ BEGIN
       'Taniec Współczesny - Warsztat',
       'Kreatywny warsztat tańca współczesnego. Dla wszystkich poziomów zaawansowania.',
       dance_id,
-      '00000000-0000-0000-0000-000000000002'::UUID, -- Anna Kowalska
+      'a79f8dad-a98d-4bfc-9433-6847560f0ed4'::UUID, -- Anna Kowalska
       (CURRENT_DATE + INTERVAL '7 days' + TIME '17:00:00')::TIMESTAMP WITH TIME ZONE,
       90,
       15,
@@ -166,7 +166,7 @@ BEGIN
       'Poranna Joga - Sesja Miniona',
       'Zajęcia jogi które już się odbyły.',
       yoga_id,
-      '00000000-0000-0000-0000-000000000002'::UUID,
+      'a79f8dad-a98d-4bfc-9433-6847560f0ed4'::UUID,
       (CURRENT_DATE - INTERVAL '2 days' + TIME '08:00:00')::TIMESTAMP WITH TIME ZONE,
       60,
       15,
@@ -187,7 +187,7 @@ INSERT INTO public.registrations (id, activity_id, user_id, status, can_cancel_u
   (
     '20000000-0000-0000-0000-000000000001'::UUID,
     '10000000-0000-0000-0000-000000000001'::UUID, -- Poranna Joga
-    '00000000-0000-0000-0000-000000000004'::UUID, -- Jan Wiśniewski
+    '8affa9fc-2838-4b9d-8619-9fab6a488b24'::UUID, -- Jan Wiśniewski
     'registered',
     (SELECT calculate_cancellation_deadline('10000000-0000-0000-0000-000000000001'::UUID)),
     FALSE
@@ -198,7 +198,7 @@ INSERT INTO public.registrations (id, activity_id, user_id, status, can_cancel_u
   (
     '20000000-0000-0000-0000-000000000002'::UUID,
     '10000000-0000-0000-0000-000000000002'::UUID, -- Piłka Nożna
-    '00000000-0000-0000-0000-000000000005'::UUID, -- Maria Lewandowska
+    'f567925b-a95f-4a63-98e7-713450ef2c5b'::UUID, -- Maria Lewandowska
     'registered',
     (SELECT calculate_cancellation_deadline('10000000-0000-0000-0000-000000000002'::UUID)),
     FALSE
@@ -209,7 +209,7 @@ INSERT INTO public.registrations (id, activity_id, user_id, status, can_cancel_u
   (
     '20000000-0000-0000-0000-000000000003'::UUID,
     '10000000-0000-0000-0000-000000000003'::UUID, -- Siłownia
-    '00000000-0000-0000-0000-000000000006'::UUID, -- Tomasz Dąbrowski
+    'a252c475-ff59-4d58-9d15-705109203529'::UUID, -- Tomasz Dąbrowski
     'registered',
     (SELECT calculate_cancellation_deadline('10000000-0000-0000-0000-000000000003'::UUID)),
     FALSE
@@ -220,7 +220,7 @@ INSERT INTO public.registrations (id, activity_id, user_id, status, can_cancel_u
   (
     '20000000-0000-0000-0000-000000000004'::UUID,
     '10000000-0000-0000-0000-000000000007'::UUID, -- Past yoga
-    '00000000-0000-0000-0000-000000000004'::UUID, -- Jan Wiśniewski
+    '8affa9fc-2838-4b9d-8619-9fab6a488b24'::UUID, -- Jan Wiśniewski
     'attended',
     (SELECT calculate_cancellation_deadline('10000000-0000-0000-0000-000000000007'::UUID)),
     TRUE
@@ -235,9 +235,9 @@ INSERT INTO public.attendance (id, activity_id, user_id, registration_id, marked
   (
     '30000000-0000-0000-0000-000000000001'::UUID,
     '10000000-0000-0000-0000-000000000007'::UUID, -- Past yoga
-    '00000000-0000-0000-0000-000000000004'::UUID, -- Jan Wiśniewski
+    '8affa9fc-2838-4b9d-8619-9fab6a488b24'::UUID, -- Jan Wiśniewski
     '20000000-0000-0000-0000-000000000004'::UUID, -- His registration
-    '00000000-0000-0000-0000-000000000002'::UUID, -- Marked by Anna Kowalska (trainer)
+    'a79f8dad-a98d-4bfc-9433-6847560f0ed4'::UUID, -- Marked by Anna Kowalska (trainer)
     'present',
     'Bardzo dobra postawa podczas ćwiczeń'
   );
@@ -250,35 +250,35 @@ INSERT INTO public.attendance (id, activity_id, user_id, registration_id, marked
 INSERT INTO public.balance_transactions (id, user_id, amount, balance_before, balance_after, type, description, created_by, created_at) VALUES
   (
     '40000000-0000-0000-0000-000000000001'::UUID,
-    '00000000-0000-0000-0000-000000000004'::UUID, -- Jan Wiśniewski
+    '8affa9fc-2838-4b9d-8619-9fab6a488b24'::UUID, -- Jan Wiśniewski
     200.00,
     0.00,
     200.00,
     'manual_credit',
     'Wpłata za styczeń 2026',
-    '00000000-0000-0000-0000-000000000001'::UUID, -- Admin
+    '76646c78-4818-4132-88d0-cb76b70e69f4'::UUID, -- Admin
     NOW() - INTERVAL '10 days'
   ),
   (
     '40000000-0000-0000-0000-000000000002'::UUID,
-    '00000000-0000-0000-0000-000000000005'::UUID, -- Maria Lewandowska
+    'f567925b-a95f-4a63-98e7-713450ef2c5b'::UUID, -- Maria Lewandowska
     200.00,
     0.00,
     200.00,
     'manual_credit',
     'Wpłata za styczeń 2026',
-    '00000000-0000-0000-0000-000000000001'::UUID, -- Admin
+    '76646c78-4818-4132-88d0-cb76b70e69f4'::UUID, -- Admin
     NOW() - INTERVAL '10 days'
   ),
   (
     '40000000-0000-0000-0000-000000000003'::UUID,
-    '00000000-0000-0000-0000-000000000006'::UUID, -- Tomasz Dąbrowski
+    'a252c475-ff59-4d58-9d15-705109203529'::UUID, -- Tomasz Dąbrowski
     100.00,
     0.00,
     100.00,
     'manual_credit',
     'Wpłata za styczeń 2026',
-    '00000000-0000-0000-0000-000000000001'::UUID, -- Admin
+    '76646c78-4818-4132-88d0-cb76b70e69f4'::UUID, -- Admin
     NOW() - INTERVAL '10 days'
   );
 
@@ -286,14 +286,14 @@ INSERT INTO public.balance_transactions (id, user_id, amount, balance_before, ba
 INSERT INTO public.balance_transactions (id, user_id, amount, balance_before, balance_after, type, reference_id, description, created_by, created_at) VALUES
   (
     '40000000-0000-0000-0000-000000000004'::UUID,
-    '00000000-0000-0000-0000-000000000004'::UUID, -- Jan Wiśniewski
+    '8affa9fc-2838-4b9d-8619-9fab6a488b24'::UUID, -- Jan Wiśniewski
     -30.00,
     200.00,
     170.00,
     'class_payment',
     '10000000-0000-0000-0000-000000000007'::UUID, -- Past yoga activity
     'Płatność za zajęcia: Poranna Joga - Sesja Miniona',
-    '00000000-0000-0000-0000-000000000002'::UUID, -- Trainer (system processed)
+    'a79f8dad-a98d-4bfc-9433-6847560f0ed4'::UUID, -- Trainer (system processed)
     NOW() - INTERVAL '2 days'
   );
 
@@ -301,18 +301,18 @@ INSERT INTO public.balance_transactions (id, user_id, amount, balance_before, ba
 INSERT INTO public.balance_transactions (id, user_id, amount, balance_before, balance_after, type, description, created_by, created_at) VALUES
   (
     '40000000-0000-0000-0000-000000000005'::UUID,
-    '00000000-0000-0000-0000-000000000004'::UUID, -- Jan Wiśniewski
+    '8affa9fc-2838-4b9d-8619-9fab6a488b24'::UUID, -- Jan Wiśniewski
     10.00,
     170.00,
     180.00,
     'manual_credit',
     'Korekta salda - bonus za polecenie',
-    '00000000-0000-0000-0000-000000000001'::UUID, -- Admin
+    '76646c78-4818-4132-88d0-cb76b70e69f4'::UUID, -- Admin
     NOW() - INTERVAL '1 day'
   );
 
 -- Adjust final User1 balance to match current state (after -30 from class)
-UPDATE public.users SET balance = 150.00 WHERE id = '00000000-0000-0000-0000-000000000004'::UUID;
+UPDATE public.users SET balance = 150.00 WHERE id = '8affa9fc-2838-4b9d-8619-9fab6a488b24'::UUID;
 
 -- ============================================================================
 -- 6. Sample Audit Log Entries
@@ -320,7 +320,7 @@ UPDATE public.users SET balance = 150.00 WHERE id = '00000000-0000-0000-0000-000
 
 INSERT INTO public.audit_log (user_id, action, table_name, record_id, new_values, created_at) VALUES
   (
-    '00000000-0000-0000-0000-000000000001'::UUID, -- Admin
+    '76646c78-4818-4132-88d0-cb76b70e69f4'::UUID, -- Admin
     'create_activity',
     'activities',
     '10000000-0000-0000-0000-000000000001'::UUID,
@@ -328,19 +328,19 @@ INSERT INTO public.audit_log (user_id, action, table_name, record_id, new_values
     NOW() - INTERVAL '5 days'
   ),
   (
-    '00000000-0000-0000-0000-000000000001'::UUID, -- Admin
+    '76646c78-4818-4132-88d0-cb76b70e69f4'::UUID, -- Admin
     'update_balance',
     'users',
-    '00000000-0000-0000-0000-000000000004'::UUID,
+    '8affa9fc-2838-4b9d-8619-9fab6a488b24'::UUID,
     jsonb_build_object('balance_before', 0.00, 'balance_after', 200.00, 'amount', 200.00),
     NOW() - INTERVAL '10 days'
   ),
   (
-    '00000000-0000-0000-0000-000000000002'::UUID, -- Trainer
+    'a79f8dad-a98d-4bfc-9433-6847560f0ed4'::UUID, -- Trainer
     'mark_attendance',
     'attendance',
     '30000000-0000-0000-0000-000000000001'::UUID,
-    jsonb_build_object('user_id', '00000000-0000-0000-0000-000000000004'::UUID, 'status', 'present'),
+    jsonb_build_object('user_id', '8affa9fc-2838-4b9d-8619-9fab6a488b24'::UUID, 'status', 'present'),
     NOW() - INTERVAL '2 days'
   );
 
