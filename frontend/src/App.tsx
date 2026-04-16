@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './supabase/client'
 import SimpleLoginPage from './pages/SimpleLoginPage'
+import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import ActivitiesPage from './pages/ActivitiesPage'
 import MyClassesPage from './pages/MyClassesPage'
@@ -84,7 +85,14 @@ function App() {
   }
 
   if (!user || !profile) {
-    return <SimpleLoginPage />
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="*" element={<SimpleLoginPage />} />
+        </Routes>
+      </BrowserRouter>
+    )
   }
 
   return (

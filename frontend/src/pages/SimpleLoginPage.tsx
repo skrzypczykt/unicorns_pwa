@@ -99,6 +99,18 @@ const SimpleLoginPage = () => {
               {loading ? 'Logowanie...' : 'Zaloguj się'}
             </button>
           </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Nie masz konta?{' '}
+              <a
+                href="/register"
+                className="text-purple-600 font-semibold hover:text-purple-700 transition-colors"
+              >
+                Zarejestruj się
+              </a>
+            </p>
+          </div>
         </div>
 
         {/* Test accounts */}
