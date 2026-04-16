@@ -111,14 +111,20 @@ const DashboardPage = ({ profile }: DashboardPageProps) => {
           <span className="text-6xl">🌈</span>
           <div>
             <h3 className="text-xl font-bold text-purple-600 mb-2">
-              Witamy w aplikacji Rainbow Unicorn Sports! 🦄
+              Witamy w Stowarzyszeniu Unicorns Łódź! 🦄
             </h3>
-            <p className="text-gray-700">
-              Kliknij na powyższe karty, aby przeglądać zajęcia, zarządzać rezerwacjami lub edytować profil.
+            <p className="text-gray-700 mb-3">
+              Dołącz do naszej społeczności pasjonatów sportu, kultury i rozrywki!
+              Badminton, siatkówka, squash, taniec, gry planszowe i wiele więcej czeka na Ciebie.
             </p>
-            <p className="text-sm text-gray-600 mt-2">
-              Zalogowano jako: <strong>{profile.email}</strong>
+            <p className="text-sm text-gray-600">
+              <strong>Jesteś zalogowany/a jako:</strong> {profile.email}
             </p>
+            <div className="mt-4 pt-4 border-t border-purple-200">
+              <p className="text-xs text-gray-600">
+                💡 Kliknij na karty powyżej, aby przeglądać zajęcia, zarządzać rezerwacjami lub edytować profil.
+              </p>
+            </div>
           </div>
         </div>
       </div>

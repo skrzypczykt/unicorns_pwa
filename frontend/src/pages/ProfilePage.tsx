@@ -1,0 +1,269 @@
+import { useEffect, useState } from 'react'
+import { supabase } from '../supabase/client'
+import { useNavigate } from 'react-router-dom'
+
+interface Transaction {
+  id: string
+  amount: number
+  balance_before: number
+  balance_after: number
+  type: string
+  description: string
+  created_at: string
+  reference_id: string | null
+}
+
+interface UserProfile {
+  id: string
+  email: string
+  display_name: string
+  role: string
+  balance: number
+  balance_updated_at: string
+  created_at: string
+}
+
+const ProfilePage = () => {
+  const navigate = useNavigate()
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchProfile()
+    fetchTransactions()
+  }, [])
+
+  const fetchProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      if (error) throw error
+      setProfile(data)
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    }
+  }
+
+  const fetchTransactions = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from('balance_transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50)
+
+      if (error) throw error
+      setTransactions(data || [])
+    } catch (error) {
+      console.error('Error fetching transactions:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('pl-PL', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
+  const getTransactionTypeLabel = (type: string) => {
+    switch (type) {
+      case 'manual_credit': return 'Wpłata manualna'
+      case 'manual_debit': return 'Wypłata manualna'
+      case 'class_payment': return 'Płatność za zajęcia'
+      case 'cancellation_refund': return 'Zwrot - anulowanie'
+      default: return type
+    }
+  }
+
+  const getTransactionColor = (amount: number) => {
+    return amount > 0 ? 'text-green-600' : 'text-red-600'
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-8xl mb-4 animate-bounce">🦄</div>
+          <p className="text-purple-600">Ładowanie...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-red-600">Nie udało się załadować profilu</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-purple-600 mb-2">👤 Mój Profil</h1>
+          <p className="text-gray-600">Zarządzaj swoim kontem i przeglądaj historię transakcji</p>
+        </div>
+        <button
+          onClick={() => navigate('/')}
+          className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
+        >
+          ← Powrót
+        </button>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-6 mb-8">
+        {/* Profile Info */}
+        <div className="md:col-span-2 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6">
+          <h2 className="text-xl font-bold text-purple-600 mb-4">Informacje o koncie</h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-500 mb-1">Imię i nazwisko</label>
+              <p className="text-lg font-semibold text-gray-800">{profile.display_name}</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-500 mb-1">Email</label>
+              <p className="text-lg text-gray-800">{profile.email}</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-500 mb-1">Rola</label>
+              <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+                profile.role === 'admin' ? 'bg-red-100 text-red-700' :
+                profile.role === 'trainer' ? 'bg-blue-100 text-blue-700' :
+                'bg-gray-100 text-gray-700'
+              }`}>
+                {profile.role === 'admin' ? 'Administrator' : profile.role === 'trainer' ? 'Trener' : 'Użytkownik'}
+              </span>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-500 mb-1">Konto utworzone</label>
+              <p className="text-gray-800">{formatDate(profile.created_at)}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Balance Card */}
+        <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl shadow-lg p-6 text-white">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-3xl">💰</span>
+            <h2 className="text-xl font-bold">Twoje saldo</h2>
+          </div>
+          <p className="text-5xl font-bold mb-4">{profile.balance.toFixed(2)} zł</p>
+          <p className="text-sm opacity-90">
+            Ostatnia aktualizacja:<br />
+            {formatDate(profile.balance_updated_at)}
+          </p>
+
+          <div className="mt-6 pt-4 border-t border-white/30">
+            <p className="text-sm opacity-75">
+              {profile.balance > 100 ? '✅ Świetne saldo!' :
+               profile.balance > 50 ? '⚠️ Rozważ doładowanie' :
+               '❗ Niskie saldo'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Transaction History */}
+      <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6">
+        <h2 className="text-xl font-bold text-purple-600 mb-4">
+          Historia transakcji ({transactions.length})
+        </h2>
+
+        {transactions.length === 0 ? (
+          <div className="text-center py-8">
+            <span className="text-6xl mb-4 block">📊</span>
+            <p className="text-gray-600">Brak transakcji</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b-2 border-purple-200">
+                  <th className="text-left py-3 px-2 text-sm font-semibold text-gray-600">Data</th>
+                  <th className="text-left py-3 px-2 text-sm font-semibold text-gray-600">Opis</th>
+                  <th className="text-left py-3 px-2 text-sm font-semibold text-gray-600">Typ</th>
+                  <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Kwota</th>
+                  <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Saldo przed</th>
+                  <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Saldo po</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.map((transaction) => (
+                  <tr key={transaction.id} className="border-b border-gray-200 hover:bg-purple-50">
+                    <td className="py-3 px-2 text-sm text-gray-600">
+                      {new Date(transaction.created_at).toLocaleDateString('pl-PL', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </td>
+                    <td className="py-3 px-2 text-sm text-gray-800">
+                      {transaction.description}
+                    </td>
+                    <td className="py-3 px-2">
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        transaction.type === 'manual_credit' ? 'bg-green-100 text-green-700' :
+                        transaction.type === 'manual_debit' ? 'bg-red-100 text-red-700' :
+                        transaction.type === 'class_payment' ? 'bg-purple-100 text-purple-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {getTransactionTypeLabel(transaction.type)}
+                      </span>
+                    </td>
+                    <td className={`py-3 px-2 text-right font-bold ${getTransactionColor(transaction.amount)}`}>
+                      {transaction.amount > 0 ? '+' : ''}{transaction.amount.toFixed(2)} zł
+                    </td>
+                    <td className="py-3 px-2 text-right text-sm text-gray-600">
+                      {transaction.balance_before.toFixed(2)} zł
+                    </td>
+                    <td className="py-3 px-2 text-right text-sm font-semibold text-gray-800">
+                      {transaction.balance_after.toFixed(2)} zł
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Info box */}
+      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <p className="text-sm text-blue-800">
+          <strong>💡 Wskazówka:</strong> Transakcje typu "Płatność za zajęcia" są automatycznie
+          dodawane gdy trener oznaczy Twoją obecność na zajęciach. Wpłaty manualne są dodawane
+          przez administratora.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export default ProfilePage

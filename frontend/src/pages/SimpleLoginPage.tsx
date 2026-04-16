@@ -42,9 +42,10 @@ const SimpleLoginPage = () => {
         <div className="text-center mb-8">
           <div className="text-8xl mb-4">🦄</div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
-            Rainbow Unicorn Sports
+            Unicorns Łódź
           </h1>
-          <p className="text-purple-600">Zajęcia Sportowe NGO</p>
+          <p className="text-purple-600 text-sm uppercase tracking-wide">Sport | Kultura | Rozrywka</p>
+          <p className="text-gray-500 text-xs mt-2">Stowarzyszenie sportowo-kulturalno-rozrywkowe</p>
         </div>
 
         {/* Login Card */}

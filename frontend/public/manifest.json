@@ -1,0 +1,33 @@
+{
+  "name": "Unicorns Łódź - Sport, Kultura, Rozrywka",
+  "short_name": "Unicorns Łódź",
+  "description": "Aplikacja do zarządzania zajęciami Stowarzyszenia Unicorns Łódź. Badminton, siatkówka, squash, taniec i więcej!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E6E6FA",
+  "theme_color": "#9370DB",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "sports",
+    "lifestyle",
+    "entertainment"
+  ],
+  "lang": "pl-PL",
+  "dir": "ltr",
+  "screenshots": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ]
+}
