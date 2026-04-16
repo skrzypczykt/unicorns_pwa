@@ -177,7 +177,6 @@ const MyClassesPage = () => {
           {registrations.map((reg) => {
             const isProcessing = cancelling === reg.id
             const canCancelNow = canCancel(reg.can_cancel_until, reg.status, reg.payment_processed)
-            const isPast = new Date(reg.activity.date_time) < new Date()
 
             return (
               <div
