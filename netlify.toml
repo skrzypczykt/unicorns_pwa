@@ -11,8 +11,8 @@
   base = "frontend"
 
 [build.environment]
-  # Node version
-  NODE_VERSION = "18"
+  # Node version (required: >= 20 for Vite 8, Supabase, React Router 7)
+  NODE_VERSION = "20"
 
   # Enable dependency caching for faster builds
   NPM_FLAGS = "--legacy-peer-deps"
