@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Rainbow Unicorn Sports - Global Styles */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-gradient-to-br from-unicorn-lavender via-white to-unicorn-peach min-h-screen;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
+}
+
+@layer utilities {
+  /* Rainbow gradient text */
+  .text-rainbow {
+    @apply bg-rainbow-gradient bg-clip-text text-transparent;
+  }
+
+  /* Unicorn button base styles */
+  .btn-unicorn {
+    @apply bg-rainbow-gradient text-white font-semibold py-3 px-6 rounded-lg shadow-rainbow hover:shadow-rainbow-lg transition-all duration-300 hover:scale-105;
+  }
+
+  /* Unicorn card */
+  .card-unicorn {
+    @apply bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-unicorn-purple/20 p-6 hover:shadow-unicorn transition-all duration-300;
+  }
+
+  /* Sparkle effect */
+  .sparkle {
+    @apply animate-sparkle;
+  }
+
+  /* Rainbow border animation */
+  .rainbow-border {
+    @apply relative overflow-hidden;
+  }
+
+  .rainbow-border::before {
+    content: '';
+    @apply absolute inset-0 bg-rainbow-gradient opacity-20 blur-xl;
+  }
+}
+
+/* Custom scrollbar with rainbow theme */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-unicorn-lavender/30;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gradient-to-b from-unicorn-pink to-unicorn-purple rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply from-unicorn-purple to-unicorn-blue;
+}
+
+/* Loading spinner with rainbow */
+@keyframes rainbow-spin {
+  0% {
+    transform: rotate(0deg);
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+    filter: hue-rotate(360deg);
+  }
+}
+
+.loading-rainbow {
+  animation: rainbow-spin 1.5s linear infinite;
+}
