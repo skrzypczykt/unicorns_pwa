@@ -8,6 +8,14 @@ export const ACTIVITY_TYPE_IMAGES: Record<string, string> = {
   'cycling': 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&h=500&fit=crop&auto=format',
   'bieganie': 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&h=500&fit=crop&auto=format',
   'running': 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&h=500&fit=crop&auto=format',
+  'piłka nożna': 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=500&fit=crop&auto=format', // Bramka piłkarska
+  'football': 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=500&fit=crop&auto=format',
+  'soccer': 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=500&fit=crop&auto=format',
+  'siłownia': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=500&fit=crop&auto=format', // Trening ze sztangą
+  'siłowy': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=500&fit=crop&auto=format',
+  'gym': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=500&fit=crop&auto=format',
+  'trening siłowy': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=500&fit=crop&auto=format',
+  'weights': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=500&fit=crop&auto=format',
 
   // Kultura & Rozrywka
   'taniec': 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&h=500&fit=crop&auto=format',
