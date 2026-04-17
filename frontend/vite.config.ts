@@ -9,26 +9,27 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/unicorn-192.png', 'icons/unicorn-512.png'],
+      includeAssets: ['unicorns-logo.png', 'favicon.svg'],
       manifest: {
-        name: 'Unicorn Sports - Zajęcia Sportowe',
-        short_name: 'Unicorn Sports',
-        description: 'Aplikacja do zarządzania zajęciami sportowymi NGO',
+        name: 'Unicorns Łódź - Sport, Kultura, Rozrywka',
+        short_name: 'Unicorns Łódź',
+        description: 'Aplikacja do zarządzania zajęciami Stowarzyszenia Unicorns Łódź. Badminton, siatkówka, squash, taniec i więcej!',
         theme_color: '#9370DB',
-        background_color: '#FF69B4',
+        background_color: '#E6E6FA',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
         icons: [
           {
-            src: 'icons/unicorn-192.png',
-            sizes: '192x192',
-            type: 'image/png'
+            src: '/unicorns-logo.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
-            src: 'icons/unicorn-512.png',
-            sizes: '512x512',
-            type: 'image/png'
+            src: '/favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml'
           }
         ]
       },
