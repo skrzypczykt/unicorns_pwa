@@ -135,29 +135,15 @@ const ActivitiesPage = () => {
         return
       }
 
-      // Get user's current balance
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('balance')
-        .eq('id', user.id)
-        .single()
-
-      if (userError) throw userError
-
-      // Check if user has sufficient balance (for future payment after attendance)
-      if (userData.balance < cost) {
-        alert(`Niewystarczające saldo! Potrzebujesz ${cost.toFixed(2)} zł, a masz ${userData.balance.toFixed(2)} zł.`)
-        return
-      }
-
       // Get activity details to calculate cancellation deadline
-      const activity = activities.find(a => a.id === activityId)
+      const allActivities = [...activities, ...specialEvents]
+      const activity = allActivities.find(a => a.id === activityId)
       if (!activity) return
 
       const activityDate = new Date(activity.date_time)
       const cancellationDeadline = new Date(activityDate.getTime() - (cancellationHours * 60 * 60 * 1000))
 
-      // Create registration
+      // Create registration - saldo nie wpływa na możliwość zapisu
       const { error: regError } = await supabase
         .from('registrations')
         .insert({
@@ -177,7 +163,12 @@ const ActivitiesPage = () => {
         return
       }
 
-      alert('✅ Zapisano na zajęcia! Pamiętaj, że płatność zostanie pobrana po oznaczeniu obecności przez trenera.')
+      // Różne komunikaty w zależności od kosztu
+      if (cost > 0) {
+        alert(`✅ Zapisano na zajęcia! Koszt ${cost.toFixed(2)} zł zostanie pobrany po oznaczeniu obecności przez trenera. Masz 40 dni na uzupełnienie salda.`)
+      } else {
+        alert('✅ Zapisano na zajęcia! To wydarzenie jest bezpłatne.')
+      }
 
       // Refresh registrations and participant counts
       await fetchUserRegistrations()
@@ -256,14 +247,14 @@ const ActivitiesPage = () => {
       {specialEvents.length > 0 && (
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-2xl font-bold text-yellow-600">🏆 Wydarzenia specjalne</h2>
+            <h2 className="text-2xl font-bold text-yellow-600">🏆 Nadchodzące wydarzenia specjalne</h2>
             <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm rounded-full font-semibold">
               Zawody • Spływy • Wyjazdy
             </span>
           </div>
 
           <div className="mb-4 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg text-sm text-yellow-800">
-            <strong>⭐ Specjalne:</strong> Jednorazowe wydarzenia wymagające wcześniejszej rejestracji. Zapisy otwarte nawet 30-60 dni przed!
+            <strong>⭐ Wydarzenia specjalne:</strong> Jednorazowe wydarzenia wymagające wcześniejszej rejestracji. Zapisy otwarte nawet 30-60 dni przed wydarzeniem!
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
@@ -394,7 +385,7 @@ const ActivitiesPage = () => {
       {/* SEKCJA 2: Regularne zajęcia */}
       <div>
         <div className="flex items-center gap-3 mb-6">
-          <h2 className="text-2xl font-bold text-purple-600">📅 Regularne zajęcia</h2>
+          <h2 className="text-2xl font-bold text-purple-600">📅 Nadchodzące zajęcia</h2>
           <span className="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full font-semibold">
             Najbliższe 7 dni
           </span>
@@ -402,7 +393,7 @@ const ActivitiesPage = () => {
 
         {/* Info banner o filtrowaniu */}
         <div className="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg text-sm text-blue-800">
-          <strong>ℹ️ Informacja:</strong> Wyświetlamy zajęcia z najbliższych 7 dni. Więcej zajęć pojawi się automatycznie w kolejnych tygodniach.
+          <strong>ℹ️ Informacja:</strong> Wyświetlamy regularne zajęcia sportowe i kulturalne z najbliższych 7 dni. Więcej zajęć pojawi się automatycznie w kolejnych tygodniach.
         </div>
 
         {activities.length === 0 ? (

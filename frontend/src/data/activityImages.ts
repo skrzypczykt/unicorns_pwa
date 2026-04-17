@@ -1,24 +1,39 @@
 export const ACTIVITY_TYPE_IMAGES: Record<string, string> = {
-  // Sport
-  'badminton': 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&h=500&fit=crop',
-  'siatkówka': 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=800&h=500&fit=crop',
-  'volleyball': 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=800&h=500&fit=crop',
-  'squash': 'https://images.unsplash.com/photo-1533071115214-8b8ddfa44bf2?w=800&h=500&fit=crop',
-  'rowery': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=500&fit=crop',
-  'cycling': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=500&fit=crop',
-  'kajaki': 'https://images.unsplash.com/photo-1578972474928-34aafffea0e3?w=800&h=500&fit=crop',
-  'kayaking': 'https://images.unsplash.com/photo-1578972474928-34aafffea0e3?w=800&h=500&fit=crop',
+  // Sport - Zajęcia regularne
+  'badminton': 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&h=500&fit=crop&auto=format',
+  'siatkówka': 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=800&h=500&fit=crop&auto=format',
+  'volleyball': 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=800&h=500&fit=crop&auto=format',
+  'squash': 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800&h=500&fit=crop&auto=format', // Lepszy obraz squasha
+  'rowery': 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&h=500&fit=crop&auto=format', // Grupa rowerzystów
+  'cycling': 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&h=500&fit=crop&auto=format',
+  'bieganie': 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&h=500&fit=crop&auto=format',
+  'running': 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&h=500&fit=crop&auto=format',
 
   // Kultura & Rozrywka
-  'taniec': 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&h=500&fit=crop',
-  'dance': 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&h=500&fit=crop',
-  'gry planszowe': 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&h=500&fit=crop',
-  'board games': 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&h=500&fit=crop',
-  'joga': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&h=500&fit=crop',
-  'yoga': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&h=500&fit=crop',
+  'taniec': 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&h=500&fit=crop&auto=format',
+  'dance': 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&h=500&fit=crop&auto=format',
+  'gry planszowe': 'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=800&h=500&fit=crop&auto=format', // Bardziej kolorowe planszówki
+  'board games': 'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=800&h=500&fit=crop&auto=format',
+  'joga': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&h=500&fit=crop&auto=format',
+  'yoga': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&h=500&fit=crop&auto=format',
+
+  // Wydarzenia specjalne
+  'spływ': 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=800&h=500&fit=crop&auto=format', // Kajaki na rzece
+  'kajaki': 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=800&h=500&fit=crop&auto=format',
+  'kayaking': 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=800&h=500&fit=crop&auto=format',
+  'krutynia': 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=500&fit=crop&auto=format', // Kajaki Mazury
+  'amsterdam': 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=800&h=500&fit=crop&auto=format', // Amsterdam kanały
+  'pride': 'https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?w=800&h=500&fit=crop&auto=format', // Rainbow flag/pride
+  'wigilia': 'https://images.unsplash.com/photo-1543589077-47d81606c1bf?w=800&h=500&fit=crop&auto=format', // Świąteczna impreza
+  'christmas': 'https://images.unsplash.com/photo-1543589077-47d81606c1bf?w=800&h=500&fit=crop&auto=format',
+  'świąteczn': 'https://images.unsplash.com/photo-1576919228236-a097c32a5cd4?w=800&h=500&fit=crop&auto=format', // Dekoracje świąteczne
+  'turniej': 'https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=800&h=500&fit=crop&auto=format', // Zawody sportowe
+  'zawody': 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&h=500&fit=crop&auto=format', // Zawody/rywalizacja
+  'wyjazd': 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=500&fit=crop&auto=format', // Podróż autokar
+  'wycieczka': 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=500&fit=crop&auto=format',
 
   // Default fallback
-  'default': 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&h=500&fit=crop'
+  'default': 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&h=500&fit=crop&auto=format'
 }
 
 /**
