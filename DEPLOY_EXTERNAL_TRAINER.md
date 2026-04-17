@@ -19,17 +19,35 @@ ERROR: policy "Users can view own profile" for table "users" already exists
    - Click "SQL Editor" in the left sidebar
    - Click "New query"
 
-3. **Copy and paste this SQL:**
+3. **First, check your schema:**
+   
+   Copy and paste this to understand your database structure:
+   ```sql
+   -- Copy the entire contents of:
+   -- supabase/CHECK_SCHEMA.sql
+   ```
+   
+   Run it and check the output.
+
+4. **Copy and paste the correct migration:**
+   
+   **If you got an error about user_role enum not existing**, use this version:
+   ```sql
+   -- Copy the entire contents of:
+   -- supabase/migrations/010_add_external_trainer_role_no_enum.sql
+   ```
+   
+   **If user_role enum exists**, use this version:
    ```sql
    -- Copy the entire contents of:
    -- supabase/migrations/010_add_external_trainer_role_safe.sql
    ```
 
-4. **Run the query**
+5. **Run the query**
    - Click "Run" or press Cmd+Enter (Mac) / Ctrl+Enter (Windows)
    - You should see: "✅ Migration completed successfully!"
 
-5. **Verify**
+6. **Verify**
    - The migration will output success messages
    - You can now create users with role `external_trainer`
 
@@ -91,11 +109,19 @@ WHERE email = 'trainer@example.com';
 
 ## Troubleshooting
 
+### Error: "type 'user_role' does not exist"
+**Solution**: Your database uses VARCHAR/TEXT for the role column instead of an enum. 
+- Use `010_add_external_trainer_role_no_enum.sql` instead
+- This version adds a CHECK constraint instead of modifying an enum
+
 ### Error: "duplicate_object"
 This means `external_trainer` already exists. The migration is safe to re-run.
 
 ### Error: "relation does not exist"
 Make sure you're connected to the correct database (production, not local).
+
+### Error: "constraint already exists"
+The migration has already been partially applied. It's safe to continue - existing constraints will be dropped and recreated.
 
 ### Users with external_trainer role can still register
 Check that the RLS policies were applied correctly:
