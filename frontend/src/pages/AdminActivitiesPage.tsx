@@ -140,6 +140,24 @@ const AdminActivitiesPage = () => {
         } else {
           alert('✅ Nowe zajęcia utworzone!')
         }
+
+        // Wyślij powiadomienia push do zainteresowanych użytkowników
+        if (newActivity) {
+          const { error: pushError } = await supabase.functions.invoke('send-push-notifications', {
+            body: {
+              activityId: newActivity.id,
+              activityName: newActivity.name,
+              dateTime: newActivity.date_time
+            }
+          })
+
+          if (pushError) {
+            console.error('Error sending push notifications:', pushError)
+            // Nie pokazuj błędu użytkownikowi - powiadomienia są opcjonalne
+          } else {
+            console.log('Push notifications sent successfully')
+          }
+        }
       }
 
       resetForm()

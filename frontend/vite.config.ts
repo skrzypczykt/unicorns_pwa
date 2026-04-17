@@ -51,6 +51,10 @@ export default defineConfig({
             }
           }
         ]
+      },
+      // Obsługa push notifications
+      devOptions: {
+        enabled: true
       }
     })
   ],

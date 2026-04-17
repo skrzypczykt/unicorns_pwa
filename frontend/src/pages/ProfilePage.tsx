@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase/client'
 import { useNavigate } from 'react-router-dom'
+import PushNotificationToggle from '../components/common/PushNotificationToggle'
 
 interface Transaction {
   id: string
@@ -186,6 +187,11 @@ const ProfilePage = () => {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Push Notifications Toggle */}
+      <div className="mb-8">
+        <PushNotificationToggle />
       </div>
 
       {/* Transaction History */}
