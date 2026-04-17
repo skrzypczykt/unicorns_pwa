@@ -39,6 +39,7 @@ export default {
         'sparkle': 'sparkle 1.5s ease-in-out infinite',
         'bounce-slow': 'bounce 3s infinite',
         'shimmer': 'shimmer 2s linear infinite',
+        'slide-up': 'slide-up 0.5s ease-out',
       },
       keyframes: {
         'rainbow-pulse': {
@@ -52,6 +53,10 @@ export default {
         'shimmer': {
           '0%': { backgroundPosition: '-200% center' },
           '100%': { backgroundPosition: '200% center' },
+        },
+        'slide-up': {
+          '0%': { transform: 'translateY(100%)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
         },
       },
       fontFamily: {

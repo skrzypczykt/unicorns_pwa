@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../supabase/client'
 import { useNavigate } from 'react-router-dom'
 import PushNotificationToggle from '../components/common/PushNotificationToggle'
+import { useInstallPWA } from '../hooks/useInstallPWA'
 
 interface Transaction {
   id: string
@@ -30,6 +31,7 @@ const ProfilePage = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [showBlikModal, setShowBlikModal] = useState(false)
+  const { isInstallable, isInstalled, promptInstall } = useInstallPWA()
 
   useEffect(() => {
     fetchProfile()
@@ -267,6 +269,59 @@ const ProfilePage = () => {
       <div className="mb-8">
         <PushNotificationToggle />
       </div>
+
+      {/* Install PWA Button */}
+      {!isInstalled && (
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-start gap-4">
+              <div className="text-4xl flex-shrink-0">📱</div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold mb-2">Zainstaluj aplikację</h3>
+                <p className="text-white/90 mb-4 text-sm">
+                  Dodaj Unicorns do ekranu głównego dla szybszego dostępu, powiadomień push i możliwości korzystania offline.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {isInstallable ? (
+                    <button
+                      onClick={async () => {
+                        const accepted = await promptInstall()
+                        if (accepted) {
+                          alert('✅ Aplikacja została zainstalowana!')
+                        }
+                      }}
+                      className="px-4 py-2 bg-white text-purple-600 hover:bg-gray-100 rounded-lg font-semibold transition-all shadow-lg"
+                    >
+                      Zainstaluj teraz
+                    </button>
+                  ) : (
+                    <div className="text-sm text-white/80">
+                      <p className="mb-2"><strong>Jak zainstalować na iOS:</strong></p>
+                      <ol className="list-decimal list-inside space-y-1 text-xs">
+                        <li>Kliknij przycisk "Udostępnij" <span className="inline-block">📤</span> w Safari</li>
+                        <li>Wybierz "Dodaj do ekranu początkowego"</li>
+                        <li>Kliknij "Dodaj"</li>
+                      </ol>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isInstalled && (
+        <div className="mb-8">
+          <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 flex items-center gap-3">
+            <span className="text-3xl">✅</span>
+            <div>
+              <p className="font-semibold text-green-800">Aplikacja zainstalowana!</p>
+              <p className="text-sm text-green-600">Korzystasz z pełnej wersji PWA Unicorns.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Transaction History */}
       <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6">

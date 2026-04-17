@@ -20,6 +20,9 @@ interface Activity {
   registered_count?: number
   image_url?: string | null
   whatsapp_group_url?: string | null
+  activity_types?: {
+    whatsapp_group_url?: string | null
+  }
 }
 
 const ActivitiesPage = () => {
@@ -39,6 +42,20 @@ const ActivitiesPage = () => {
     fetchParticipantCounts()
   }, [])
 
+  // Helper: Pobierz link WhatsApp z fallback do activity_type
+  const getWhatsAppLink = (activity: Activity): string | null => {
+    // Priorytet 1: Link bezpośrednio z aktywności
+    if (activity.whatsapp_group_url) {
+      return activity.whatsapp_group_url
+    }
+    // Priorytet 2: Link z typu aktywności (np. wszystkie "Taniec" mają wspólną grupę)
+    if (activity.activity_types?.whatsapp_group_url) {
+      return activity.activity_types.whatsapp_group_url
+    }
+    // Brak linku
+    return null
+  }
+
   const fetchActivities = async () => {
     try {
       // Filtruj regularne zajęcia do najbliższych 7 dni
@@ -47,7 +64,12 @@ const ActivitiesPage = () => {
 
       const { data, error } = await supabase
         .from('activities')
-        .select('*')
+        .select(`
+          *,
+          activity_types (
+            whatsapp_group_url
+          )
+        `)
         .eq('status', 'scheduled')
         .eq('is_special_event', false)
         .gte('date_time', now.toISOString())
@@ -71,7 +93,12 @@ const ActivitiesPage = () => {
 
       const { data, error } = await supabase
         .from('activities')
-        .select('*')
+        .select(`
+          *,
+          activity_types (
+            whatsapp_group_url
+          )
+        `)
         .eq('status', 'scheduled')
         .eq('is_special_event', true)
         .gte('date_time', now.toISOString())
@@ -208,8 +235,9 @@ const ActivitiesPage = () => {
         }
       }
 
-      // Dodaj info o WhatsApp jeśli istnieje
-      if (activity.whatsapp_group_url) {
+      // Dodaj info o WhatsApp jeśli istnieje (z fallbackiem do activity_type)
+      const whatsappLink = getWhatsAppLink(activity)
+      if (whatsappLink) {
         message += '\n\n💬 Dołącz do grupy WhatsApp! Poznaj innych uczestników, zadawaj pytania i bądź na bieżąco.'
       }
 
@@ -443,18 +471,21 @@ const ActivitiesPage = () => {
                       </button>
                     )}
 
-                    {/* WhatsApp Group Link */}
-                    {activity.whatsapp_group_url && (
-                      <a
-                        href={activity.whatsapp_group_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-3 w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
-                      >
-                        <img src="/whatsapp-icon.svg" alt="" className="h-5 w-5" />
-                        Dołącz do grupy WhatsApp
-                      </a>
-                    )}
+                    {/* WhatsApp Group Link z fallbackiem */}
+                    {(() => {
+                      const whatsappLink = getWhatsAppLink(activity)
+                      return whatsappLink ? (
+                        <a
+                          href={whatsappLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-3 w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
+                        >
+                          <img src="/whatsapp-icon.svg" alt="" className="h-5 w-5" />
+                          Dołącz do grupy WhatsApp
+                        </a>
+                      ) : null
+                    })()}
                   </div>
                 </div>
               )
@@ -595,18 +626,21 @@ const ActivitiesPage = () => {
                     </button>
                   )}
 
-                  {/* WhatsApp Group Link */}
-                  {activity.whatsapp_group_url && (
-                    <a
-                      href={activity.whatsapp_group_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-3 w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
-                    >
-                      <img src="/whatsapp-icon.svg" alt="" className="h-5 w-5" />
-                      Dołącz do grupy WhatsApp
-                    </a>
-                  )}
+                  {/* WhatsApp Group Link z fallbackiem */}
+                  {(() => {
+                    const whatsappLink = getWhatsAppLink(activity)
+                    return whatsappLink ? (
+                      <a
+                        href={whatsappLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
+                      >
+                        <img src="/whatsapp-icon.svg" alt="" className="h-5 w-5" />
+                        Dołącz do grupy WhatsApp
+                      </a>
+                    ) : null
+                  })()}
                 </div>
               </div>
             )

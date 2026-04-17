@@ -15,6 +15,8 @@ import AdminActivitiesPage from './pages/AdminActivitiesPage'
 import AdminReportsPage from './pages/AdminReportsPage'
 import AdminAttendancePage from './pages/AdminAttendancePage'
 import ActivityParticipantsPage from './pages/ActivityParticipantsPage'
+import InstallPWAPrompt from './components/InstallPWAPrompt'
+import PWADebugPanel from './components/PWADebugPanel'
 
 interface UserProfile {
   id: string
@@ -91,6 +93,8 @@ function App() {
   if (!user || !profile) {
     return (
       <BrowserRouter>
+        <PWADebugPanel />
+        <InstallPWAPrompt />
         <Routes>
           <Route path="/" element={<PublicAboutPage />} />
           <Route path="/activities" element={<ActivitiesPage />} />
@@ -105,6 +109,8 @@ function App() {
 
   return (
     <BrowserRouter>
+      <PWADebugPanel />
+      <InstallPWAPrompt />
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200">
         {/* Header - Responsywny */}
         <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b-4 border-purple-500">

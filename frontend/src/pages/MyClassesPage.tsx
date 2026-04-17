@@ -18,6 +18,9 @@ interface Registration {
     location: string
     status: string
     whatsapp_group_url?: string | null
+    activity_types?: {
+      whatsapp_group_url?: string | null
+    }
   }
 }
 
@@ -26,6 +29,17 @@ const MyClassesPage = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([])
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState<string | null>(null)
+
+  // Helper: Pobierz link WhatsApp z fallback do activity_type
+  const getWhatsAppLink = (activity: Registration['activity']): string | null => {
+    if (activity.whatsapp_group_url) {
+      return activity.whatsapp_group_url
+    }
+    if (activity.activity_types?.whatsapp_group_url) {
+      return activity.activity_types.whatsapp_group_url
+    }
+    return null
+  }
 
   useEffect(() => {
     fetchMyRegistrations()
@@ -53,7 +67,10 @@ const MyClassesPage = () => {
             cost,
             location,
             status,
-            whatsapp_group_url
+            whatsapp_group_url,
+            activity_types (
+              whatsapp_group_url
+            )
           )
         `)
         .eq('user_id', user.id)
@@ -238,18 +255,21 @@ const MyClassesPage = () => {
                       </div>
                     )}
 
-                    {/* WhatsApp Group Link */}
-                    {reg.status === 'registered' && reg.activity.whatsapp_group_url && (
-                      <a
-                        href={reg.activity.whatsapp_group_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition-all"
-                      >
-                        <img src="/whatsapp-icon.svg" alt="" className="h-4 w-4" />
-                        Dołącz do grupy WhatsApp
-                      </a>
-                    )}
+                    {/* WhatsApp Group Link z fallbackiem */}
+                    {(() => {
+                      const whatsappLink = getWhatsAppLink(reg.activity)
+                      return reg.status === 'registered' && whatsappLink ? (
+                        <a
+                          href={whatsappLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition-all"
+                        >
+                          <img src="/whatsapp-icon.svg" alt="" className="h-4 w-4" />
+                          Dołącz do grupy WhatsApp
+                        </a>
+                      ) : null
+                    })()}
                   </div>
 
                   {canCancelNow && (

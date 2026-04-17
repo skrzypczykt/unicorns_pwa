@@ -145,10 +145,15 @@ serve(async (req) => {
       )
     }
 
-    // Pobierz szczegóły aktywności (w tym link WhatsApp)
+    // Pobierz szczegóły aktywności (w tym link WhatsApp z fallbackiem do activity_type)
     const { data: activity } = await supabase
       .from('activities')
-      .select('whatsapp_group_url')
+      .select(`
+        whatsapp_group_url,
+        activity_types (
+          whatsapp_group_url
+        )
+      `)
       .eq('id', activityId)
       .single()
 
@@ -161,9 +166,10 @@ serve(async (req) => {
       minute: '2-digit'
     })
 
-    // Dodaj wzmiankę o WhatsApp jeśli dostępna
+    // Dodaj wzmiankę o WhatsApp jeśli dostępna (z fallbackiem do activity_type)
     let bodyText = `📅 ${formattedDate} - Zapisz się teraz!`
-    if (activity?.whatsapp_group_url) {
+    const whatsappLink = activity?.whatsapp_group_url || activity?.activity_types?.whatsapp_group_url
+    if (whatsappLink) {
       bodyText += ` 💬 Grupa WhatsApp dostępna!`
     }
 
@@ -175,7 +181,7 @@ serve(async (req) => {
       data: {
         url: '/activities',
         activityId,
-        hasWhatsApp: !!activity?.whatsapp_group_url
+        hasWhatsApp: !!whatsappLink
       }
     }
 
