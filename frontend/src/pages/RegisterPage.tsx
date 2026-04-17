@@ -37,7 +37,8 @@ const RegisterPage = () => {
     setLoading(true)
 
     try {
-      // 1. Create auth user with email redirect to production URL
+      // Create auth user with email redirect to production URL
+      // Trigger w bazie danych automatycznie utworzy profil w tabeli users
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -49,32 +50,16 @@ const RegisterPage = () => {
         }
       })
 
-      if (signUpError) throw signUpError
+      if (signUpError) {
+        // Sprawdź czy to duplikat (użytkownik już istnieje)
+        if (signUpError.message.includes('already registered')) {
+          throw new Error('To konto już istnieje. Jeśli masz problem z logowaniem, skontaktuj się z administratorem.')
+        }
+        throw signUpError
+      }
 
       if (!authData.user) {
         throw new Error('Nie udało się utworzyć konta')
-      }
-
-      // 2. Create user profile in users table
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert({
-          id: authData.user.id,
-          email: formData.email,
-          display_name: formData.displayName.trim(),
-          role: 'user', // Always create as regular user
-          balance: 0.00
-        })
-
-      if (profileError) {
-        console.error('Profile creation failed:', profileError)
-
-        // Sprawdź czy to duplikat (użytkownik już istnieje)
-        if (profileError.code === '23505') {
-          throw new Error('To konto już istnieje. Jeśli masz problem z logowaniem, skontaktuj się z administratorem.')
-        }
-
-        throw new Error('Nie udało się utworzyć profilu użytkownika. Skontaktuj się z administratorem.')
       }
 
       // Sprawdź czy email confirmation jest włączone
