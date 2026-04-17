@@ -18,6 +18,18 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      },
+    })
+  }
+
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -34,7 +46,13 @@ serve(async (req) => {
       console.error('Failed to parse JSON:', e)
       return new Response(
         JSON.stringify({ error: 'Invalid JSON in request body' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        }
       )
     }
 
@@ -45,7 +63,13 @@ serve(async (req) => {
     if (!activityId || !activityName || !dateTime) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        }
       )
     }
 
@@ -65,7 +89,12 @@ serve(async (req) => {
     if (!interestedUsers || interestedUsers.length === 0) {
       return new Response(
         JSON.stringify({ message: 'No interested users found', sent: 0 }),
-        { headers: { 'Content-Type': 'application/json' } }
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        }
       )
     }
 
@@ -84,7 +113,12 @@ serve(async (req) => {
     if (!subscriptions || subscriptions.length === 0) {
       return new Response(
         JSON.stringify({ message: 'No push subscriptions found', sent: 0 }),
-        { headers: { 'Content-Type': 'application/json' } }
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        }
       )
     }
 
@@ -166,13 +200,24 @@ serve(async (req) => {
         failed: failedCount,
         total: sendResults.length
       }),
-      { headers: { 'Content-Type': 'application/json' } }
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      }
     )
   } catch (error: any) {
     console.error('Function error:', error)
     return new Response(
       JSON.stringify({ error: error.message, stack: error.stack }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      }
     )
   }
 })
