@@ -16,6 +16,7 @@ interface Activity {
   cancellation_hours: number
   registration_opens_at?: string | null
   registration_closes_at?: string | null
+  registered_count?: number
 }
 
 const ActivitiesPage = () => {
@@ -24,10 +25,12 @@ const ActivitiesPage = () => {
   const [loading, setLoading] = useState(true)
   const [registering, setRegistering] = useState<string | null>(null)
   const [userRegistrations, setUserRegistrations] = useState<Set<string>>(new Set())
+  const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({})
 
   useEffect(() => {
     fetchActivities()
     fetchUserRegistrations()
+    fetchParticipantCounts()
   }, [])
 
   const fetchActivities = async () => {
@@ -70,6 +73,27 @@ const ActivitiesPage = () => {
       setUserRegistrations(registeredIds)
     } catch (error) {
       console.error('Error fetching user registrations:', error)
+    }
+  }
+
+  const fetchParticipantCounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('registrations')
+        .select('activity_id')
+        .in('status', ['registered', 'attended'])
+
+      if (error) throw error
+
+      // Policz rejestracje dla każdej aktywności
+      const counts: Record<string, number> = {}
+      data?.forEach(reg => {
+        counts[reg.activity_id] = (counts[reg.activity_id] || 0) + 1
+      })
+
+      setParticipantCounts(counts)
+    } catch (error) {
+      console.error('Error fetching participant counts:', error)
     }
   }
 
@@ -126,8 +150,9 @@ const ActivitiesPage = () => {
 
       alert('✅ Zapisano na zajęcia! Pamiętaj, że płatność zostanie pobrana po oznaczeniu obecności przez trenera.')
 
-      // Refresh registrations
+      // Refresh registrations and participant counts
       await fetchUserRegistrations()
+      await fetchParticipantCounts()
     } catch (error) {
       console.error('Error registering:', error)
       alert('Wystąpił błąd podczas zapisu')
@@ -214,6 +239,8 @@ const ActivitiesPage = () => {
             const isRegistered = userRegistrations.has(activity.id)
             const isProcessing = registering === activity.id
             const { isOpen, isBeforeOpen, isAfterClose, opensAt } = checkRegistrationWindow(activity)
+            const registered = participantCounts[activity.id] || 0
+            const isFull = registered >= activity.max_participants
 
             return (
               <div
@@ -238,7 +265,21 @@ const ActivitiesPage = () => {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <span>👥</span>
-                    <span>Max {activity.max_participants} osób</span>
+                    <span>
+                      {(() => {
+                        const registered = participantCounts[activity.id] || 0
+                        const available = activity.max_participants - registered
+                        const isFull = available <= 0
+                        const isAlmostFull = available <= 3 && available > 0
+
+                        return (
+                          <span className={isFull ? 'text-red-600 font-bold' : isAlmostFull ? 'text-orange-600 font-semibold' : ''}>
+                            {registered}/{activity.max_participants} zapisanych
+                            {isFull ? ' - PEŁNE' : ` (${available} ${available === 1 ? 'wolne miejsce' : 'wolnych miejsc'})`}
+                          </span>
+                        )
+                      })()}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm font-bold text-purple-600">
                     <span>💰</span>
@@ -263,6 +304,12 @@ const ActivitiesPage = () => {
                   </div>
                 )}
 
+                {isFull && !isRegistered && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+                    <strong>🚫 Brak wolnych miejsc</strong>
+                  </div>
+                )}
+
                 {isRegistered ? (
                   <div className="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg text-center">
                     ✓ Zapisany/a
@@ -270,10 +317,11 @@ const ActivitiesPage = () => {
                 ) : (
                   <button
                     onClick={() => handleRegister(activity.id, activity.cost, activity.cancellation_hours)}
-                    disabled={isProcessing || !isOpen}
+                    disabled={isProcessing || !isOpen || isFull}
                     className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isProcessing ? 'Zapisywanie...' :
+                     isFull ? 'Brak miejsc' :
                      isBeforeOpen ? `Zapisy otwarte za ${opensAt && formatTimeUntil(opensAt)}` :
                      isAfterClose ? 'Zapisy zamknięte' :
                      'Zapisz się'}
