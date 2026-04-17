@@ -2,7 +2,7 @@
 
 [build]
   # Build command - runs in the frontend directory
-  command = "npm ci && npx vite build"
+  command = "npm ci || npm install --legacy-peer-deps; npx --yes vite@7.3.2 build"
 
   # Directory to publish - Vite outputs to 'dist'
   publish = "dist"
