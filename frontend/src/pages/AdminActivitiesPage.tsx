@@ -165,20 +165,33 @@ const AdminActivitiesPage = () => {
 
           const { data: { user } } = await supabase.auth.getUser()
 
-          const { data: pushData, error: pushError } = await supabase.functions.invoke('send-push-notifications', {
-            body: {
-              activityId: newActivity.id,
-              activityName: newActivity.name,
-              dateTime: newActivity.date_time,
-              userId: user?.id
-            }
-          })
+          try {
+            const response = await fetch(
+              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-push-notifications`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+                },
+                body: JSON.stringify({
+                  activityId: newActivity.id,
+                  activityName: newActivity.name,
+                  dateTime: newActivity.date_time,
+                  userId: user?.id
+                })
+              }
+            )
 
-          if (pushError) {
-            console.error('[Push] Error sending push notifications:', pushError)
-            // Nie pokazuj błędu użytkownikowi - powiadomienia są opcjonalne
-          } else {
-            console.log('[Push] Notifications sent successfully:', pushData)
+            const pushData = await response.json()
+
+            if (!response.ok) {
+              console.error('[Push] Error sending push notifications:', pushData)
+            } else {
+              console.log('[Push] Notifications sent successfully:', pushData)
+            }
+          } catch (err) {
+            console.error('[Push] Error sending push notifications:', err)
           }
         }
       }
