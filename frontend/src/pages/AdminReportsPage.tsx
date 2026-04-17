@@ -83,7 +83,7 @@ export default function AdminReportsPage() {
           throw new Error('Nie jesteś zalogowany. Odśwież stronę i zaloguj się ponownie.')
         }
 
-        const { data, error } = await supabase.functions.invoke('generate-accounting-report', {
+        const response = await supabase.functions.invoke('generate-accounting-report', {
           body: {
             month: selectedMonth,
             activityTypeId: selectedSection || null
@@ -93,14 +93,33 @@ export default function AdminReportsPage() {
           }
         })
 
-        if (error) throw error
+        console.log('Edge Function response:', response)
 
-        // Check if data exists and has the expected structure
-        if (!data || !data.data) {
-          throw new Error('Nieprawidłowa odpowiedź z serwera')
+        if (response.error) {
+          console.error('Edge Function error:', response.error)
+          throw new Error(response.error.message || 'Błąd wywołania funkcji')
         }
 
-        setReportData(data.data || [])
+        // Check if data exists and has the expected structure
+        if (!response.data) {
+          throw new Error('Brak danych w odpowiedzi')
+        }
+
+        // The response.data contains the actual response from the function
+        const functionData = response.data
+        console.log('Function data:', functionData)
+
+        // Check if there's an error in the function response
+        if (functionData.error) {
+          throw new Error(functionData.error)
+        }
+
+        // Check if data exists in the expected structure
+        if (!functionData.data) {
+          throw new Error('Nieprawidłowa struktura odpowiedzi')
+        }
+
+        setReportData(functionData.data || [])
       } else {
         // Attendance report - fetch directly from database
         await generateAttendanceReport()
