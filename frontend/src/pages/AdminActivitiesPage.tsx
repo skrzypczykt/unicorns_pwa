@@ -47,6 +47,7 @@ const AdminActivitiesPage = () => {
     description: '',
     date_time: '',
     duration_minutes: 60,
+    duration_description: '',
     max_participants: 15,
     cost: 30,
     location: '',
@@ -268,6 +269,7 @@ const AdminActivitiesPage = () => {
       description: activity.description,
       date_time: toDateTimeLocal(activity.date_time),
       duration_minutes: activity.duration_minutes,
+      duration_description: (activity as any).duration_description || '',
       max_participants: activity.max_participants,
       cost: activity.cost,
       location: activity.location,
@@ -314,6 +316,7 @@ const AdminActivitiesPage = () => {
       description: '',
       date_time: '',
       duration_minutes: 60,
+      duration_description: '',
       max_participants: 15,
       cost: 30,
       location: '',
@@ -473,20 +476,39 @@ const AdminActivitiesPage = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Czas trwania (minuty) *
-                </label>
-                <input
-                  type="number"
-                  value={formData.duration_minutes}
-                  onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
-                  required
-                  min="15"
-                  step="15"
-                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                />
-              </div>
+              {/* Czas trwania - różne pola dla zwykłych zajęć vs wydarzeń specjalnych */}
+              {!formData.is_special_event ? (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Czas trwania (minuty) *
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.duration_minutes}
+                    onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
+                    required
+                    min="15"
+                    step="15"
+                    className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Czas trwania (opis tekstowy)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.duration_description}
+                    onChange={(e) => setFormData({ ...formData, duration_description: e.target.value })}
+                    placeholder='np. "3 dni", "cały weekend", "do ustalenia"'
+                    className="w-full px-4 py-2 border-2 border-yellow-200 rounded-lg focus:border-yellow-500 focus:outline-none"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Dla wydarzeń specjalnych możesz wpisać dowolny opis czasu trwania zamiast konkretnej liczby minut
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">

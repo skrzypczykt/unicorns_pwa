@@ -91,6 +91,7 @@ export interface Database {
           trainer_id: string
           date_time: string
           duration_minutes: number
+          duration_description: string | null
           max_participants: number
           cost: number
           cancellation_hours: number
@@ -109,6 +110,7 @@ export interface Database {
           trainer_id: string
           date_time: string
           duration_minutes: number
+          duration_description?: string | null
           max_participants: number
           cost: number
           cancellation_hours?: number
@@ -127,6 +129,7 @@ export interface Database {
           trainer_id?: string
           date_time?: string
           duration_minutes?: number
+          duration_description?: string | null
           max_participants?: number
           cost?: number
           cancellation_hours?: number

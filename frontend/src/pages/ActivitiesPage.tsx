@@ -9,6 +9,7 @@ interface Activity {
   description: string
   date_time: string
   duration_minutes: number
+  duration_description?: string | null
   max_participants: number
   cost: number
   location: string
@@ -400,7 +401,7 @@ const ActivitiesPage = () => {
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <span>⏱️</span>
-                        <span>{formatDuration(activity.duration_minutes)}</span>
+                        <span>{activity.duration_description || formatDuration(activity.duration_minutes)}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <span>📍</span>
@@ -555,7 +556,7 @@ const ActivitiesPage = () => {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <span>⏱️</span>
-                    <span>{formatDuration(activity.duration_minutes)}</span>
+                    <span>{activity.duration_description || formatDuration(activity.duration_minutes)}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <span>📍</span>
