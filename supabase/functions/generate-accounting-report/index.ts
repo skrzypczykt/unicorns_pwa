@@ -12,9 +12,14 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Function invoked')
+
     // Get the authorization header
     const authHeader = req.headers.get('Authorization')
+    console.log('Auth header present:', !!authHeader)
+
     if (!authHeader) {
+      console.error('Missing authorization header')
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
         {
@@ -32,6 +37,8 @@ serve(async (req) => {
 
     // Verify user is authenticated by extracting JWT from header
     const jwt = authHeader.replace('Bearer ', '')
+    console.log('Verifying JWT...')
+
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(jwt)
 
     if (authError || !user) {
@@ -45,7 +52,10 @@ serve(async (req) => {
       )
     }
 
+    console.log('User authenticated:', user.id)
+
     // Check if user is admin using service role key
+    console.log('Checking admin role...')
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -57,9 +67,12 @@ serve(async (req) => {
       .eq('id', user.id)
       .single()
 
+    console.log('Profile:', profile, 'Error:', profileError)
+
     if (profileError || profile?.role !== 'admin') {
+      console.error('Not admin. Role:', profile?.role)
       return new Response(
-        JSON.stringify({ error: 'Forbidden - Admin access required' }),
+        JSON.stringify({ error: 'Forbidden - Admin access required', role: profile?.role }),
         {
           status: 403,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -67,10 +80,13 @@ serve(async (req) => {
       )
     }
 
+    console.log('User is admin, reading request body...')
     const { month, activityTypeId } = await req.json()
+    console.log('Request params:', { month, activityTypeId })
 
     // Validation
     if (!month) {
+      console.error('Missing month parameter')
       return new Response(
         JSON.stringify({ error: 'Month parameter required (format: YYYY-MM-DD)' }),
         {
@@ -81,12 +97,18 @@ serve(async (req) => {
     }
 
     // Call the database function (using service role client from above)
+    console.log('Calling database function...')
     const { data, error } = await supabaseAdmin.rpc('get_accounting_report', {
       report_month: month,
       activity_type_filter: activityTypeId || null
     })
 
-    if (error) throw error
+    if (error) {
+      console.error('Database function error:', error)
+      throw error
+    }
+
+    console.log('Success! Rows returned:', data?.length || 0)
 
     return new Response(
       JSON.stringify({ data }),
