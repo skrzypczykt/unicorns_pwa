@@ -17,6 +17,7 @@ interface Registration {
     cost: number
     location: string
     status: string
+    whatsapp_group_url?: string | null
   }
 }
 
@@ -51,7 +52,8 @@ const MyClassesPage = () => {
             duration_minutes,
             cost,
             location,
-            status
+            status,
+            whatsapp_group_url
           )
         `)
         .eq('user_id', user.id)
@@ -234,6 +236,19 @@ const MyClassesPage = () => {
                       <div className="mt-3 text-xs text-gray-500">
                         <span>⚠️ Możesz anulować do: {formatDate(reg.can_cancel_until)}</span>
                       </div>
+                    )}
+
+                    {/* WhatsApp Group Link */}
+                    {reg.status === 'registered' && reg.activity.whatsapp_group_url && (
+                      <a
+                        href={reg.activity.whatsapp_group_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition-all"
+                      >
+                        <img src="/whatsapp-icon.svg" alt="" className="h-4 w-4" />
+                        Dołącz do grupy WhatsApp
+                      </a>
                     )}
                   </div>
 

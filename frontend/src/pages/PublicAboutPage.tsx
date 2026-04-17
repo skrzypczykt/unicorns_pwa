@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom'
 import Timeline from '../components/about/Timeline'
 import InstagramFeed from '../components/social/InstagramFeed'
+import { useMainWhatsAppChannel } from '../hooks/useMainWhatsAppChannel'
 
 const PublicAboutPage = () => {
   const navigate = useNavigate()
+  const { whatsappUrl } = useMainWhatsAppChannel()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200">
@@ -251,6 +253,17 @@ const PublicAboutPage = () => {
             <div>
               <p className="font-semibold text-gray-700 mb-2">Dołącz do społeczności:</p>
               <div className="flex flex-wrap gap-3">
+                {whatsappUrl && (
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm transition-all font-semibold shadow-lg"
+                  >
+                    <img src="/whatsapp-icon.svg" alt="" className="h-5 w-5" />
+                    Kanał WhatsApp 🦄
+                  </a>
+                )}
                 <a
                   href="https://www.facebook.com/groups/604562728465563"
                   target="_blank"
@@ -278,10 +291,11 @@ const PublicAboutPage = () => {
                   🌐 Strona WWW
                 </a>
               </div>
-              <p className="text-xs text-gray-500 mt-2">
-                <img src="/whatsapp-icon.svg" alt="" className="inline h-4 w-4 mr-1" />
-                Dostępna również grupa WhatsApp - zapytaj na Facebooku!
-              </p>
+              {whatsappUrl && (
+                <p className="text-sm text-green-700 font-medium mt-3 bg-green-50 p-3 rounded-lg border border-green-200">
+                  💬 <strong>Dołącz do głównego kanału WhatsApp!</strong> Aktualności, ogłoszenia, pytania i integracja całej społeczności Unicorns.
+                </p>
+              )}
             </div>
           </div>
         </div>

@@ -145,6 +145,13 @@ serve(async (req) => {
       )
     }
 
+    // Pobierz szczegóły aktywności (w tym link WhatsApp)
+    const { data: activity } = await supabase
+      .from('activities')
+      .select('whatsapp_group_url')
+      .eq('id', activityId)
+      .single()
+
     // Przygotuj treść powiadomienia
     const formattedDate = new Date(dateTime).toLocaleString('pl-PL', {
       weekday: 'short',
@@ -154,14 +161,21 @@ serve(async (req) => {
       minute: '2-digit'
     })
 
+    // Dodaj wzmiankę o WhatsApp jeśli dostępna
+    let bodyText = `📅 ${formattedDate} - Zapisz się teraz!`
+    if (activity?.whatsapp_group_url) {
+      bodyText += ` 💬 Grupa WhatsApp dostępna!`
+    }
+
     const notification = {
       title: `🦄 Nowe zajęcia: ${activityName}`,
-      body: `📅 ${formattedDate} - Zapisz się teraz!`,
+      body: bodyText,
       icon: '/unicorns-logo.png',
       badge: '/badge-icon.svg',
       data: {
         url: '/activities',
-        activityId
+        activityId,
+        hasWhatsApp: !!activity?.whatsapp_group_url
       }
     }
 
