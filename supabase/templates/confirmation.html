@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Potwierdź swoją rejestrację</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+    h1 {
+      color: #9333ea;
+      margin: 0 0 10px 0;
+      font-size: 24px;
+    }
+    .subtitle {
+      color: #666;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .content {
+      margin: 30px 0;
+      color: #555;
+    }
+    .button {
+      display: inline-block;
+      padding: 16px 32px;
+      background: linear-gradient(to right, #ec4899, #9333ea, #3b82f6);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .button-container {
+      text-align: center;
+      margin: 30px 0;
+    }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+    }
+    .link-backup {
+      background: #f8f8f8;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 20px 0;
+      word-break: break-all;
+      font-size: 12px;
+      color: #666;
+    }
+    .info-box {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">🦄</div>
+      <h1>Unicorns Łódź</h1>
+      <p class="subtitle">Sport | Kultura | Rozrywka</p>
+    </div>
+
+    <div class="content">
+      <h2 style="color: #333; margin-top: 0;">Witaj w społeczności Unicorns! 🎉</h2>
+
+      <p>Cieszę się, że dołączasz do naszej wspaniałej społeczności sportowo-kulturalnej w Łodzi!</p>
+
+      <p>Aby dokończyć proces rejestracji i aktywować swoje konto, musisz potwierdzić swój adres email.</p>
+
+      <div class="button-container">
+        <a href="{{ .ConfirmationURL }}" class="button">
+          ✅ Potwierdź adres email
+        </a>
+      </div>
+
+      <div class="info-box">
+        <strong>📌 Co dalej?</strong>
+        <ol style="margin: 10px 0 0 0; padding-left: 20px;">
+          <li>Kliknij w przycisk powyżej</li>
+          <li>Zostaniesz przekierowany do strony logowania</li>
+          <li>Zaloguj się swoim emailem i hasłem</li>
+          <li>Gotowe! Możesz zapisywać się na zajęcia 🦄</li>
+        </ol>
+      </div>
+
+      <p style="margin-top: 20px;">Jeśli przycisk nie działa, skopiuj i wklej poniższy link do przeglądarki:</p>
+
+      <div class="link-backup">
+        {{ .ConfirmationURL }}
+      </div>
+
+      <p style="font-size: 13px; color: #999; margin-top: 30px;">
+        Ten link jest ważny przez 24 godziny i może być użyty tylko raz.
+      </p>
+    </div>
+
+    <div class="footer">
+      <p><strong>Stowarzyszenie Unicorns Łódź</strong></p>
+      <p>Badminton • Siatkówka • Squash • Taniec • Gry planszowe</p>
+      <p style="margin-top: 10px;">
+        <a href="https://www.unicorns.org.pl" style="color: #9333ea; text-decoration: none;">www.unicorns.org.pl</a> |
+        <a href="https://www.instagram.com/unicorns_lodz" style="color: #9333ea; text-decoration: none;">Instagram</a> |
+        <a href="https://www.facebook.com/groups/604562728465563" style="color: #9333ea; text-decoration: none;">Facebook</a>
+      </p>
+      <p style="margin-top: 15px; color: #ccc;">
+        Jeśli nie rejestrowałeś się w Unicorns Łódź, zignoruj tego emaila.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
