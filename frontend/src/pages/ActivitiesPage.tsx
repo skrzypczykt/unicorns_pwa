@@ -163,11 +163,21 @@ const ActivitiesPage = () => {
         return
       }
 
-      // Różne komunikaty w zależności od kosztu
+      // Różne komunikaty w zależności od typu wydarzenia i kosztu
+      const isSpecialEvent = specialEvents.some(e => e.id === activityId)
+
       if (cost > 0) {
-        alert(`✅ Zapisano na zajęcia! Koszt ${cost.toFixed(2)} zł zostanie pobrany po oznaczeniu obecności przez trenera. Masz 40 dni na uzupełnienie salda.`)
+        if (isSpecialEvent) {
+          alert(`✅ Zapisano na wydarzenie! Koszt ${cost.toFixed(2)} zł zostanie pobrany po uczestnictwie. Masz 40 dni na uzupełnienie salda.`)
+        } else {
+          alert(`✅ Zapisano na zajęcia! Koszt ${cost.toFixed(2)} zł zostanie pobrany po oznaczeniu obecności przez trenera. Masz 40 dni na uzupełnienie salda.`)
+        }
       } else {
-        alert('✅ Zapisano na zajęcia! To wydarzenie jest bezpłatne.')
+        if (isSpecialEvent) {
+          alert('✅ Zapisano na wydarzenie! Udział jest bezpłatny.')
+        } else {
+          alert('✅ Zapisano na zajęcia! Udział jest bezpłatny.')
+        }
       }
 
       // Refresh registrations and participant counts
