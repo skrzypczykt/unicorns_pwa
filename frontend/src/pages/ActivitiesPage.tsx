@@ -213,7 +213,7 @@ const ActivitiesPage = () => {
           {activities.map((activity) => {
             const isRegistered = userRegistrations.has(activity.id)
             const isProcessing = registering === activity.id
-            const { isOpen, isBeforeOpen, isAfterClose, opensAt, closesAt } = checkRegistrationWindow(activity)
+            const { isOpen, isBeforeOpen, isAfterClose, opensAt } = checkRegistrationWindow(activity)
 
             return (
               <div
