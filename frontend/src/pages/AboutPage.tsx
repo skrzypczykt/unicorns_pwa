@@ -27,23 +27,31 @@ const AboutPage = () => {
           className="h-40 w-auto mx-auto mb-4"
         />
         <h2 className="text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
-          Unicorns Łódź
+          Unicorns Łódź 🦄
         </h2>
-        <p className="text-xl text-purple-600 uppercase tracking-wide">
+        <p className="text-xl text-purple-600 uppercase tracking-wide mb-2">
           Sport | Kultura | Rozrywka
         </p>
-        <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-          Stowarzyszenie sportowo-kulturalno-rozrywkowe łączące pasjonatów aktywnego stylu życia w Łodzi
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <span className="text-2xl">🏳️‍🌈</span>
+          <p className="text-gray-700 font-medium">Przestrzeń inkluzywna dla wszystkich</p>
+        </div>
+        <p className="text-gray-600 max-w-2xl mx-auto">
+          Oficjalne łódzkie stowarzyszenie sportowe - <strong>446 członków</strong> pełnych pozytywnej energii!
         </p>
       </div>
 
       {/* Mission */}
       <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
-        <h3 className="text-2xl font-bold text-purple-600 mb-4">🎯 Nasza Misja</h3>
+        <h3 className="text-2xl font-bold text-purple-600 mb-4">🎯 Kim Jesteśmy?</h3>
+        <p className="text-gray-700 leading-relaxed mb-4">
+          Jesteśmy <strong>różnorodną drużyną</strong>, która wierzy w siłę płynącą ze wspólnego grania, wspierania się
+          i budowania pozytywnej energii. Unicorns Łódź to przestrzeń, gdzie sport spotyka się z kulturą i rozrywką,
+          a każdy znajduje coś dla siebie.
+        </p>
         <p className="text-gray-700 leading-relaxed">
-          Unicorns Łódź to społeczność ludzi, którzy wierzą, że aktywność fizyczna, kultura i wspólna zabawa
-          są kluczem do szczęśliwego życia. Organizujemy różnorodne zajęcia sportowe, wydarzenia kulturalne
-          i integracyjne spotkania, które łączą mieszkańców Łodzi w duchu przyjaźni i wzajemnego wsparcia.
+          Od regularnych treningów i rozgrywek, przez integracyjne spotkania świąteczne, aż po ambitne wyjazdy
+          międzynarodowe - tworzymy społeczność opartą na wzajemnym wsparciu, sportowej rywalizacji i poczuciu wspólnoty.
         </p>
       </div>
 
@@ -96,7 +104,44 @@ const AboutPage = () => {
             <h4 className="font-bold text-pink-600">Unicorns BadCup</h4>
             <p className="text-sm text-gray-600">Prestiżowy puchar badmintona organizowany przez Unicorns</p>
           </div>
+          <div className="p-3 border-l-4 border-yellow-500 bg-yellow-50">
+            <h4 className="font-bold text-yellow-600">🎄 Spotkania Integracyjne</h4>
+            <p className="text-sm text-gray-600">Świąteczne spotkania, grillowanie, i czas dla "wolnych elektronów" w fajnym gronie rówieśników</p>
+          </div>
+          <div className="p-3 border-l-4 border-green-500 bg-green-50">
+            <h4 className="font-bold text-green-600">🌍 Wyjazdy Zagraniczne</h4>
+            <p className="text-sm text-gray-600">Wspólne wyjazdy na międzynarodowe wydarzenia - od World Pride Amsterdam do sportowych wypraw!</p>
+          </div>
         </div>
+      </div>
+
+      {/* Team */}
+      <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
+        <h3 className="text-2xl font-bold text-purple-600 mb-4">👥 Nasz Zespół</h3>
+        <p className="text-gray-700 mb-4">
+          Stowarzyszenie prowadzone jest przez pasjonatów sportu i integracji społecznej:
+        </p>
+        <div className="grid md:grid-cols-2 gap-3">
+          <div className="p-3 bg-purple-50 rounded-lg">
+            <p className="font-semibold text-purple-600">Administracja</p>
+            <ul className="text-sm text-gray-700 mt-2 space-y-1">
+              <li>• Fryderyk Żeromiński</li>
+              <li>• Tomek Pełczewski</li>
+              <li>• Adam Prusik</li>
+            </ul>
+          </div>
+          <div className="p-3 bg-pink-50 rounded-lg">
+            <p className="font-semibold text-pink-600">Koordynatorzy Wydarzeń</p>
+            <ul className="text-sm text-gray-700 mt-2 space-y-1">
+              <li>• Przemek Kaleta</li>
+              <li>• Tomasz Skrzypczyk</li>
+              <li>• Luca Corso</li>
+            </ul>
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 mt-4 italic">
+          ...i wielu innych aktywnych członków tworzących magię Unicorns! 🦄✨
+        </p>
       </div>
 
       {/* Contact & Social */}
@@ -152,10 +197,14 @@ const AboutPage = () => {
 
       {/* Join Us */}
       <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-xl shadow-lg p-8 text-white text-center">
-        <h3 className="text-2xl font-bold mb-3">🦄 Zostań Unicorns!</h3>
+        <h3 className="text-2xl font-bold mb-3">🦄 Zostań jednym z nas!</h3>
+        <p className="mb-4 max-w-2xl mx-auto text-lg">
+          <strong>446 członków</strong> nie może się mylić! 🏳️‍🌈
+        </p>
         <p className="mb-6 max-w-2xl mx-auto">
-          Dołącz do naszej społeczności i odkryj nowe pasje, poznaj wspaniałych ludzi
-          i czerp radość z aktywnego stylu życia!
+          Dołącz do różnorodnej drużyny pełnej pozytywnej energii. Tu poznasz wspaniałych ludzi,
+          rozwiniesz swoje pasje sportowe i kulturalne, a przede wszystkim - znajdziesz wsparcie
+          i poczucie wspólnoty. Od treningów po wyjazdy zagraniczne - wspólnie tworzymy coś wyjątkowego!
         </p>
         <div className="flex gap-3 justify-center flex-wrap">
           <button
