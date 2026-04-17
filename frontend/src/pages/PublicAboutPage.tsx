@@ -68,6 +68,67 @@ const PublicAboutPage = () => {
           </p>
         </div>
 
+        {/* CTA - Zapisz się */}
+        <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-xl shadow-lg p-8 text-white mb-8">
+          <h3 className="text-3xl font-bold mb-4 text-center">📝 Zapisz się na zajęcia i weź udział w wydarzeniach!</h3>
+          <p className="mb-6 max-w-2xl mx-auto text-center text-lg">
+            <strong>446 członków</strong> nie może się mylić! 🏳️‍🌈
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-4 mb-6 max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="text-3xl mb-2">🗓️</div>
+              <h4 className="font-bold mb-1">Pełny harmonogram zajęć</h4>
+              <p className="text-sm opacity-90">Zobacz wszystkie treningi i wydarzenia</p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="text-3xl mb-2">📝</div>
+              <h4 className="font-bold mb-1">Zapisy bez przedpłaty</h4>
+              <p className="text-sm opacity-90">Zapisz się teraz, płać później (40 dni na uzupełnienie salda)</p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="text-3xl mb-2">🔔</div>
+              <h4 className="font-bold mb-1">Powiadomienia push</h4>
+              <p className="text-sm opacity-90">Nie przegap nowych zajęć i wydarzeń</p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="text-3xl mb-2">🏆</div>
+              <h4 className="font-bold mb-1">Wydarzenia specjalne</h4>
+              <p className="text-sm opacity-90">Zawody, spływy kajakowe, wyjazdy</p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="text-3xl mb-2">💰</div>
+              <h4 className="font-bold mb-1">Przejrzyste rozliczenia</h4>
+              <p className="text-sm opacity-90">Zobacz historię uczestnictwa i płatności</p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="text-3xl mb-2">📱</div>
+              <h4 className="font-bold mb-1">Aplikacja PWA</h4>
+              <p className="text-sm opacity-90">Zainstaluj na telefonie, używaj offline</p>
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-center flex-wrap">
+            <button
+              onClick={() => navigate('/register')}
+              className="px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:scale-105"
+            >
+              Zarejestruj się
+            </button>
+            <button
+              onClick={() => navigate('/login')}
+              className="px-6 py-3 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-lg hover:bg-white/30 transition-all"
+            >
+              Zaloguj się
+            </button>
+          </div>
+        </div>
+
         {/* Mission */}
         <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
           <h3 className="text-2xl font-bold text-purple-600 mb-4">🎯 Kim Jesteśmy?</h3>
@@ -238,32 +299,6 @@ const PublicAboutPage = () => {
           <InstagramFeed />
         </div>
 
-        {/* Join Us - CTA */}
-        <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-xl shadow-lg p-8 text-white text-center">
-          <h3 className="text-2xl font-bold mb-3">🦄 Zostań jednym z nas!</h3>
-          <p className="mb-4 max-w-2xl mx-auto text-lg">
-            <strong>446 członków</strong> nie może się mylić! 🏳️‍🌈
-          </p>
-          <p className="mb-6 max-w-2xl mx-auto">
-            Dołącz do różnorodnej drużyny pełnej pozytywnej energii. Tu poznasz wspaniałych ludzi,
-            rozwiniesz swoje pasje sportowe i kulturalne, a przede wszystkim - znajdziesz wsparcie
-            i poczucie wspólnoty. Od treningów po wyjazdy zagraniczne - wspólnie tworzymy coś wyjątkowego!
-          </p>
-          <div className="flex gap-3 justify-center flex-wrap">
-            <button
-              onClick={() => navigate('/register')}
-              className="px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:bg-gray-100 transition-all"
-            >
-              Zarejestruj się
-            </button>
-            <button
-              onClick={() => navigate('/login')}
-              className="px-6 py-3 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-lg hover:bg-white/30 transition-all"
-            >
-              Zaloguj się
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Footer */}

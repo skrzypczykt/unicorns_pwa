@@ -17,31 +17,43 @@ export interface Database {
           id: string
           email: string
           display_name: string
-          role: 'user' | 'trainer' | 'admin'
+          role: 'user' | 'trainer' | 'admin' | 'external_trainer'
           balance: number
           balance_updated_at: string | null
           created_at: string
           updated_at: string
+          is_association_member: boolean
+          association_member_since: string | null
+          gdpr_consent_date: string | null
+          sports_terms_accepted_date: string | null
         }
         Insert: {
           id: string
           email: string
           display_name: string
-          role?: 'user' | 'trainer' | 'admin'
+          role?: 'user' | 'trainer' | 'admin' | 'external_trainer'
           balance?: number
           balance_updated_at?: string | null
           created_at?: string
           updated_at?: string
+          is_association_member?: boolean
+          association_member_since?: string | null
+          gdpr_consent_date?: string | null
+          sports_terms_accepted_date?: string | null
         }
         Update: {
           id?: string
           email?: string
           display_name?: string
-          role?: 'user' | 'trainer' | 'admin'
+          role?: 'user' | 'trainer' | 'admin' | 'external_trainer'
           balance?: number
           balance_updated_at?: string | null
           created_at?: string
           updated_at?: string
+          is_association_member?: boolean
+          association_member_since?: string | null
+          gdpr_consent_date?: string | null
+          sports_terms_accepted_date?: string | null
         }
       }
       activity_types: {
@@ -81,6 +93,7 @@ export interface Database {
           cancellation_hours: number
           location: string
           status: 'scheduled' | 'completed' | 'cancelled'
+          is_special_event: boolean
           created_at: string
           updated_at: string
         }
@@ -97,6 +110,7 @@ export interface Database {
           cancellation_hours?: number
           location: string
           status?: 'scheduled' | 'completed' | 'cancelled'
+          is_special_event?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -113,6 +127,7 @@ export interface Database {
           cancellation_hours?: number
           location?: string
           status?: 'scheduled' | 'completed' | 'cancelled'
+          is_special_event?: boolean
           created_at?: string
           updated_at?: string
         }
