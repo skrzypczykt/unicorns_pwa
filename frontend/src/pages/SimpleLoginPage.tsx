@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase/client'
 
 const SimpleLoginPage = () => {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -33,6 +35,14 @@ const SimpleLoginPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center p-4">
+      {/* Przycisk powrotu */}
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-4 left-4 px-4 py-2 bg-white/80 hover:bg-white text-purple-600 rounded-lg text-sm font-semibold transition-all shadow-md"
+      >
+        ← Strona główna
+      </button>
+
       {/* Decorative unicorns */}
       <div className="fixed top-10 left-10 text-6xl opacity-20">🦄</div>
       <div className="fixed bottom-10 right-10 text-6xl opacity-20">🦄</div>

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './supabase/client'
 import SimpleLoginPage from './pages/SimpleLoginPage'
 import RegisterPage from './pages/RegisterPage'
+import PublicAboutPage from './pages/PublicAboutPage'
 import DashboardPage from './pages/DashboardPage'
 import ActivitiesPage from './pages/ActivitiesPage'
 import MyClassesPage from './pages/MyClassesPage'
@@ -88,8 +89,10 @@ function App() {
     return (
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<PublicAboutPage />} />
+          <Route path="/login" element={<SimpleLoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="*" element={<SimpleLoginPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     )
