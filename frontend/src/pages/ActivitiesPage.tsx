@@ -205,6 +205,29 @@ const ActivitiesPage = () => {
     return `${minutes}m`
   }
 
+  const formatDuration = (minutes: number) => {
+    if (minutes >= 1440) {
+      // >= 24h = pokaż dni
+      const days = Math.floor(minutes / 1440)
+      const remainingHours = Math.floor((minutes % 1440) / 60)
+      if (remainingHours > 0) {
+        return `${days} ${days === 1 ? 'dzień' : 'dni'} ${remainingHours}h`
+      }
+      return `${days} ${days === 1 ? 'dzień' : 'dni'}`
+    } else if (minutes >= 60) {
+      // >= 1h = pokaż godziny
+      const hours = Math.floor(minutes / 60)
+      const remainingMinutes = minutes % 60
+      if (remainingMinutes > 0) {
+        return `${hours}h ${remainingMinutes}min`
+      }
+      return `${hours}h`
+    } else {
+      // < 1h = pokaż minuty
+      return `${minutes} min`
+    }
+  }
+
   const checkRegistrationWindow = (activity: Activity) => {
     const now = new Date()
     const opensAt = activity.registration_opens_at ? new Date(activity.registration_opens_at) : null
@@ -304,7 +327,7 @@ const ActivitiesPage = () => {
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <span>⏱️</span>
-                        <span>{activity.duration_minutes} minut</span>
+                        <span>{formatDuration(activity.duration_minutes)}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <span>📍</span>
@@ -443,7 +466,7 @@ const ActivitiesPage = () => {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <span>⏱️</span>
-                    <span>{activity.duration_minutes} minut</span>
+                    <span>{formatDuration(activity.duration_minutes)}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <span>📍</span>
