@@ -93,16 +93,26 @@ const AdminActivitiesPage = () => {
     }
   }
 
+  // Helper: konwertuj datetime-local (lokalny czas) na ISO string z timezone
+  const toISOWithTimezone = (dateTimeLocal: string | null | undefined): string | null => {
+    if (!dateTimeLocal) return null
+    // datetime-local zwraca "2024-04-18T18:00" bez TZ
+    // Tworzymy Date obiekt z lokalnego czasu i konwertujemy na ISO (UTC)
+    const localDate = new Date(dateTimeLocal)
+    return localDate.toISOString()
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     try {
-      // Konwertuj puste stringi na null dla opcjonalnych pól datetime
+      // Konwertuj puste stringi na null i datetime-local na ISO z timezone
       const dataToSave = {
         ...formData,
-        registration_opens_at: formData.registration_opens_at || null,
-        registration_closes_at: formData.registration_closes_at || null,
-        recurrence_end_date: formData.recurrence_end_date || null,
+        date_time: toISOWithTimezone(formData.date_time),
+        registration_opens_at: toISOWithTimezone(formData.registration_opens_at),
+        registration_closes_at: toISOWithTimezone(formData.registration_closes_at),
+        recurrence_end_date: toISOWithTimezone(formData.recurrence_end_date),
         recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : 'none'
       }
 
@@ -168,12 +178,25 @@ const AdminActivitiesPage = () => {
     }
   }
 
+  // Helper: konwertuj ISO string (UTC z bazy) na format datetime-local (lokalny czas)
+  const toDateTimeLocal = (isoString: string | null | undefined): string => {
+    if (!isoString) return ''
+    // Parsuj UTC string z bazy i sformatuj jako lokalny czas dla datetime-local
+    const date = new Date(isoString)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+  }
+
   const handleEdit = (activity: Activity) => {
     setEditingId(activity.id)
     setFormData({
       name: activity.name,
       description: activity.description,
-      date_time: activity.date_time.slice(0, 16), // Format for datetime-local input
+      date_time: toDateTimeLocal(activity.date_time),
       duration_minutes: activity.duration_minutes,
       max_participants: activity.max_participants,
       cost: activity.cost,
@@ -181,11 +204,11 @@ const AdminActivitiesPage = () => {
       trainer_id: activity.trainer_id,
       cancellation_hours: activity.cancellation_hours,
       status: activity.status,
-      registration_opens_at: activity.registration_opens_at ? activity.registration_opens_at.slice(0, 16) : '',
-      registration_closes_at: activity.registration_closes_at ? activity.registration_closes_at.slice(0, 16) : '',
+      registration_opens_at: toDateTimeLocal(activity.registration_opens_at),
+      registration_closes_at: toDateTimeLocal(activity.registration_closes_at),
       is_recurring: activity.is_recurring || false,
       recurrence_pattern: activity.recurrence_pattern || 'none',
-      recurrence_end_date: activity.recurrence_end_date ? activity.recurrence_end_date.slice(0, 16) : ''
+      recurrence_end_date: toDateTimeLocal(activity.recurrence_end_date)
     })
     setShowForm(true)
   }
