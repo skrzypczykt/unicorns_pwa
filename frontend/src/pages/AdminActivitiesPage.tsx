@@ -15,6 +15,8 @@ interface Activity {
   cancellation_hours: number
   status: string
   activity_type_id: string | null
+  registration_opens_at?: string | null
+  registration_closes_at?: string | null
 }
 
 interface Trainer {
@@ -42,7 +44,9 @@ const AdminActivitiesPage = () => {
     location: '',
     trainer_id: '',
     cancellation_hours: 24,
-    status: 'scheduled'
+    status: 'scheduled',
+    registration_opens_at: '',
+    registration_closes_at: ''
   })
 
   useEffect(() => {
@@ -85,11 +89,18 @@ const AdminActivitiesPage = () => {
     e.preventDefault()
 
     try {
+      // Konwertuj puste stringi na null dla opcjonalnych pól datetime
+      const dataToSave = {
+        ...formData,
+        registration_opens_at: formData.registration_opens_at || null,
+        registration_closes_at: formData.registration_closes_at || null
+      }
+
       if (editingId) {
         // Update existing activity
         const { error } = await supabase
           .from('activities')
-          .update(formData)
+          .update(dataToSave)
           .eq('id', editingId)
 
         if (error) throw error
@@ -98,7 +109,7 @@ const AdminActivitiesPage = () => {
         // Create new activity
         const { error } = await supabase
           .from('activities')
-          .insert(formData)
+          .insert(dataToSave)
 
         if (error) throw error
         alert('✅ Nowe zajęcia utworzone!')
@@ -124,7 +135,9 @@ const AdminActivitiesPage = () => {
       location: activity.location,
       trainer_id: activity.trainer_id,
       cancellation_hours: activity.cancellation_hours,
-      status: activity.status
+      status: activity.status,
+      registration_opens_at: activity.registration_opens_at ? activity.registration_opens_at.slice(0, 16) : '',
+      registration_closes_at: activity.registration_closes_at ? activity.registration_closes_at.slice(0, 16) : ''
     })
     setShowForm(true)
   }
@@ -158,7 +171,9 @@ const AdminActivitiesPage = () => {
       location: '',
       trainer_id: '',
       cancellation_hours: 24,
-      status: 'scheduled'
+      status: 'scheduled',
+      registration_opens_at: '',
+      registration_closes_at: ''
     })
     setEditingId(null)
     setShowForm(false)
@@ -346,6 +361,46 @@ const AdminActivitiesPage = () => {
                   min="0"
                   className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
                 />
+              </div>
+
+              {/* Okna rejestracji */}
+              <div className="col-span-2 border-t-2 border-purple-200 pt-4 mt-4">
+                <h3 className="text-lg font-bold text-purple-600 mb-3">⏰ Okna rejestracji (opcjonalnie)</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Określ kiedy zapisy są otwarte. Pozostaw puste aby zapisy były otwarte od razu do rozpoczęcia zajęć.
+                </p>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Zapisy otwarte od
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={formData.registration_opens_at || ''}
+                      onChange={(e) => setFormData({ ...formData, registration_opens_at: e.target.value || '' })}
+                      className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Pozostaw puste aby zapisy były otwarte od razu
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Zapisy zamknięte o
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={formData.registration_closes_at || ''}
+                      onChange={(e) => setFormData({ ...formData, registration_closes_at: e.target.value || '' })}
+                      className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Pozostaw puste aby zapisy były otwarte do początku zajęć
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div>
