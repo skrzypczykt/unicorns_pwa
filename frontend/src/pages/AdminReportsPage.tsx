@@ -29,6 +29,13 @@ export default function AdminReportsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Clear report data when report type changes
+  const handleReportTypeChange = (newType: ReportType) => {
+    setReportType(newType)
+    setReportData([])  // Clear old data to prevent type mismatch
+    setError(null)
+  }
+
   // Generate last 12 months for dropdown
   const generateMonthOptions = () => {
     const months = []
@@ -297,7 +304,7 @@ export default function AdminReportsPage() {
                     type="radio"
                     value="accounting"
                     checked={reportType === 'accounting'}
-                    onChange={(e) => setReportType(e.target.value as ReportType)}
+                    onChange={(e) => handleReportTypeChange(e.target.value as ReportType)}
                     className="mr-2"
                   />
                   <span>Księgowy</span>
@@ -307,7 +314,7 @@ export default function AdminReportsPage() {
                     type="radio"
                     value="attendance"
                     checked={reportType === 'attendance'}
-                    onChange={(e) => setReportType(e.target.value as ReportType)}
+                    onChange={(e) => handleReportTypeChange(e.target.value as ReportType)}
                     className="mr-2"
                   />
                   <span>Frekwencja</span>
@@ -378,39 +385,48 @@ export default function AdminReportsPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {reportData.map((row, index) => (
-                      <tr
-                        key={index}
-                        className={row.debt > 0 ? 'bg-red-50' : row.closing_balance > 0 ? 'bg-green-50' : ''}
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {row.user_name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {row.email}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {row.section_name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
-                          {row.opening_balance.toFixed(2)} zł
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600">
-                          +{row.total_credits.toFixed(2)} zł
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-red-600">
-                          -{row.total_debits.toFixed(2)} zł
-                        </td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold ${
-                          row.closing_balance < 0 ? 'text-red-700' : row.closing_balance > 0 ? 'text-green-700' : 'text-gray-900'
-                        }`}>
-                          {row.closing_balance.toFixed(2)} zł
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-red-700 font-semibold">
-                          {row.debt > 0 ? `${row.debt.toFixed(2)} zł` : '-'}
-                        </td>
-                      </tr>
-                    ))}
+                    {reportData.map((row, index) => {
+                      // Type guard - check if this is actually accounting data
+                      const isAccountingRow = 'opening_balance' in row && 'total_credits' in row
+                      if (!isAccountingRow) {
+                        console.error('Wrong data type in accounting report:', row)
+                        return null
+                      }
+
+                      return (
+                        <tr
+                          key={index}
+                          className={row.debt > 0 ? 'bg-red-50' : row.closing_balance > 0 ? 'bg-green-50' : ''}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {row.user_name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {row.email}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {row.section_name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                            {row.opening_balance?.toFixed(2) ?? '0.00'} zł
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600">
+                            +{row.total_credits?.toFixed(2) ?? '0.00'} zł
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-red-600">
+                            -{row.total_debits?.toFixed(2) ?? '0.00'} zł
+                          </td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold ${
+                            (row.closing_balance ?? 0) < 0 ? 'text-red-700' : (row.closing_balance ?? 0) > 0 ? 'text-green-700' : 'text-gray-900'
+                          }`}>
+                            {row.closing_balance?.toFixed(2) ?? '0.00'} zł
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-red-700 font-semibold">
+                            {(row.debt ?? 0) > 0 ? `${row.debt?.toFixed(2) ?? '0.00'} zł` : '-'}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               ) : (
