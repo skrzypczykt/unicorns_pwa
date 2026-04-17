@@ -14,7 +14,6 @@ import ProfilePage from './pages/ProfilePage'
 import AdminActivitiesPage from './pages/AdminActivitiesPage'
 import AdminReportsPage from './pages/AdminReportsPage'
 import AdminAttendancePage from './pages/AdminAttendancePage'
-import AboutPage from './pages/AboutPage'
 
 interface UserProfile {
   id: string
@@ -173,7 +172,6 @@ function App() {
           <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/my-classes" element={<MyClassesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/about" element={<AboutPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/activities" element={<AdminActivitiesPage />} />
           <Route path="/admin/reports" element={<AdminReportsPage />} />
@@ -253,12 +251,6 @@ function App() {
             </div>
 
             <div className="border-t border-gray-200 pt-4 text-center">
-              <button
-                onClick={() => window.location.href = '/about'}
-                className="mb-3 px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-sm font-semibold transition-all"
-              >
-                ℹ️ O Nas
-              </button>
               <p className="text-xs text-gray-500">© 2026 Stowarzyszenie Unicorns. Wszystkie prawa zastrzeżone.</p>
               <p className="text-xs text-gray-500 mt-1">Aplikacja stworzona z magią jednorożców 🦄🌈✨</p>
             </div>

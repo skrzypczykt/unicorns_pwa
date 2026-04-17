@@ -29,6 +29,7 @@ const ProfilePage = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
+  const [showBlikModal, setShowBlikModal] = useState(false)
 
   useEffect(() => {
     fetchProfile()
@@ -180,14 +181,87 @@ const ProfilePage = () => {
           </p>
 
           <div className="mt-6 pt-4 border-t border-white/30">
-            <p className="text-sm opacity-75">
+            <p className="text-sm opacity-75 mb-3">
               {profile.balance > 100 ? '✅ Świetne saldo!' :
                profile.balance > 50 ? '⚠️ Rozważ doładowanie' :
                '❗ Niskie saldo'}
             </p>
+
+            {/* BLIK Payment Button */}
+            <button
+              onClick={() => setShowBlikModal(true)}
+              className="w-full bg-white text-purple-600 font-semibold py-2 px-4 rounded-lg hover:bg-purple-50 transition-all flex items-center justify-center gap-2"
+            >
+              <span className="text-xl">💳</span>
+              Doładuj przez BLIK
+            </button>
           </div>
         </div>
       </div>
+
+      {/* BLIK Payment Modal */}
+      {showBlikModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">💳</div>
+              <h3 className="text-2xl font-bold text-purple-600 mb-2">Płatność BLIK</h3>
+              <div className="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-4 mb-4">
+                <p className="text-yellow-800 font-semibold mb-2">⚠️ Wersja testowa aplikacji</p>
+                <p className="text-sm text-yellow-700">
+                  Płatności BLIK są jeszcze nieaktywne. Ta funkcjonalność będzie dostępna wkrótce.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Kwota doładowania (zł)
+                </label>
+                <input
+                  type="number"
+                  placeholder="np. 100"
+                  disabled
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg bg-gray-100 cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Kod BLIK (6 cyfr)
+                </label>
+                <input
+                  type="text"
+                  placeholder="000 000"
+                  maxLength={6}
+                  disabled
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg bg-gray-100 cursor-not-allowed text-center text-2xl tracking-widest"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowBlikModal(false)}
+                className="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all"
+              >
+                Zamknij
+              </button>
+              <button
+                disabled
+                className="flex-1 px-4 py-3 bg-purple-300 text-white font-semibold rounded-lg cursor-not-allowed opacity-60"
+              >
+                Zapłać (niedostępne)
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 text-center mt-4">
+              💡 W pełnej wersji aplikacji będziesz mógł doładować saldo za pomocą BLIK w kilka sekund.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Push Notifications Toggle */}
       <div className="mb-8">
