@@ -37,10 +37,16 @@ const RegisterPage = () => {
     setLoading(true)
 
     try {
-      // 1. Create auth user
+      // 1. Create auth user with email redirect to production URL
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`,
+          data: {
+            display_name: formData.displayName.trim()
+          }
+        }
       })
 
       if (signUpError) throw signUpError
@@ -62,6 +68,12 @@ const RegisterPage = () => {
 
       if (profileError) {
         console.error('Profile creation failed:', profileError)
+
+        // Sprawdź czy to duplikat (użytkownik już istnieje)
+        if (profileError.code === '23505') {
+          throw new Error('To konto już istnieje. Jeśli masz problem z logowaniem, skontaktuj się z administratorem.')
+        }
+
         throw new Error('Nie udało się utworzyć profilu użytkownika. Skontaktuj się z administratorem.')
       }
 
@@ -232,15 +244,24 @@ const RegisterPage = () => {
                 Wysłaliśmy email weryfikacyjny na adres:<br />
                 <strong className="text-purple-600">{formData.email}</strong>
               </p>
-              <p className="text-sm text-gray-500 mb-4">
-                Kliknij w link w emailu aby aktywować konto.
-                <br />Jeśli nie widzisz emaila, sprawdź folder <strong>SPAM</strong>.
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 text-left">
+                <p className="text-sm text-blue-800 mb-2">
+                  <strong>📌 Ważne kroki:</strong>
+                </p>
+                <ol className="text-xs text-blue-700 space-y-1 list-decimal list-inside">
+                  <li>Otwórz email od Supabase (może być w folderze SPAM)</li>
+                  <li>Kliknij w link "Confirm your email"</li>
+                  <li>Po przekierowaniu zaloguj się swoim emailem i hasłem</li>
+                </ol>
+              </div>
+              <p className="text-xs text-gray-500 mb-4">
+                Jeśli link nie działa, skopiuj go i wklej bezpośrednio w pasku przeglądarki.
               </p>
               <button
                 onClick={() => navigate('/login')}
                 className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-xl transition-all"
               >
-                OK, rozumiem
+                Przejdź do logowania
               </button>
             </div>
           </div>
