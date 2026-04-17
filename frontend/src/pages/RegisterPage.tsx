@@ -77,8 +77,16 @@ const RegisterPage = () => {
         throw new Error('Nie udało się utworzyć profilu użytkownika. Skontaktuj się z administratorem.')
       }
 
-      // Pokaż modal z informacją o weryfikacji email
-      setShowSuccessModal(true)
+      // Sprawdź czy email confirmation jest włączone
+      // Jeśli użytkownik jest od razu zalogowany (autoConfirm enabled), przekieruj do home
+      if (authData.session) {
+        // Email confirmation wyłączone - użytkownik od razu zalogowany
+        alert('✅ Konto utworzone! Witaj w Unicorns!')
+        navigate('/')
+      } else {
+        // Email confirmation włączone - pokaż modal
+        setShowSuccessModal(true)
+      }
     } catch (err: any) {
       console.error('Registration error:', err)
       setError(err.message || 'Wystąpił błąd podczas rejestracji')
