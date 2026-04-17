@@ -12,8 +12,12 @@ interface Activity {
   location: string
   status: string
   activity_type_id: string
+  trainer_id: string
   activity_types?: {
     name: string
+  } | null
+  users?: {
+    display_name: string
   } | null
 }
 
@@ -29,6 +33,17 @@ interface Registration {
   section_balance?: number
 }
 
+interface ActivityType {
+  id: string
+  name: string
+}
+
+interface Trainer {
+  id: string
+  display_name: string
+  email: string
+}
+
 interface AttendanceSummary {
   total: number
   attended: number
@@ -36,8 +51,16 @@ interface AttendanceSummary {
   pending: number
 }
 
-const TrainerClassesPage = () => {
+const AdminAttendancePage = () => {
   const navigate = useNavigate()
+
+  // Filters
+  const [activityTypes, setActivityTypes] = useState<ActivityType[]>([])
+  const [trainers, setTrainers] = useState<Trainer[]>([])
+  const [selectedActivityType, setSelectedActivityType] = useState<string>('')
+  const [selectedTrainer, setSelectedTrainer] = useState<string>('')
+
+  // Activities and registrations
   const [activities, setActivities] = useState<Activity[]>([])
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null)
   const [registrations, setRegistrations] = useState<Registration[]>([])
@@ -51,36 +74,82 @@ const TrainerClassesPage = () => {
   })
 
   useEffect(() => {
-    fetchTrainerActivities()
+    fetchFilters()
   }, [])
 
-  const fetchTrainerActivities = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+  useEffect(() => {
+    if (selectedActivityType || selectedTrainer) {
+      fetchActivities()
+    }
+  }, [selectedActivityType, selectedTrainer])
 
-      // Get both scheduled and completed activities (last 7 days and future)
+  const fetchFilters = async () => {
+    try {
+      // Fetch activity types
+      const { data: types, error: typesError } = await supabase
+        .from('activity_types')
+        .select('id, name')
+        .order('name')
+
+      if (typesError) throw typesError
+      setActivityTypes(types || [])
+
+      // Fetch trainers
+      const { data: trainersData, error: trainersError } = await supabase
+        .from('users')
+        .select('id, display_name, email')
+        .eq('role', 'trainer')
+        .order('display_name')
+
+      if (trainersError) throw trainersError
+      setTrainers(trainersData || [])
+
+    } catch (error) {
+      console.error('Error fetching filters:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchActivities = async () => {
+    try {
+      setLoading(true)
+
+      // Get activities from last 7 days and future
       const sevenDaysAgo = new Date()
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('activities')
         .select(`
           *,
           activity_types (
             name
+          ),
+          users:trainer_id (
+            display_name
           )
         `)
-        .eq('trainer_id', user.id)
         .gte('date_time', sevenDaysAgo.toISOString())
         .order('date_time', { ascending: true })
+
+      if (selectedActivityType) {
+        query = query.eq('activity_type_id', selectedActivityType)
+      }
+
+      if (selectedTrainer) {
+        query = query.eq('trainer_id', selectedTrainer)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
 
       // Transform data
       const transformed = data?.map(act => ({
         ...act,
-        activity_types: Array.isArray(act.activity_types) ? act.activity_types[0] : act.activity_types
+        activity_types: Array.isArray(act.activity_types) ? act.activity_types[0] : act.activity_types,
+        users: Array.isArray(act.users) ? act.users[0] : act.users
       })) || []
 
       setActivities(transformed as any)
@@ -93,7 +162,7 @@ const TrainerClassesPage = () => {
 
   const fetchRegistrations = async (activityId: string, activityTypeId: string) => {
     try {
-      // Get all registrations (including attended and no_show)
+      // Get all registrations
       const { data, error } = await supabase
         .from('registrations')
         .select(`
@@ -117,7 +186,7 @@ const TrainerClassesPage = () => {
         users: Array.isArray(reg.users) ? reg.users[0] : reg.users
       })) || []
 
-      // Fetch section balances for each user
+      // Fetch section balances
       const userIds = transformed.map(r => r.user_id)
 
       if (userIds.length > 0) {
@@ -130,7 +199,6 @@ const TrainerClassesPage = () => {
         if (balanceError) {
           console.error('Error fetching balances:', balanceError)
         } else {
-          // Map balances to registrations
           const balanceMap = new Map(balances?.map(b => [b.user_id, b.balance]) || [])
           transformed.forEach(reg => {
             reg.section_balance = balanceMap.get(reg.user_id) || 0
@@ -210,7 +278,7 @@ const TrainerClassesPage = () => {
         const balanceBefore = balanceData?.balance || 0
         const balanceAfter = balanceBefore - activityCost
 
-        // 3. Update section balance (or create if doesn't exist)
+        // 3. Update section balance
         const { error: updateBalanceError } = await supabase
           .from('user_section_balances')
           .upsert({
@@ -309,24 +377,24 @@ const TrainerClassesPage = () => {
     return new Date(dateString) > new Date()
   }
 
-  if (loading) {
+  if (loading && activityTypes.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-8xl mb-4 animate-bounce">🦄</div>
-          <p className="text-purple-600 text-lg">Ładowanie zajęć...</p>
+          <p className="text-purple-600 text-lg">Ładowanie...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 px-4 py-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-purple-600 mb-2">✅ Panel Trenera</h1>
-            <p className="text-gray-600">Oznacz obecność na zajęciach</p>
+            <h1 className="text-3xl font-bold text-purple-900 mb-2">👥 Zarządzanie Obecnością</h1>
+            <p className="text-gray-600">Panel admina - oznaczanie obecności</p>
           </div>
           <button
             onClick={() => navigate('/')}
@@ -338,10 +406,63 @@ const TrainerClassesPage = () => {
 
         {!selectedActivity ? (
           <>
-            {activities.length === 0 ? (
-              <div className="text-center py-12 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg">
+            {/* Filters */}
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h3 className="text-lg font-bold text-purple-900 mb-4">Filtry</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Sekcja
+                  </label>
+                  <select
+                    value={selectedActivityType}
+                    onChange={(e) => setSelectedActivityType(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="">Wszystkie sekcje</option>
+                    {activityTypes.map(type => (
+                      <option key={type.id} value={type.id}>
+                        {type.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Trener
+                  </label>
+                  <select
+                    value={selectedTrainer}
+                    onChange={(e) => setSelectedTrainer(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="">Wszyscy trenerzy</option>
+                    {trainers.map(trainer => (
+                      <option key={trainer.id} value={trainer.id}>
+                        {trainer.display_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Activities List */}
+            {!selectedActivityType && !selectedTrainer ? (
+              <div className="text-center py-12 bg-white rounded-lg shadow-md">
+                <span className="text-6xl mb-4 block">🎯</span>
+                <p className="text-xl text-gray-600">Wybierz sekcję lub trenera, aby zobaczyć zajęcia</p>
+              </div>
+            ) : loading ? (
+              <div className="text-center py-12 bg-white rounded-lg shadow-md">
+                <div className="text-6xl mb-4 animate-bounce">🦄</div>
+                <p className="text-gray-600">Ładowanie zajęć...</p>
+              </div>
+            ) : activities.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-lg shadow-md">
                 <span className="text-6xl mb-4 block">🦄</span>
-                <p className="text-xl text-gray-600">Brak zajęć do prowadzenia</p>
+                <p className="text-xl text-gray-600">Brak zajęć spełniających kryteria</p>
                 <p className="text-sm text-gray-500 mt-2">Zajęcia z ostatnich 7 dni i nadchodzące</p>
               </div>
             ) : (
@@ -351,7 +472,7 @@ const TrainerClassesPage = () => {
                   return (
                     <div
                       key={activity.id}
-                      className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 ${
+                      className={`bg-white rounded-xl shadow-lg border-2 ${
                         upcoming ? 'border-purple-300' : 'border-gray-300'
                       } p-6 hover:shadow-xl transition-all cursor-pointer ${
                         !upcoming ? 'opacity-75' : ''
@@ -366,7 +487,8 @@ const TrainerClassesPage = () => {
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500 mb-3">{activity.activity_types?.name || 'Brak sekcji'}</p>
+                      <p className="text-sm text-gray-500 mb-1">{activity.activity_types?.name || 'Brak sekcji'}</p>
+                      <p className="text-sm text-gray-600 mb-3">Trener: {activity.users?.display_name || 'Nieznany'}</p>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
                           <span>📅</span>
@@ -404,11 +526,12 @@ const TrainerClassesPage = () => {
             </button>
 
             {/* Activity Info */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
+            <div className="bg-white rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold text-purple-600 mb-2">{selectedActivity.name}</h2>
                   <p className="text-gray-600">{selectedActivity.activity_types?.name || 'Brak sekcji'}</p>
+                  <p className="text-sm text-gray-500">Trener: {selectedActivity.users?.display_name || 'Nieznany'}</p>
                 </div>
                 {!isUpcoming(selectedActivity.date_time) && (
                   <span className="px-3 py-1 bg-gray-200 text-gray-600 text-sm rounded-lg">
@@ -438,31 +561,31 @@ const TrainerClassesPage = () => {
 
             {/* Summary */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-blue-200 p-4 text-center">
+              <div className="bg-white rounded-xl shadow-lg border-2 border-blue-200 p-4 text-center">
                 <div className="text-3xl font-bold text-blue-600">{summary.total}</div>
                 <div className="text-sm text-gray-600">Zapisani</div>
               </div>
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-green-200 p-4 text-center">
+              <div className="bg-white rounded-xl shadow-lg border-2 border-green-200 p-4 text-center">
                 <div className="text-3xl font-bold text-green-600">{summary.attended}</div>
                 <div className="text-sm text-gray-600">Obecni</div>
               </div>
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-red-200 p-4 text-center">
+              <div className="bg-white rounded-xl shadow-lg border-2 border-red-200 p-4 text-center">
                 <div className="text-3xl font-bold text-red-600">{summary.no_show}</div>
                 <div className="text-sm text-gray-600">Nieobecni</div>
               </div>
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-yellow-200 p-4 text-center">
+              <div className="bg-white rounded-xl shadow-lg border-2 border-yellow-200 p-4 text-center">
                 <div className="text-3xl font-bold text-yellow-600">{summary.pending}</div>
                 <div className="text-sm text-gray-600">Oczekuje</div>
               </div>
             </div>
 
             {/* Participants List */}
-            <h3 className="text-xl font-bold text-purple-600 mb-4">
+            <h3 className="text-xl font-bold text-purple-900 mb-4">
               Lista uczestników
             </h3>
 
             {registrations.length === 0 ? (
-              <div className="text-center py-8 bg-white/80 backdrop-blur-sm rounded-xl">
+              <div className="text-center py-8 bg-white rounded-xl shadow-md">
                 <p className="text-gray-600">Brak zapisanych uczestników</p>
               </div>
             ) : (
@@ -477,7 +600,7 @@ const TrainerClassesPage = () => {
                   return (
                     <div
                       key={reg.id}
-                      className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 ${
+                      className={`bg-white rounded-xl shadow-lg border-2 ${
                         isAttended ? 'border-green-200 bg-green-50/50' :
                         isNoShow ? 'border-red-200 bg-red-50/50' :
                         'border-purple-200'
@@ -544,4 +667,4 @@ const TrainerClassesPage = () => {
   )
 }
 
-export default TrainerClassesPage
+export default AdminAttendancePage

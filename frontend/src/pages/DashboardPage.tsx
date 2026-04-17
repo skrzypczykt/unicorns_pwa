@@ -102,10 +102,10 @@ const DashboardPage = ({ profile }: DashboardPageProps) => {
               📊 Raporty Księgowe
             </button>
             <button
-              onClick={() => navigate('/admin/payments')}
+              onClick={() => navigate('/admin/attendance')}
               className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
             >
-              Raporty płatności
+              👥 Zarządzaj Obecnością
             </button>
           </div>
         </div>
