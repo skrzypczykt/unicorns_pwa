@@ -46,7 +46,6 @@ self.addEventListener('push', (event) => {
       icon: notificationData.icon,
       badge: notificationData.badge,
       data: notificationData.data,
-      vibrate: [200, 100, 200],
       tag: 'unicorns-notification',
       requireInteraction: false
     }
