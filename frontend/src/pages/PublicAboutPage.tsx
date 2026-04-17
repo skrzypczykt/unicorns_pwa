@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom'
+import Timeline from '../components/about/Timeline'
+import InstagramFeed from '../components/social/InstagramFeed'
 
 const PublicAboutPage = () => {
   const navigate = useNavigate()
@@ -99,6 +101,12 @@ const PublicAboutPage = () => {
           </div>
         </div>
 
+        {/* Nasza Historia - Timeline */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
+          <h3 className="text-2xl font-bold text-purple-600 mb-4">📜 Nasza Historia</h3>
+          <Timeline />
+        </div>
+
         {/* Events */}
         <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
           <h3 className="text-2xl font-bold text-purple-600 mb-4">🏆 Nasze Wydarzenia</h3>
@@ -167,6 +175,22 @@ const PublicAboutPage = () => {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Instagram Feed */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-2xl font-bold text-purple-600">📸 Nasza Galeria</h3>
+            <a
+              href="https://www.instagram.com/unicorns_lodz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-purple-600 hover:underline flex items-center gap-1"
+            >
+              Zobacz więcej na Instagram →
+            </a>
+          </div>
+          <InstagramFeed />
         </div>
 
         {/* Join Us - CTA */}

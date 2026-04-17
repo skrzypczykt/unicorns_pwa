@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import Timeline from '../components/about/Timeline'
 
 const AboutPage = () => {
   const navigate = useNavigate()
@@ -71,6 +72,12 @@ const AboutPage = () => {
             </ul>
           </div>
         </div>
+      </div>
+
+      {/* Nasza Historia - Timeline */}
+      <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
+        <h3 className="text-2xl font-bold text-purple-600 mb-4">📜 Nasza Historia</h3>
+        <Timeline />
       </div>
 
       {/* Events */}

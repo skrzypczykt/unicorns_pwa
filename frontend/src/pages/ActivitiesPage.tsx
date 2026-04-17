@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase/client'
 import { useNavigate } from 'react-router-dom'
+import { getActivityImage } from '../data/activityImages'
 
 interface Activity {
   id: string
@@ -17,6 +18,7 @@ interface Activity {
   registration_opens_at?: string | null
   registration_closes_at?: string | null
   registered_count?: number
+  image_url?: string | null
 }
 
 const ActivitiesPage = () => {
@@ -245,12 +247,30 @@ const ActivitiesPage = () => {
             return (
               <div
                 key={activity.id}
-                className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all ${!isOpen && !isRegistered ? 'opacity-60' : ''}`}
+                className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 overflow-hidden hover:shadow-xl transition-all ${!isOpen && !isRegistered ? 'opacity-60' : ''}`}
               >
-                <h3 className="text-xl font-bold text-purple-600 mb-2">{activity.name}</h3>
-                <p className="text-gray-600 mb-4 text-sm">{activity.description}</p>
+                {/* Obrazek nagłówkowy */}
+                <div className="relative h-40 sm:h-48 lg:h-56 w-full overflow-hidden">
+                  <img
+                    src={getActivityImage(activity.name, activity.image_url)}
+                    alt={activity.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  {/* Gradient overlay dla lepszej czytelności */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
 
-                <div className="space-y-2 mb-4">
+                  {/* Tytuł na obrazku */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h3 className="text-2xl font-bold text-white drop-shadow-lg">{activity.name}</h3>
+                  </div>
+                </div>
+
+                {/* Zawartość karty */}
+                <div className="p-6">
+                  <p className="text-gray-600 mb-4 text-sm">{activity.description}</p>
+
+                  <div className="space-y-2 mb-4">
                   <div className="flex items-center gap-2 text-sm">
                     <span>📅</span>
                     <span>{formatDate(activity.date_time)}</span>
@@ -310,23 +330,24 @@ const ActivitiesPage = () => {
                   </div>
                 )}
 
-                {isRegistered ? (
-                  <div className="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg text-center">
-                    ✓ Zapisany/a
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => handleRegister(activity.id, activity.cost, activity.cancellation_hours)}
-                    disabled={isProcessing || !isOpen || isFull}
-                    className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isProcessing ? 'Zapisywanie...' :
-                     isFull ? 'Brak miejsc' :
-                     isBeforeOpen ? `Zapisy otwarte za ${opensAt && formatTimeUntil(opensAt)}` :
-                     isAfterClose ? 'Zapisy zamknięte' :
-                     'Zapisz się'}
-                  </button>
-                )}
+                  {isRegistered ? (
+                    <div className="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg text-center">
+                      ✓ Zapisany/a
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleRegister(activity.id, activity.cost, activity.cancellation_hours)}
+                      disabled={isProcessing || !isOpen || isFull}
+                      className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isProcessing ? 'Zapisywanie...' :
+                       isFull ? 'Brak miejsc' :
+                       isBeforeOpen ? `Zapisy otwarte za ${opensAt && formatTimeUntil(opensAt)}` :
+                       isAfterClose ? 'Zapisy zamknięte' :
+                       'Zapisz się'}
+                    </button>
+                  )}
+                </div>
               </div>
             )
           })}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase/client'
 import { useNavigate } from 'react-router-dom'
+import { ACTIVITY_TYPE_IMAGES } from '../data/activityImages'
 
 interface Activity {
   id: string
@@ -21,6 +22,7 @@ interface Activity {
   recurrence_pattern?: string
   recurrence_end_date?: string | null
   parent_activity_id?: string | null
+  image_url?: string | null
 }
 
 interface Trainer {
@@ -53,7 +55,8 @@ const AdminActivitiesPage = () => {
     registration_closes_at: '',
     is_recurring: false,
     recurrence_pattern: 'none',
-    recurrence_end_date: ''
+    recurrence_end_date: '',
+    image_url: ''
   })
 
   useEffect(() => {
@@ -235,7 +238,8 @@ const AdminActivitiesPage = () => {
       registration_closes_at: toDateTimeLocal(activity.registration_closes_at),
       is_recurring: activity.is_recurring || false,
       recurrence_pattern: activity.recurrence_pattern || 'none',
-      recurrence_end_date: toDateTimeLocal(activity.recurrence_end_date)
+      recurrence_end_date: toDateTimeLocal(activity.recurrence_end_date),
+      image_url: activity.image_url || ''
     })
     setShowForm(true)
   }
@@ -274,7 +278,8 @@ const AdminActivitiesPage = () => {
       registration_closes_at: '',
       is_recurring: false,
       recurrence_pattern: 'none',
-      recurrence_end_date: ''
+      recurrence_end_date: '',
+      image_url: ''
     })
     setEditingId(null)
     setShowForm(false)
@@ -473,6 +478,37 @@ const AdminActivitiesPage = () => {
                   required
                   className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
                 />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Zdjęcie (URL - opcjonalnie)
+                </label>
+                <input
+                  type="url"
+                  value={formData.image_url || ''}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Pozostaw puste aby użyć domyślnego zdjęcia na podstawie nazwy zajęć.
+                  Możesz użyć Unsplash, Pexels lub własnego linku.
+                </p>
+
+                {/* Podgląd obrazka */}
+                {formData.image_url && (
+                  <div className="mt-2 rounded-lg overflow-hidden border-2 border-purple-200">
+                    <img
+                      src={formData.image_url}
+                      alt="Podgląd"
+                      className="w-full h-40 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = ACTIVITY_TYPE_IMAGES['default']
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               <div>
