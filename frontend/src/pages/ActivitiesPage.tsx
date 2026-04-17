@@ -14,6 +14,8 @@ interface Activity {
   trainer_id: string
   status: string
   cancellation_hours: number
+  registration_opens_at?: string | null
+  registration_closes_at?: string | null
 }
 
 const ActivitiesPage = () => {
@@ -146,6 +148,30 @@ const ActivitiesPage = () => {
     })
   }
 
+  const formatTimeUntil = (targetDate: Date) => {
+    const now = new Date()
+    const diff = targetDate.getTime() - now.getTime()
+    const days = Math.floor(diff / (24 * 60 * 60 * 1000))
+    const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000))
+    const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000))
+
+    if (days > 0) return `${days}d ${hours}h`
+    if (hours > 0) return `${hours}h ${minutes}m`
+    return `${minutes}m`
+  }
+
+  const checkRegistrationWindow = (activity: Activity) => {
+    const now = new Date()
+    const opensAt = activity.registration_opens_at ? new Date(activity.registration_opens_at) : null
+    const closesAt = activity.registration_closes_at ? new Date(activity.registration_closes_at) : null
+
+    const isBeforeOpen = opensAt && now < opensAt
+    const isAfterClose = closesAt && now > closesAt
+    const isOpen = !isBeforeOpen && !isAfterClose
+
+    return { isOpen, isBeforeOpen, isAfterClose, opensAt, closesAt }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center">
@@ -187,11 +213,12 @@ const ActivitiesPage = () => {
           {activities.map((activity) => {
             const isRegistered = userRegistrations.has(activity.id)
             const isProcessing = registering === activity.id
+            const { isOpen, isBeforeOpen, isAfterClose, opensAt, closesAt } = checkRegistrationWindow(activity)
 
             return (
               <div
                 key={activity.id}
-                className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all"
+                className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all ${!isOpen && !isRegistered ? 'opacity-60' : ''}`}
               >
                 <h3 className="text-xl font-bold text-purple-600 mb-2">{activity.name}</h3>
                 <p className="text-gray-600 mb-4 text-sm">{activity.description}</p>
@@ -223,6 +250,19 @@ const ActivitiesPage = () => {
                   </div>
                 </div>
 
+                {/* Status okna rejestracji */}
+                {isBeforeOpen && opensAt && (
+                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+                    <strong>⏰ Zapisy otwarte za:</strong> {formatTimeUntil(opensAt)}
+                  </div>
+                )}
+
+                {isAfterClose && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+                    <strong>🔒 Zapisy zamknięte</strong>
+                  </div>
+                )}
+
                 {isRegistered ? (
                   <div className="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg text-center">
                     ✓ Zapisany/a
@@ -230,10 +270,13 @@ const ActivitiesPage = () => {
                 ) : (
                   <button
                     onClick={() => handleRegister(activity.id, activity.cost, activity.cancellation_hours)}
-                    disabled={isProcessing}
+                    disabled={isProcessing || !isOpen}
                     className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isProcessing ? 'Zapisywanie...' : 'Zapisz się'}
+                    {isProcessing ? 'Zapisywanie...' :
+                     isBeforeOpen ? `Zapisy otwarte za ${opensAt && formatTimeUntil(opensAt)}` :
+                     isAfterClose ? 'Zapisy zamknięte' :
+                     'Zapisz się'}
                   </button>
                 )}
               </div>
