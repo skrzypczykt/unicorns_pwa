@@ -101,44 +101,58 @@ function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200">
-        {/* Header */}
+        {/* Header - Responsywny */}
         <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b-4 border-purple-500">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
+            <div className="flex items-center justify-between gap-2">
+              {/* Logo + Tytuł - Responsywne */}
               <button
                 onClick={() => window.location.href = '/'}
-                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity min-w-0"
               >
                 <img
                   src="/unicorns-logo.png"
                   alt="Unicorns Łódź"
-                  className="h-16 w-auto"
+                  className="h-10 sm:h-12 md:h-16 w-auto flex-shrink-0"
                 />
-                <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+                <div className="min-w-0">
+                  <h1 className="text-lg sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent truncate">
                     Unicorns Łódź
                   </h1>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">Sport | Kultura | Rozrywka</p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Witaj, {profile.display_name}!
-                    <span className="ml-2 px-2 py-1 bg-purple-200 text-purple-700 rounded-full text-xs font-semibold">
-                      {profile.role === 'admin' ? 'Administrator' : profile.role === 'trainer' ? 'Trener' : 'Użytkownik'}
+                  {/* Ukryj tagline na mobile */}
+                  <p className="hidden md:block text-xs text-gray-500 uppercase tracking-wide">
+                    Sport | Kultura | Rozrywka
+                  </p>
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1 truncate">
+                    {profile.display_name}
+                    <span className="ml-1 sm:ml-2 px-1 sm:px-2 py-1 bg-purple-200 text-purple-700 rounded-full text-xs font-semibold">
+                      {profile.role === 'admin' ? 'Admin' :
+                       profile.role === 'trainer' ? 'Trener' : 'User'}
                     </span>
                   </p>
                 </div>
               </button>
-              <div className="flex items-center gap-4">
+
+              {/* Saldo + Wyloguj - Responsywne */}
+              <div className="flex items-center gap-1 sm:gap-2 md:gap-4 flex-shrink-0">
                 <div className="text-right">
-                  <p className="text-xs text-gray-500">Twoje saldo</p>
-                  <p className="text-2xl font-bold text-purple-600">
-                    {profile.balance.toFixed(2)} zł 💰
+                  {/* Ukryj label "Twoje saldo" na mobile */}
+                  <p className="hidden sm:block text-xs text-gray-500">Twoje saldo</p>
+                  <p className={`text-base sm:text-xl md:text-2xl font-bold ${
+                    profile.balance >= 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {profile.balance >= 0 ? '+' : ''}
+                    {profile.balance.toFixed(0)}
+                    <span className="hidden sm:inline"> zł</span>
+                    <span className="ml-1">{profile.balance < 0 ? '💳' : '💰'}</span>
                   </p>
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-semibold transition-all"
+                  className="px-2 sm:px-3 md:px-4 py-1 sm:py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-xs sm:text-sm font-semibold transition-all"
                 >
-                  Wyloguj
+                  <span className="hidden sm:inline">Wyloguj</span>
+                  <span className="sm:hidden">🚪</span>
                 </button>
               </div>
             </div>
