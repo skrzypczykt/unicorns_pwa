@@ -24,23 +24,20 @@ serve(async (req) => {
       )
     }
 
-    const supabase = createClient(
+    // Create Supabase client for auth verification
+    const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: {
-            Authorization: authHeader
-          }
-        }
-      }
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     )
 
-    // Verify user is authenticated and is admin
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    // Verify user is authenticated by extracting JWT from header
+    const jwt = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(jwt)
+
     if (authError || !user) {
+      console.error('Auth error:', authError)
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized', details: authError?.message }),
         {
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -48,8 +45,13 @@ serve(async (req) => {
       )
     }
 
-    // Check if user is admin
-    const { data: profile, error: profileError } = await supabase
+    // Check if user is admin using service role key
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('users')
       .select('role')
       .eq('id', user.id)
@@ -78,13 +80,7 @@ serve(async (req) => {
       )
     }
 
-    // Create service role client for database query (function has SECURITY DEFINER)
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    // Call the database function
+    // Call the database function (using service role client from above)
     const { data, error } = await supabaseAdmin.rpc('get_accounting_report', {
       report_month: month,
       activity_type_filter: activityTypeId || null
