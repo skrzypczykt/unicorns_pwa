@@ -12,6 +12,7 @@ import TrainerClassesPage from './pages/TrainerClassesPage'
 import AdminUsersPage from './pages/AdminUsersPage'
 import ProfilePage from './pages/ProfilePage'
 import AdminActivitiesPage from './pages/AdminActivitiesPage'
+import AdminReportsPage from './pages/AdminReportsPage'
 import AboutPage from './pages/AboutPage'
 
 interface UserProfile {
@@ -170,6 +171,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/activities" element={<AdminActivitiesPage />} />
+          <Route path="/admin/reports" element={<AdminReportsPage />} />
           <Route path="/admin/*" element={
             <div className="p-8 text-center max-w-2xl mx-auto">
               <div className="text-6xl mb-4">⚙️</div>
