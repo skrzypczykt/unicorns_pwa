@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase/client'
+import PWAInstallButton from '../components/common/PWAInstallButton'
 
 const SimpleLoginPage = () => {
   const navigate = useNavigate()
@@ -113,6 +114,9 @@ const SimpleLoginPage = () => {
               {loading ? 'Logowanie...' : 'Zaloguj się'}
             </button>
           </form>
+
+          {/* PWA Install Button */}
+          <PWAInstallButton />
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
