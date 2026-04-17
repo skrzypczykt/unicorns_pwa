@@ -158,7 +158,7 @@ serve(async (req) => {
       title: `🦄 Nowe zajęcia: ${activityName}`,
       body: `📅 ${formattedDate} - Zapisz się teraz!`,
       icon: '/unicorns-logo.png',
-      badge: '/unicorns-logo.png',
+      badge: '/badge-icon.svg',
       data: {
         url: '/activities',
         activityId
