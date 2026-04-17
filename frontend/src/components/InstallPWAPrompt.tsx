@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { usePushNotifications } from '../hooks/usePushNotifications'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -10,6 +11,7 @@ const InstallPWAPrompt = () => {
   const [showPrompt, setShowPrompt] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
+  const { subscribeToPush, isSupported: isPushSupported } = usePushNotifications()
 
   useEffect(() => {
     // Sprawdź czy aplikacja jest już zainstalowana
@@ -85,9 +87,13 @@ const InstallPWAPrompt = () => {
     const { outcome } = await deferredPrompt.userChoice
 
     if (outcome === 'accepted') {
-      console.log('PWA installed')
-    } else {
-      console.log('PWA installation dismissed')
+      // Aplikacja zainstalowana - automatycznie włącz powiadomienia
+      if (isPushSupported) {
+        // Daj chwilę na zainstalowanie aplikacji, potem włącz powiadomienia
+        setTimeout(async () => {
+          await subscribeToPush()
+        }, 1000)
+      }
     }
 
     // Wyczyść prompt
