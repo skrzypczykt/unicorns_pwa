@@ -294,10 +294,18 @@ const AdminAttendancePage = () => {
           .select('balance')
           .eq('user_id', userId)
           .eq('activity_type_id', selectedActivity!.activity_type_id)
-          .single()
+          .maybeSingle()  // Use maybeSingle() instead of single() to handle no records
+
+        // If balanceError is real error (not just "no records"), throw it
+        if (balanceError && balanceError.code !== 'PGRST116') {
+          console.error('Error fetching balance:', balanceError)
+          throw balanceError
+        }
 
         const balanceBefore = balanceData?.balance || 0
         const balanceAfter = balanceBefore - activityCost
+
+        console.log(`Balance update: ${balanceBefore} -> ${balanceAfter} (cost: ${activityCost})`)
 
         // 3. Update section balance
         const { error: updateBalanceError } = await supabase
