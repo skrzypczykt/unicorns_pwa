@@ -17,6 +17,10 @@ interface Activity {
   activity_type_id: string | null
   registration_opens_at?: string | null
   registration_closes_at?: string | null
+  is_recurring?: boolean
+  recurrence_pattern?: string
+  recurrence_end_date?: string | null
+  parent_activity_id?: string | null
 }
 
 interface Trainer {
@@ -46,7 +50,10 @@ const AdminActivitiesPage = () => {
     cancellation_hours: 24,
     status: 'scheduled',
     registration_opens_at: '',
-    registration_closes_at: ''
+    registration_closes_at: '',
+    is_recurring: false,
+    recurrence_pattern: 'none',
+    recurrence_end_date: ''
   })
 
   useEffect(() => {
@@ -93,7 +100,9 @@ const AdminActivitiesPage = () => {
       const dataToSave = {
         ...formData,
         registration_opens_at: formData.registration_opens_at || null,
-        registration_closes_at: formData.registration_closes_at || null
+        registration_closes_at: formData.registration_closes_at || null,
+        recurrence_end_date: formData.recurrence_end_date || null,
+        recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : 'none'
       }
 
       if (editingId) {
@@ -107,12 +116,29 @@ const AdminActivitiesPage = () => {
         alert('✅ Zajęcia zaktualizowane!')
       } else {
         // Create new activity
-        const { error } = await supabase
+        const { data: newActivity, error } = await supabase
           .from('activities')
           .insert(dataToSave)
+          .select()
+          .single()
 
         if (error) throw error
-        alert('✅ Nowe zajęcia utworzone!')
+
+        // Jeśli cykliczne, generuj instancje
+        if (formData.is_recurring && newActivity) {
+          const { error: funcError } = await supabase.functions.invoke('generate-recurring-activities', {
+            body: { activityTemplate: newActivity }
+          })
+
+          if (funcError) {
+            console.error('Error generating instances:', funcError)
+            alert(`⚠️ Zajęcia utworzone, ale wystąpił błąd przy generowaniu serii: ${funcError.message}`)
+          } else {
+            alert(`✅ Zajęcia cykliczne utworzone! Wygenerowano serię wydarzeń.`)
+          }
+        } else {
+          alert('✅ Nowe zajęcia utworzone!')
+        }
       }
 
       resetForm()
@@ -137,7 +163,10 @@ const AdminActivitiesPage = () => {
       cancellation_hours: activity.cancellation_hours,
       status: activity.status,
       registration_opens_at: activity.registration_opens_at ? activity.registration_opens_at.slice(0, 16) : '',
-      registration_closes_at: activity.registration_closes_at ? activity.registration_closes_at.slice(0, 16) : ''
+      registration_closes_at: activity.registration_closes_at ? activity.registration_closes_at.slice(0, 16) : '',
+      is_recurring: activity.is_recurring || false,
+      recurrence_pattern: activity.recurrence_pattern || 'none',
+      recurrence_end_date: activity.recurrence_end_date ? activity.recurrence_end_date.slice(0, 16) : ''
     })
     setShowForm(true)
   }
@@ -173,7 +202,10 @@ const AdminActivitiesPage = () => {
       cancellation_hours: 24,
       status: 'scheduled',
       registration_opens_at: '',
-      registration_closes_at: ''
+      registration_closes_at: '',
+      is_recurring: false,
+      recurrence_pattern: 'none',
+      recurrence_end_date: ''
     })
     setEditingId(null)
     setShowForm(false)
@@ -189,6 +221,23 @@ const AdminActivitiesPage = () => {
       hour: '2-digit',
       minute: '2-digit',
     })
+  }
+
+  const calculateInstanceCount = () => {
+    if (!formData.date_time || !formData.recurrence_end_date || !formData.is_recurring) return 0
+
+    const start = new Date(formData.date_time)
+    const end = new Date(formData.recurrence_end_date)
+    const diffMs = end.getTime() - start.getTime()
+
+    if (formData.recurrence_pattern === 'weekly') {
+      return Math.min(Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000)) + 1, 52)
+    } else if (formData.recurrence_pattern === 'monthly') {
+      const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth())
+      return Math.min(months + 1, 52)
+    }
+
+    return 0
   }
 
   if (loading) {
@@ -401,6 +450,64 @@ const AdminActivitiesPage = () => {
                     </p>
                   </div>
                 </div>
+              </div>
+
+              {/* Zajęcia cykliczne */}
+              <div className="border-t-2 border-purple-200 pt-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <input
+                    type="checkbox"
+                    id="is_recurring"
+                    checked={formData.is_recurring || false}
+                    onChange={(e) => setFormData({ ...formData, is_recurring: e.target.checked })}
+                    className="h-5 w-5 text-purple-600 rounded"
+                  />
+                  <label htmlFor="is_recurring" className="text-sm font-semibold text-gray-700">
+                    🔄 Zajęcia cykliczne (powtarzające się)
+                  </label>
+                </div>
+
+                {formData.is_recurring && (
+                  <div className="space-y-4 pl-8 border-l-4 border-purple-300">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Częstotliwość *
+                      </label>
+                      <select
+                        value={formData.recurrence_pattern || 'weekly'}
+                        onChange={(e) => setFormData({ ...formData, recurrence_pattern: e.target.value })}
+                        className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                      >
+                        <option value="weekly">Co tydzień</option>
+                        <option value="monthly">Co miesiąc</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Powtarzaj do *
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={formData.recurrence_end_date || ''}
+                        onChange={(e) => setFormData({ ...formData, recurrence_end_date: e.target.value })}
+                        required={formData.is_recurring}
+                        className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                      />
+                    </div>
+
+                    {formData.date_time && formData.recurrence_end_date && (
+                      <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          ℹ️ Zostanie utworzonych <strong>{calculateInstanceCount()}</strong> zajęć.
+                        </p>
+                        <p className="text-xs text-blue-600 mt-1">
+                          Pierwsze zajęcia będą rodzicielskie (szablon), pozostałe zostaną wygenerowane automatycznie.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>
