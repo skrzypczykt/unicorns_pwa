@@ -12,14 +12,20 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Function invoked')
+    console.log('=== Function invoked ===')
 
-    // Create Supabase client with the Authorization header from the request
-    // This allows Supabase to automatically verify the JWT
+    // Create service role client (no user auth required)
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Get the authorization header (Bearer token from user)
     const authHeader = req.headers.get('Authorization')
+    console.log('Auth header present:', !!authHeader)
 
-    if (!authHeader) {
-      console.error('Missing authorization header')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('Missing or invalid authorization header')
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
         {
@@ -29,27 +35,18 @@ serve(async (req) => {
       )
     }
 
-    // Create client that will use the user's auth token
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: {
-            Authorization: authHeader,
-          },
-        },
-      }
-    )
+    // Extract JWT token
+    const token = authHeader.replace('Bearer ', '')
+    console.log('Token extracted, length:', token.length)
 
-    // Get the authenticated user
-    console.log('Getting authenticated user...')
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
+    // Verify the JWT token using admin client
+    console.log('Verifying JWT with admin client...')
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
 
     if (userError || !user) {
-      console.error('User verification failed:', userError)
+      console.error('JWT verification failed:', userError?.message)
       return new Response(
-        JSON.stringify({ error: 'Unauthorized', details: userError?.message }),
+        JSON.stringify({ error: 'Invalid or expired token', details: userError?.message }),
         {
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -57,25 +54,31 @@ serve(async (req) => {
       )
     }
 
-    console.log('User authenticated:', user.id)
+    console.log('User verified:', user.id, user.email)
 
-    // Check if user is admin (using service role for this query)
-    console.log('Checking admin role...')
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
+    // Check if user is admin
+    console.log('Checking admin role for user:', user.id)
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('users')
       .select('role')
       .eq('id', user.id)
       .single()
 
-    console.log('Profile:', profile, 'Error:', profileError)
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError)
+      return new Response(
+        JSON.stringify({ error: 'Error fetching user profile' }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
 
-    if (profileError || profile?.role !== 'admin') {
-      console.error('Not admin. Role:', profile?.role)
+    console.log('User role:', profile?.role)
+
+    if (profile?.role !== 'admin') {
+      console.error('Access denied - user is not admin')
       return new Response(
         JSON.stringify({ error: 'Forbidden - Admin access required', role: profile?.role }),
         {
@@ -85,7 +88,7 @@ serve(async (req) => {
       )
     }
 
-    console.log('User is admin, reading request body...')
+    console.log('Admin verified, reading request body...')
     const { month, activityTypeId } = await req.json()
     console.log('Request params:', { month, activityTypeId })
 
@@ -101,8 +104,8 @@ serve(async (req) => {
       )
     }
 
-    // Call the database function (using service role client)
-    console.log('Calling database function...')
+    // Call the database function
+    console.log('Calling get_accounting_report...')
     const { data, error } = await supabaseAdmin.rpc('get_accounting_report', {
       report_month: month,
       activity_type_filter: activityTypeId || null
@@ -118,13 +121,14 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ data }),
       {
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
   } catch (error: any) {
-    console.error('Error generating report:', error)
+    console.error('=== ERROR ===', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || 'Internal server error' }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
