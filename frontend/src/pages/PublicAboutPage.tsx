@@ -115,6 +115,13 @@ const PublicAboutPage = () => {
 
           <div className="flex gap-3 justify-center flex-wrap">
             <button
+              onClick={() => navigate('/activities')}
+              className="px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
+            >
+              <span>🗓️</span>
+              Zobacz harmonogram zajęć
+            </button>
+            <button
               onClick={() => navigate('/register')}
               className="px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:scale-105"
             >

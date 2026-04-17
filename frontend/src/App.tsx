@@ -92,6 +92,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<PublicAboutPage />} />
+          <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/login" element={<SimpleLoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
