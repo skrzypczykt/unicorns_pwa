@@ -14,9 +14,9 @@ serve(async (req) => {
   try {
     console.log('Function invoked')
 
-    // Get the authorization header
+    // Create Supabase client with the Authorization header from the request
+    // This allows Supabase to automatically verify the JWT
     const authHeader = req.headers.get('Authorization')
-    console.log('Auth header present:', !!authHeader)
 
     if (!authHeader) {
       console.error('Missing authorization header')
@@ -29,22 +29,27 @@ serve(async (req) => {
       )
     }
 
-    // Create Supabase client for auth verification
+    // Create client that will use the user's auth token
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: {
+            Authorization: authHeader,
+          },
+        },
+      }
     )
 
-    // Verify user is authenticated by extracting JWT from header
-    const jwt = authHeader.replace('Bearer ', '')
-    console.log('Verifying JWT...')
+    // Get the authenticated user
+    console.log('Getting authenticated user...')
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(jwt)
-
-    if (authError || !user) {
-      console.error('Auth error:', authError)
+    if (userError || !user) {
+      console.error('User verification failed:', userError)
       return new Response(
-        JSON.stringify({ error: 'Unauthorized', details: authError?.message }),
+        JSON.stringify({ error: 'Unauthorized', details: userError?.message }),
         {
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -54,7 +59,7 @@ serve(async (req) => {
 
     console.log('User authenticated:', user.id)
 
-    // Check if user is admin using service role key
+    // Check if user is admin (using service role for this query)
     console.log('Checking admin role...')
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -96,7 +101,7 @@ serve(async (req) => {
       )
     }
 
-    // Call the database function (using service role client from above)
+    // Call the database function (using service role client)
     console.log('Calling database function...')
     const { data, error } = await supabaseAdmin.rpc('get_accounting_report', {
       report_month: month,
