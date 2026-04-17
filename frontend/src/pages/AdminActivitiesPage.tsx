@@ -81,11 +81,12 @@ const AdminActivitiesPage = () => {
     try {
       const { data, error } = await supabase
         .from('users')
-        .select('id, display_name, email')
+        .select('id, display_name, email, role')
         .eq('role', 'trainer')
         .order('display_name', { ascending: true })
 
       if (error) throw error
+      console.log('Fetched trainers:', data)
       setTrainers(data || [])
     } catch (error) {
       console.error('Error fetching trainers:', error)
@@ -224,14 +225,22 @@ const AdminActivitiesPage = () => {
   }
 
   const calculateInstanceCount = () => {
-    if (!formData.date_time || !formData.recurrence_end_date || !formData.is_recurring) return 0
+    if (!formData.date_time || !formData.recurrence_end_date || !formData.is_recurring) {
+      return 0
+    }
 
     const start = new Date(formData.date_time)
     const end = new Date(formData.recurrence_end_date)
+
+    if (start >= end) {
+      return 0
+    }
+
     const diffMs = end.getTime() - start.getTime()
 
     if (formData.recurrence_pattern === 'weekly') {
-      return Math.min(Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000)) + 1, 52)
+      const weeks = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000))
+      return Math.min(weeks + 1, 52)
     } else if (formData.recurrence_pattern === 'monthly') {
       const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth())
       return Math.min(months + 1, 52)
