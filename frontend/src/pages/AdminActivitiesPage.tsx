@@ -163,11 +163,14 @@ const AdminActivitiesPage = () => {
             dateTime: newActivity.date_time
           })
 
+          const { data: { user } } = await supabase.auth.getUser()
+
           const { data: pushData, error: pushError } = await supabase.functions.invoke('send-push-notifications', {
             body: {
               activityId: newActivity.id,
               activityName: newActivity.name,
-              dateTime: newActivity.date_time
+              dateTime: newActivity.date_time,
+              userId: user?.id
             }
           })
 
