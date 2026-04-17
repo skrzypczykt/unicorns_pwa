@@ -60,7 +60,8 @@ const AdminActivitiesPage = () => {
     recurrence_end_date: '',
     image_url: '',
     is_special_event: false,
-    whatsapp_group_url: ''
+    whatsapp_group_url: '',
+    send_notification: false
   })
 
   useEffect(() => {
@@ -187,12 +188,13 @@ const AdminActivitiesPage = () => {
           alert('✅ Nowe zajęcia utworzone!')
         }
 
-        // Wyślij powiadomienia push do zainteresowanych użytkowników
-        if (newActivity) {
+        // Wyślij powiadomienia push (jeśli zaznaczone)
+        if (newActivity && formData.send_notification) {
           console.log('[Push] Calling send-push-notifications with:', {
             activityId: newActivity.id,
             activityName: newActivity.name,
-            dateTime: newActivity.date_time
+            dateTime: newActivity.date_time,
+            sendToAll: formData.is_special_event
           })
 
           const { data: { user } } = await supabase.auth.getUser()
@@ -211,7 +213,8 @@ const AdminActivitiesPage = () => {
                   activityId: newActivity.id,
                   activityName: newActivity.name,
                   dateTime: newActivity.date_time,
-                  userId: user?.id
+                  userId: user?.id,
+                  sendToAll: formData.is_special_event // Wydarzenia specjalne -> wszyscy
                 })
               }
             )
@@ -220,12 +223,17 @@ const AdminActivitiesPage = () => {
 
             if (!response.ok) {
               console.error('[Push] Error sending push notifications:', pushData)
+              alert(`⚠️ Zajęcia utworzone, ale wystąpił błąd przy wysyłaniu powiadomień: ${pushData.error}`)
             } else {
               console.log('[Push] Notifications sent successfully:', pushData)
+              alert(`✅ Zajęcia utworzone i wysłano ${pushData.sent} powiadomień!`)
             }
           } catch (err) {
             console.error('[Push] Error sending push notifications:', err)
+            alert('⚠️ Zajęcia utworzone, ale wystąpił błąd przy wysyłaniu powiadomień')
           }
+        } else if (!formData.send_notification && newActivity && !formData.is_recurring) {
+          alert('✅ Nowe zajęcia utworzone!')
         }
       }
 
@@ -312,7 +320,8 @@ const AdminActivitiesPage = () => {
       recurrence_end_date: '',
       image_url: '',
       is_special_event: false,
-      whatsapp_group_url: ''
+      whatsapp_group_url: '',
+      send_notification: false
     })
     setEditingId(null)
     setShowForm(false)
@@ -642,6 +651,38 @@ const AdminActivitiesPage = () => {
                       <li>Obecność nie jest sprawdzana (brak oznaczeń uczestnictwa)</li>
                       <li>Idealne dla wycieczek, zawodów, spływów kajakowych itp.</li>
                     </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* Powiadomienia push */}
+              <div className="border-t-2 border-blue-200 pt-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <input
+                    type="checkbox"
+                    id="send_notification"
+                    checked={formData.send_notification || false}
+                    onChange={(e) => setFormData({ ...formData, send_notification: e.target.checked })}
+                    className="h-5 w-5 text-blue-600 rounded"
+                  />
+                  <label htmlFor="send_notification" className="text-sm font-semibold text-gray-700">
+                    🔔 Wyślij powiadomienie push
+                  </label>
+                </div>
+
+                {formData.send_notification && (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+                    {formData.is_special_event ? (
+                      <>
+                        <p className="font-semibold mb-1">📢 Powiadomienie dla WSZYSTKICH użytkowników</p>
+                        <p>Wydarzenia specjalne są wysyłane do wszystkich użytkowników z włączonymi powiadomieniami push (nie tylko zainteresowanych tym typem zajęć).</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-semibold mb-1">📢 Powiadomienie dla zainteresowanych</p>
+                        <p>Powiadomienie zostanie wysłane tylko do użytkowników zainteresowanych tym typem zajęć (np. Taniec, Siatkówka).</p>
+                      </>
+                    )}
                   </div>
                 )}
               </div>

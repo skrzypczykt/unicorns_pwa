@@ -57,9 +57,9 @@ serve(async (req) => {
       )
     }
 
-    const { activityId, activityName, dateTime, userId } = body
+    const { activityId, activityName, dateTime, userId, sendToAll } = body
 
-    console.log('Received request:', { activityId, activityName, dateTime, userId })
+    console.log('Received request:', { activityId, activityName, dateTime, userId, sendToAll })
 
     // Verify userId is admin (optional security check)
     if (userId) {
@@ -96,32 +96,48 @@ serve(async (req) => {
       )
     }
 
-    // Znajdź użytkowników zainteresowanych tym typem zajęć
-    const { data: interestedUsers, error: usersError } = await supabase
-      .rpc('get_users_interested_in_activity_type', {
-        activity_name_param: activityName.split(' ')[0]
-      })
+    let userIds: string[] = []
 
-    console.log('Interested users:', interestedUsers?.length || 0)
+    if (sendToAll) {
+      // Wyślij do WSZYSTKICH użytkowników którzy mają push subscriptions
+      console.log('Sending to ALL users with push subscriptions')
 
-    if (usersError) {
-      console.error('Error fetching interested users:', usersError)
-      throw usersError
-    }
+      const { data: allSubscriptions, error: subsError } = await supabase
+        .from('push_subscriptions')
+        .select('user_id')
 
-    if (!interestedUsers || interestedUsers.length === 0) {
-      return new Response(
-        JSON.stringify({ message: 'No interested users found', sent: 0 }),
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+      if (subsError) throw subsError
+
+      userIds = [...new Set(allSubscriptions?.map((s: any) => s.user_id) || [])]
+      console.log('All users with subscriptions:', userIds.length)
+    } else {
+      // Znajdź użytkowników zainteresowanych tym typem zajęć
+      const { data: interestedUsers, error: usersError } = await supabase
+        .rpc('get_users_interested_in_activity_type', {
+          activity_name_param: activityName.split(' ')[0]
+        })
+
+      console.log('Interested users:', interestedUsers?.length || 0)
+
+      if (usersError) {
+        console.error('Error fetching interested users:', usersError)
+        throw usersError
+      }
+
+      if (!interestedUsers || interestedUsers.length === 0) {
+        return new Response(
+          JSON.stringify({ message: 'No interested users found', sent: 0 }),
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            }
           }
-        }
-      )
-    }
+        )
+      }
 
-    const userIds = interestedUsers.map((u: any) => u.user_id)
+      userIds = interestedUsers.map((u: any) => u.user_id)
+    }
 
     // Pobierz tokeny push dla zainteresowanych użytkowników
     const { data: subscriptions, error: subsError } = await supabase

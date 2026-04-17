@@ -12,8 +12,6 @@ const InstallPWAPrompt = () => {
   const [isStandalone, setIsStandalone] = useState(false)
 
   useEffect(() => {
-    console.log('[InstallPWAPrompt] Komponent zamontowany')
-
     // Sprawdź czy aplikacja jest już zainstalowana
     const isInStandaloneMode = () => {
       return (
@@ -25,7 +23,6 @@ const InstallPWAPrompt = () => {
 
     const standalone = isInStandaloneMode()
     setIsStandalone(standalone)
-    console.log('[InstallPWAPrompt] Is standalone:', standalone)
 
     // Wykryj iOS
     const checkIsIOS = () => {
@@ -34,12 +31,9 @@ const InstallPWAPrompt = () => {
     }
     const iOS = checkIsIOS()
     setIsIOS(iOS)
-    console.log('[InstallPWAPrompt] Is iOS:', iOS)
-    console.log('[InstallPWAPrompt] User agent:', window.navigator.userAgent)
 
     // Słuchaj eventu beforeinstallprompt (Android/Chrome)
     const handleBeforeInstallPrompt = (e: Event) => {
-      console.log('[InstallPWAPrompt] beforeinstallprompt event fired!')
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
 
@@ -47,12 +41,10 @@ const InstallPWAPrompt = () => {
       const dismissed = localStorage.getItem('pwa-install-dismissed')
       const dismissedTime = dismissed ? parseInt(dismissed) : null
       const now = Date.now()
-      console.log('[InstallPWAPrompt] Dismissed until:', dismissedTime, 'Now:', now)
 
       // Jeśli nie było dismissed lub minął czas
       if (!dismissedTime || dismissedTime < now) {
         setShowPrompt(true)
-        console.log('[InstallPWAPrompt] Showing prompt')
         // Wyczyść stare dismissed
         if (dismissedTime && dismissedTime < now) {
           localStorage.removeItem('pwa-install-dismissed')
@@ -67,25 +59,15 @@ const InstallPWAPrompt = () => {
       const dismissed = localStorage.getItem('pwa-install-dismissed-ios')
       const dismissedTime = dismissed ? parseInt(dismissed) : null
       const now = Date.now()
-      console.log('[InstallPWAPrompt] iOS dismissed until:', dismissedTime, 'Now:', now)
 
       // Jeśli nie było dismissed lub minął czas
       if (!dismissedTime || dismissedTime < now) {
         setShowPrompt(true)
-        console.log('[InstallPWAPrompt] Showing iOS prompt')
         // Wyczyść stare dismissed
         if (dismissedTime && dismissedTime < now) {
           localStorage.removeItem('pwa-install-dismissed-ios')
         }
       }
-    }
-
-    // TEMPORARY: Zawsze pokaż prompt na desktopie dla testów
-    if (!iOS && !standalone) {
-      console.log('[InstallPWAPrompt] Desktop detected - showing test prompt in 2 seconds')
-      setTimeout(() => {
-        setShowPrompt(true)
-      }, 2000)
     }
 
     return () => {
@@ -123,23 +105,13 @@ const InstallPWAPrompt = () => {
     )
   }
 
-  // Debug info
-  console.log('[InstallPWAPrompt] Render state:', {
-    isStandalone,
-    showPrompt,
-    isIOS,
-    hasDeferredPrompt: !!deferredPrompt
-  })
-
   // Nie pokazuj jeśli aplikacja jest już zainstalowana
   if (isStandalone) {
-    console.log('[InstallPWAPrompt] Hidden - app is standalone')
     return null
   }
 
   // Nie pokazuj jeśli użytkownik odrzucił
   if (!showPrompt) {
-    console.log('[InstallPWAPrompt] Hidden - showPrompt is false')
     return null
   }
 
@@ -190,7 +162,6 @@ const InstallPWAPrompt = () => {
 
   // Android/Chrome - natywny prompt
   if (deferredPrompt) {
-    console.log('[InstallPWAPrompt] Rendering Android/Chrome prompt')
     return (
       <div className="fixed bottom-4 left-4 right-4 z-50 animate-slide-up">
         <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-xl shadow-2xl p-4 text-white border-2 border-white/30">
@@ -234,7 +205,6 @@ const InstallPWAPrompt = () => {
   }
 
   // Fallback - pokaż ogólny prompt (desktop/inne przeglądarki)
-  console.log('[InstallPWAPrompt] Rendering fallback prompt')
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 animate-slide-up">
       <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-xl shadow-2xl p-4 text-white border-2 border-white/30">
