@@ -2,9 +2,9 @@
 
 [build]
   # Build command - runs in the frontend directory
-  # Install deps first to ensure TypeScript is available
+  # Clean node_modules first to avoid cache conflicts, then install and build
   # Use --legacy-peer-deps due to vite-plugin-pwa not yet supporting vite@8
-  command = "npm install --legacy-peer-deps && npm run build"
+  command = "rm -rf node_modules && npm install --legacy-peer-deps && npm run build"
 
   # Directory to publish - Vite outputs to 'dist'
   publish = "dist"
