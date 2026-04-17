@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase/client'
 import { AccountingReportRow, generateAccountingCSV, downloadCSV } from '../utils/csvExport'
 
@@ -19,6 +20,7 @@ interface AttendanceReportRow {
 type ReportType = 'accounting' | 'attendance'
 
 export default function AdminReportsPage() {
+  const navigate = useNavigate()
   const [activityTypes, setActivityTypes] = useState<ActivityType[]>([])
   const [selectedMonth, setSelectedMonth] = useState<string>('')
   const [selectedSection, setSelectedSection] = useState<string>('')
@@ -221,7 +223,15 @@ export default function AdminReportsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-purple-900 mb-8">📊 Raporty Księgowe</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-purple-900">📊 Raporty Księgowe</h1>
+          <button
+            onClick={() => navigate('/')}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all flex items-center gap-2"
+          >
+            ← Powrót do menu
+          </button>
+        </div>
 
         {/* Filters */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
