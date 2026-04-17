@@ -4,6 +4,7 @@ import { supabase } from './supabase/client'
 import SimpleLoginPage from './pages/SimpleLoginPage'
 import RegisterPage from './pages/RegisterPage'
 import PublicAboutPage from './pages/PublicAboutPage'
+import AuthCallbackPage from './pages/AuthCallbackPage'
 import DashboardPage from './pages/DashboardPage'
 import ActivitiesPage from './pages/ActivitiesPage'
 import MyClassesPage from './pages/MyClassesPage'
@@ -92,6 +93,7 @@ function App() {
           <Route path="/" element={<PublicAboutPage />} />
           <Route path="/login" element={<SimpleLoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

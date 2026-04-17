@@ -22,7 +22,12 @@ const SimpleLoginPage = () => {
       })
 
       if (signInError) {
-        setError(signInError.message)
+        // Sprawdź czy błąd to brak potwierdzenia email
+        if (signInError.message.includes('email') || signInError.message.includes('confirm') || signInError.message.includes('verify')) {
+          setError('⚠️ Najpierw potwierdź swój adres email. Sprawdź skrzynkę pocztową (także folder SPAM).')
+        } else {
+          setError(signInError.message)
+        }
       } else {
         console.log('Logged in:', data)
         window.location.reload() // Refresh to show authenticated state
@@ -72,6 +77,28 @@ const SimpleLoginPage = () => {
           {error && (
             <div className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg text-red-700 text-sm">
               {error}
+              {error.includes('potwierdź') && (
+                <button
+                  onClick={async () => {
+                    if (!email) {
+                      alert('Wprowadź adres email')
+                      return
+                    }
+                    const { error: resendError } = await supabase.auth.resend({
+                      type: 'signup',
+                      email: email
+                    })
+                    if (!resendError) {
+                      alert('✅ Email weryfikacyjny wysłany ponownie!')
+                    } else {
+                      alert('❌ Błąd: ' + resendError.message)
+                    }
+                  }}
+                  className="mt-2 text-sm text-purple-600 underline hover:text-purple-700"
+                >
+                  Wyślij ponownie email weryfikacyjny
+                </button>
+              )}
             </div>
           )}
 

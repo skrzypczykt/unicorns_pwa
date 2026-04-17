@@ -12,6 +12,7 @@ const RegisterPage = () => {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,8 +65,8 @@ const RegisterPage = () => {
         throw new Error('Nie udało się utworzyć profilu użytkownika. Skontaktuj się z administratorem.')
       }
 
-      alert('✅ Konto utworzone pomyślnie! Możesz się teraz zalogować.')
-      navigate('/')
+      // Pokaż modal z informacją o weryfikacji email
+      setShowSuccessModal(true)
     } catch (err: any) {
       console.error('Registration error:', err)
       setError(err.message || 'Wystąpił błąd podczas rejestracji')
@@ -219,6 +220,32 @@ const RegisterPage = () => {
           </p>
         </div>
       </div>
+
+      {/* Success Modal - Email Verification */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
+            <div className="text-center">
+              <div className="text-6xl mb-4">📧</div>
+              <h3 className="text-2xl font-bold text-purple-600 mb-4">Sprawdź swoją skrzynkę!</h3>
+              <p className="text-gray-700 mb-4">
+                Wysłaliśmy email weryfikacyjny na adres:<br />
+                <strong className="text-purple-600">{formData.email}</strong>
+              </p>
+              <p className="text-sm text-gray-500 mb-4">
+                Kliknij w link w emailu aby aktywować konto.
+                <br />Jeśli nie widzisz emaila, sprawdź folder <strong>SPAM</strong>.
+              </p>
+              <button
+                onClick={() => navigate('/login')}
+                className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-xl transition-all"
+              >
+                OK, rozumiem
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
