@@ -93,7 +93,7 @@ const ActivitiesPage = () => {
         .from('registrations')
         .select('activity_id')
         .eq('user_id', user.id)
-        .in('status', ['registered'])
+        .in('status', ['registered', 'attended'])  // Include attended status
 
       if (error) throw error
 
@@ -143,24 +143,49 @@ const ActivitiesPage = () => {
       const activityDate = new Date(activity.date_time)
       const cancellationDeadline = new Date(activityDate.getTime() - (cancellationHours * 60 * 60 * 1000))
 
-      // Create registration - saldo nie wpływa na możliwość zapisu
-      const { error: regError } = await supabase
+      // Check if user already has a registration (including cancelled ones)
+      const { data: existingReg, error: checkError } = await supabase
         .from('registrations')
-        .insert({
-          activity_id: activityId,
-          user_id: user.id,
-          status: 'registered',
-          can_cancel_until: cancellationDeadline.toISOString(),
-          payment_processed: false
-        })
+        .select('id, status')
+        .eq('activity_id', activityId)
+        .eq('user_id', user.id)
+        .maybeSingle()
 
-      if (regError) {
-        if (regError.code === '23505') {
+      if (checkError) throw checkError
+
+      if (existingReg) {
+        if (existingReg.status === 'registered' || existingReg.status === 'attended') {
           alert('Już jesteś zapisany na te zajęcia!')
-        } else {
-          throw regError
+          return
         }
-        return
+
+        // Reaktywuj anulowany zapis
+        if (existingReg.status === 'cancelled' || existingReg.status === 'no_show') {
+          const { error: updateError } = await supabase
+            .from('registrations')
+            .update({
+              status: 'registered',
+              can_cancel_until: cancellationDeadline.toISOString(),
+              payment_processed: false,
+              cancelled_at: null
+            })
+            .eq('id', existingReg.id)
+
+          if (updateError) throw updateError
+        }
+      } else {
+        // Create new registration
+        const { error: insertError } = await supabase
+          .from('registrations')
+          .insert({
+            activity_id: activityId,
+            user_id: user.id,
+            status: 'registered',
+            can_cancel_until: cancellationDeadline.toISOString(),
+            payment_processed: false
+          })
+
+        if (insertError) throw insertError
       }
 
       // Różne komunikaty w zależności od typu wydarzenia i kosztu
