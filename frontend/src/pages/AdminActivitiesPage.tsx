@@ -9,6 +9,7 @@ interface Activity {
   description: string
   date_time: string
   duration_minutes: number
+  duration_description?: string | null
   max_participants: number
   cost: number
   location: string
@@ -25,6 +26,7 @@ interface Activity {
   image_url?: string | null
   is_special_event?: boolean
   registered_count?: number
+  whatsapp_group_url?: string | null
 }
 
 interface Trainer {
@@ -273,7 +275,7 @@ const AdminActivitiesPage = () => {
       description: activity.description,
       date_time: toDateTimeLocal(activity.date_time),
       duration_minutes: activity.duration_minutes,
-      duration_description: (activity as any).duration_description || '',
+      duration_description: activity.duration_description || '',
       max_participants: activity.max_participants,
       cost: activity.cost,
       location: activity.location,
