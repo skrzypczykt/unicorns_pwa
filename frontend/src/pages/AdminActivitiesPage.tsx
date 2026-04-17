@@ -137,8 +137,11 @@ const AdminActivitiesPage = () => {
 
     try {
       // Konwertuj puste stringi na null i datetime-local na ISO z timezone
+      // Wykluczamy send_notification - to tylko parametr UI, nie kolumna w bazie
+      const { send_notification, ...formDataWithoutNotification } = formData
+
       const dataToSave = {
-        ...formData,
+        ...formDataWithoutNotification,
         date_time: toISOWithTimezone(formData.date_time),
         // Wydarzenia specjalne nie mają registration_opens_at - zapisy od razu
         registration_opens_at: formData.is_special_event ? null : toISOWithTimezone(formData.registration_opens_at),
