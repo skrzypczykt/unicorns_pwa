@@ -250,9 +250,28 @@ function App() {
               </div>
             </div>
 
-            <div className="border-t border-gray-200 pt-4 text-center">
-              <p className="text-xs text-gray-500">© 2026 Stowarzyszenie Unicorns. Wszystkie prawa zastrzeżone.</p>
-              <p className="text-xs text-gray-500 mt-1">Aplikacja stworzona z magią jednorożców 🦄🌈✨</p>
+            <div className="border-t border-gray-200 pt-4">
+              <div className="flex justify-center gap-4 text-xs text-gray-500 mb-3">
+                <a
+                  href="/polityka-prywatnosci.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-purple-600 transition-colors"
+                >
+                  Polityka prywatności
+                </a>
+                <span>•</span>
+                <a
+                  href="/regulamin-zajec.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-purple-600 transition-colors"
+                >
+                  Regulamin zajęć
+                </a>
+              </div>
+              <p className="text-xs text-gray-500 text-center">© 2026 Stowarzyszenie Unicorns. Wszystkie prawa zastrzeżone.</p>
+              <p className="text-xs text-gray-500 mt-1 text-center">Aplikacja stworzona z magią jednorożców 🦄🌈✨</p>
             </div>
           </div>
         </footer>

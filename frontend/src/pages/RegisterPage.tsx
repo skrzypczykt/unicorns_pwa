@@ -10,6 +10,7 @@ const RegisterPage = () => {
     confirmPassword: '',
     displayName: ''
   })
+  const [gdprConsent, setGdprConsent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showSuccessModal, setShowSuccessModal] = useState(false)
@@ -19,6 +20,11 @@ const RegisterPage = () => {
     setError('')
 
     // Validation
+    if (!gdprConsent) {
+      setError('Musisz zaakceptować politykę prywatności')
+      return
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Hasła nie są identyczne')
       return
@@ -60,6 +66,14 @@ const RegisterPage = () => {
 
       if (!authData.user) {
         throw new Error('Nie udało się utworzyć konta')
+      }
+
+      // Save GDPR consent date to user profile
+      if (gdprConsent) {
+        await supabase
+          .from('users')
+          .update({ gdpr_consent_date: new Date().toISOString() })
+          .eq('id', authData.user.id)
       }
 
       // Sprawdź czy email confirmation jest włączone
@@ -185,9 +199,34 @@ const RegisterPage = () => {
               />
             </div>
 
+            {/* GDPR Consent Checkbox */}
+            <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <input
+                type="checkbox"
+                id="gdpr-consent"
+                checked={gdprConsent}
+                onChange={(e) => setGdprConsent(e.target.checked)}
+                className="mt-1 w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 flex-shrink-0"
+              />
+              <label htmlFor="gdpr-consent" className="text-sm text-gray-700">
+                Akceptuję{' '}
+                <a
+                  href="/polityka-prywatnosci.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-purple-600 font-semibold underline hover:text-purple-700"
+                >
+                  politykę prywatności
+                </a>
+                {' '}i wyrażam zgodę na przetwarzanie moich danych osobowych przez Stowarzyszenie Unicorns Łódź
+                w celu umożliwienia rejestracji na zajęcia i wydarzenia.
+                <span className="text-red-600 font-bold ml-1">*</span>
+              </label>
+            </div>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !gdprConsent}
               className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Tworzenie konta...' : 'Utwórz konto'}
