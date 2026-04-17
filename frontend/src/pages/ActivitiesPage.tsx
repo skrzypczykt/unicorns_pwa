@@ -30,11 +30,16 @@ const ActivitiesPage = () => {
 
   const fetchActivities = async () => {
     try {
+      // Filtruj do najbliższych 7 dni
+      const now = new Date()
+      const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+
       const { data, error } = await supabase
         .from('activities')
         .select('*')
         .eq('status', 'scheduled')
-        .gte('date_time', new Date().toISOString())
+        .gte('date_time', now.toISOString())
+        .lte('date_time', sevenDaysLater.toISOString())
         .order('date_time', { ascending: true })
 
       if (error) throw error
@@ -156,7 +161,7 @@ const ActivitiesPage = () => {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-purple-600 mb-2">📅 Nadchodzące zajęcia</h1>
+          <h1 className="text-3xl font-bold text-purple-600 mb-2">📅 Zajęcia na najbliższe 7 dni</h1>
           <p className="text-gray-600">Wybierz zajęcia i zapisz się!</p>
         </div>
         <button
@@ -165,6 +170,11 @@ const ActivitiesPage = () => {
         >
           ← Powrót
         </button>
+      </div>
+
+      {/* Info banner o filtrowaniu */}
+      <div className="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg text-sm text-blue-800">
+        <strong>ℹ️ Informacja:</strong> Wyświetlamy zajęcia z najbliższych 7 dni. Więcej zajęć pojawi się automatycznie w kolejnych tygodniach.
       </div>
 
       {activities.length === 0 ? (
