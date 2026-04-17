@@ -85,6 +85,11 @@ export default function AdminReportsPage() {
 
         if (error) throw error
 
+        // Check if data exists and has the expected structure
+        if (!data || !data.data) {
+          throw new Error('Nieprawidłowa odpowiedź z serwera')
+        }
+
         setReportData(data.data || [])
       } else {
         // Attendance report - fetch directly from database
@@ -92,6 +97,11 @@ export default function AdminReportsPage() {
       }
     } catch (err: any) {
       console.error('Error generating report:', err)
+      console.error('Error details:', {
+        message: err.message,
+        name: err.name,
+        stack: err.stack
+      })
       setError(err.message || 'Nie udało się wygenerować raportu')
     } finally {
       setLoading(false)
@@ -127,6 +137,11 @@ export default function AdminReportsPage() {
     const aggregated: Record<string, AttendanceReportRow> = {}
 
     data?.forEach((reg: any) => {
+      // Skip records with missing data
+      if (!reg.user || !reg.activity || !reg.activity.activity_type) {
+        return
+      }
+
       const key = `${reg.user.display_name}-${reg.activity.activity_type.name}`
       if (!aggregated[key]) {
         aggregated[key] = {
