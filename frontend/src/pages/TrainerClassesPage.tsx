@@ -11,6 +11,10 @@ interface Activity {
   cost: number
   location: string
   status: string
+  activity_type_id: string
+  activity_types: {
+    name: string
+  }
 }
 
 interface Registration {
@@ -21,8 +25,15 @@ interface Registration {
   users: {
     display_name: string
     email: string
-    balance: number
   }
+  section_balance?: number
+}
+
+interface AttendanceSummary {
+  total: number
+  attended: number
+  no_show: number
+  pending: number
 }
 
 const TrainerClassesPage = () => {
@@ -32,6 +43,12 @@ const TrainerClassesPage = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([])
   const [loading, setLoading] = useState(true)
   const [marking, setMarking] = useState<string | null>(null)
+  const [summary, setSummary] = useState<AttendanceSummary>({
+    total: 0,
+    attended: 0,
+    no_show: 0,
+    pending: 0
+  })
 
   useEffect(() => {
     fetchTrainerActivities()
@@ -42,15 +59,31 @@ const TrainerClassesPage = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
+      // Get both scheduled and completed activities (last 7 days and future)
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
       const { data, error } = await supabase
         .from('activities')
-        .select('*')
+        .select(`
+          *,
+          activity_types (
+            name
+          )
+        `)
         .eq('trainer_id', user.id)
-        .eq('status', 'scheduled')
+        .gte('date_time', sevenDaysAgo.toISOString())
         .order('date_time', { ascending: true })
 
       if (error) throw error
-      setActivities(data || [])
+
+      // Transform data
+      const transformed = data?.map(act => ({
+        ...act,
+        activity_types: Array.isArray(act.activity_types) ? act.activity_types[0] : act.activity_types
+      })) || []
+
+      setActivities(transformed as any)
     } catch (error) {
       console.error('Error fetching activities:', error)
     } finally {
@@ -58,8 +91,9 @@ const TrainerClassesPage = () => {
     }
   }
 
-  const fetchRegistrations = async (activityId: string) => {
+  const fetchRegistrations = async (activityId: string, activityTypeId: string) => {
     try {
+      // Get all registrations (including attended and no_show)
       const { data, error } = await supabase
         .from('registrations')
         .select(`
@@ -69,12 +103,11 @@ const TrainerClassesPage = () => {
           payment_processed,
           users (
             display_name,
-            email,
-            balance
+            email
           )
         `)
         .eq('activity_id', activityId)
-        .eq('status', 'registered')
+        .in('status', ['registered', 'attended', 'no_show'])
 
       if (error) throw error
 
@@ -84,7 +117,38 @@ const TrainerClassesPage = () => {
         users: Array.isArray(reg.users) ? reg.users[0] : reg.users
       })) || []
 
+      // Fetch section balances for each user
+      const userIds = transformed.map(r => r.user_id)
+
+      if (userIds.length > 0) {
+        const { data: balances, error: balanceError } = await supabase
+          .from('user_section_balances')
+          .select('user_id, balance')
+          .eq('activity_type_id', activityTypeId)
+          .in('user_id', userIds)
+
+        if (balanceError) {
+          console.error('Error fetching balances:', balanceError)
+        } else {
+          // Map balances to registrations
+          const balanceMap = new Map(balances?.map(b => [b.user_id, b.balance]) || [])
+          transformed.forEach(reg => {
+            reg.section_balance = balanceMap.get(reg.user_id) || 0
+          })
+        }
+      }
+
       setRegistrations(transformed as any)
+
+      // Calculate summary
+      const summary: AttendanceSummary = {
+        total: transformed.length,
+        attended: transformed.filter(r => r.status === 'attended').length,
+        no_show: transformed.filter(r => r.status === 'no_show').length,
+        pending: transformed.filter(r => r.status === 'registered').length
+      }
+      setSummary(summary)
+
     } catch (error) {
       console.error('Error fetching registrations:', error)
     }
@@ -92,18 +156,18 @@ const TrainerClassesPage = () => {
 
   const handleSelectActivity = async (activity: Activity) => {
     setSelectedActivity(activity)
-    await fetchRegistrations(activity.id)
+    await fetchRegistrations(activity.id, activity.activity_type_id)
   }
 
   const markAttendance = async (
     registrationId: string,
     userId: string,
-    status: 'present' | 'absent',
+    newStatus: 'attended' | 'no_show',
     activityCost: number,
     userBalance: number
   ) => {
-    if (status === 'present' && userBalance < activityCost) {
-      if (!confirm(`Użytkownik ma niewystarczające saldo (${userBalance.toFixed(2)} zł < ${activityCost.toFixed(2)} zł). Czy chcesz oznaczyć obecność i utworzyć zadłużenie?`)) {
+    if (newStatus === 'attended' && userBalance < activityCost) {
+      if (!confirm(`Użytkownik ma niewystarczające saldo w tej sekcji (${userBalance.toFixed(2)} zł < ${activityCost.toFixed(2)} zł).\n\nCzy chcesz oznaczyć obecność i utworzyć zadłużenie?`)) {
         return
       }
     }
@@ -111,51 +175,54 @@ const TrainerClassesPage = () => {
     setMarking(registrationId)
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) {
+        alert('Musisz być zalogowany')
+        return
+      }
 
-      if (status === 'present') {
+      if (newStatus === 'attended') {
         // Mark as present and process payment
-        // 1. Create attendance record
+
+        // 1. Create/update attendance record
         const { error: attendanceError } = await supabase
           .from('attendance')
-          .insert({
+          .upsert({
             activity_id: selectedActivity!.id,
             user_id: userId,
             registration_id: registrationId,
             marked_by: user.id,
             status: 'present'
+          }, {
+            onConflict: 'activity_id,user_id',
+            ignoreDuplicates: false
           })
 
-        if (attendanceError) {
-          if (attendanceError.code === '23505') {
-            alert('Obecność już została oznaczona dla tego użytkownika')
-            return
-          }
-          throw attendanceError
-        }
+        if (attendanceError) throw attendanceError
 
-        // 2. Get current balance
-        const { data: userData, error: userError } = await supabase
-          .from('users')
+        // 2. Get current section balance
+        const { data: balanceData, error: balanceError } = await supabase
+          .from('user_section_balances')
           .select('balance')
-          .eq('id', userId)
+          .eq('user_id', userId)
+          .eq('activity_type_id', selectedActivity!.activity_type_id)
           .single()
 
-        if (userError) throw userError
-
-        const balanceBefore = userData.balance
+        const balanceBefore = balanceData?.balance || 0
         const balanceAfter = balanceBefore - activityCost
 
-        // 3. Deduct balance
-        const { error: balanceError } = await supabase
-          .from('users')
-          .update({
+        // 3. Update section balance (or create if doesn't exist)
+        const { error: updateBalanceError } = await supabase
+          .from('user_section_balances')
+          .upsert({
+            user_id: userId,
+            activity_type_id: selectedActivity!.activity_type_id,
             balance: balanceAfter,
-            balance_updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id,activity_type_id'
           })
-          .eq('id', userId)
 
-        if (balanceError) throw balanceError
+        if (updateBalanceError) throw updateBalanceError
 
         // 4. Create transaction record
         const { error: transactionError } = await supabase
@@ -167,6 +234,7 @@ const TrainerClassesPage = () => {
             balance_after: balanceAfter,
             type: 'class_payment',
             reference_id: selectedActivity!.id,
+            activity_type_id: selectedActivity!.activity_type_id,
             description: `Płatność za zajęcia: ${selectedActivity!.name}`,
             created_by: user.id
           })
@@ -184,26 +252,23 @@ const TrainerClassesPage = () => {
 
         if (regError) throw regError
 
-        alert(`✅ Obecność oznaczona! Pobrano ${activityCost.toFixed(2)} zł z konta użytkownika.`)
+        alert(`✅ Obecność oznaczona!\n\nPobrano ${activityCost.toFixed(2)} zł z konta sekcji: ${selectedActivity!.activity_types.name}\nNowe saldo: ${balanceAfter.toFixed(2)} zł`)
       } else {
         // Mark as absent - no payment
         const { error: attendanceError } = await supabase
           .from('attendance')
-          .insert({
+          .upsert({
             activity_id: selectedActivity!.id,
             user_id: userId,
             registration_id: registrationId,
             marked_by: user.id,
             status: 'absent'
+          }, {
+            onConflict: 'activity_id,user_id',
+            ignoreDuplicates: false
           })
 
-        if (attendanceError) {
-          if (attendanceError.code === '23505') {
-            alert('Obecność już została oznaczona dla tego użytkownika')
-            return
-          }
-          throw attendanceError
-        }
+        if (attendanceError) throw attendanceError
 
         // Update registration status
         const { error: regError } = await supabase
@@ -219,10 +284,10 @@ const TrainerClassesPage = () => {
       }
 
       // Refresh registrations
-      await fetchRegistrations(selectedActivity!.id)
-    } catch (error) {
+      await fetchRegistrations(selectedActivity!.id, selectedActivity!.activity_type_id)
+    } catch (error: any) {
       console.error('Error marking attendance:', error)
-      alert('Wystąpił błąd podczas oznaczania obecności')
+      alert(`❌ Wystąpił błąd podczas oznaczania obecności:\n\n${error.message || error}`)
     } finally {
       setMarking(null)
     }
@@ -240,156 +305,241 @@ const TrainerClassesPage = () => {
     })
   }
 
+  const isUpcoming = (dateString: string) => {
+    return new Date(dateString) > new Date()
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center">
         <div className="text-center">
           <div className="text-8xl mb-4 animate-bounce">🦄</div>
-          <p className="text-purple-600">Ładowanie...</p>
+          <p className="text-purple-600 text-lg">Ładowanie zajęć...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-purple-600 mb-2">✅ Panel Trenera</h1>
-          <p className="text-gray-600">Oznacz obecność na zajęciach</p>
-        </div>
-        <button
-          onClick={() => navigate('/')}
-          className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
-        >
-          ← Powrót
-        </button>
-      </div>
-
-      {!selectedActivity ? (
-        <>
-          {activities.length === 0 ? (
-            <div className="text-center py-12">
-              <span className="text-6xl mb-4 block">🦄</span>
-              <p className="text-xl text-gray-600">Brak zaplanowanych zajęć do prowadzenia</p>
-            </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {activities.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all cursor-pointer"
-                  onClick={() => handleSelectActivity(activity)}
-                >
-                  <h3 className="text-xl font-bold text-purple-600 mb-2">{activity.name}</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span>📅</span>
-                      <span>{formatDate(activity.date_time)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span>📍</span>
-                      <span>{activity.location}</span>
-                    </div>
-                    <div className="flex items-center gap-2 font-bold text-purple-600">
-                      <span>💰</span>
-                      <span>{activity.cost.toFixed(2)} zł</span>
-                    </div>
-                  </div>
-                  <button className="mt-4 w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-2 px-4 rounded-lg">
-                    Oznacz obecność →
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
-      ) : (
-        <div>
-          <button
-            onClick={() => {
-              setSelectedActivity(null)
-              setRegistrations([])
-            }}
-            className="mb-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
-          >
-            ← Powrót do listy zajęć
-          </button>
-
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
-            <h2 className="text-2xl font-bold text-purple-600 mb-4">{selectedActivity.name}</h2>
-            <div className="grid md:grid-cols-2 gap-2 text-sm">
-              <div className="flex items-center gap-2">
-                <span>📅</span>
-                <span>{formatDate(selectedActivity.date_time)}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span>📍</span>
-                <span>{selectedActivity.location}</span>
-              </div>
-              <div className="flex items-center gap-2 font-bold text-purple-600">
-                <span>💰</span>
-                <span>Koszt: {selectedActivity.cost.toFixed(2)} zł</span>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 px-4 py-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-purple-600 mb-2">✅ Panel Trenera</h1>
+            <p className="text-gray-600">Oznacz obecność na zajęciach</p>
           </div>
-
-          <h3 className="text-xl font-bold text-purple-600 mb-4">
-            Lista uczestników ({registrations.length})
-          </h3>
-
-          {registrations.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-600">Brak zapisanych uczestników</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {registrations.map((reg) => (
-                <div
-                  key={reg.id}
-                  className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-4 flex items-center justify-between"
-                >
-                  <div>
-                    <h4 className="font-bold text-purple-600">{reg.users.display_name}</h4>
-                    <p className="text-sm text-gray-600">{reg.users.email}</p>
-                    <p className="text-sm">
-                      Saldo: <span className={reg.users.balance >= selectedActivity.cost ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-                        {reg.users.balance.toFixed(2)} zł
-                      </span>
-                      {reg.users.balance < selectedActivity.cost && (
-                        <span className="ml-2 text-xs text-red-600">⚠️ Niewystarczające</span>
-                      )}
-                    </p>
-                  </div>
-
-                  {reg.payment_processed ? (
-                    <div className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-semibold">
-                      ✓ Opłacono
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => markAttendance(reg.id, reg.user_id, 'present', selectedActivity.cost, reg.users.balance)}
-                        disabled={marking === reg.id}
-                        className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all disabled:opacity-50"
-                      >
-                        ✓ Obecny/a
-                      </button>
-                      <button
-                        onClick={() => markAttendance(reg.id, reg.user_id, 'absent', selectedActivity.cost, reg.users.balance)}
-                        disabled={marking === reg.id}
-                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all disabled:opacity-50"
-                      >
-                        ✗ Nieobecny/a
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+          <button
+            onClick={() => navigate('/')}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all font-semibold"
+          >
+            ← Powrót
+          </button>
         </div>
-      )}
+
+        {!selectedActivity ? (
+          <>
+            {activities.length === 0 ? (
+              <div className="text-center py-12 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg">
+                <span className="text-6xl mb-4 block">🦄</span>
+                <p className="text-xl text-gray-600">Brak zajęć do prowadzenia</p>
+                <p className="text-sm text-gray-500 mt-2">Zajęcia z ostatnich 7 dni i nadchodzące</p>
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {activities.map((activity) => {
+                  const upcoming = isUpcoming(activity.date_time)
+                  return (
+                    <div
+                      key={activity.id}
+                      className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 ${
+                        upcoming ? 'border-purple-300' : 'border-gray-300'
+                      } p-6 hover:shadow-xl transition-all cursor-pointer ${
+                        !upcoming ? 'opacity-75' : ''
+                      }`}
+                      onClick={() => handleSelectActivity(activity)}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="text-xl font-bold text-purple-600 flex-1">{activity.name}</h3>
+                        {!upcoming && (
+                          <span className="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded">
+                            Zakończone
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500 mb-3">{activity.activity_types.name}</p>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span>📅</span>
+                          <span>{formatDate(activity.date_time)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span>📍</span>
+                          <span>{activity.location}</span>
+                        </div>
+                        <div className="flex items-center gap-2 font-bold text-purple-600">
+                          <span>💰</span>
+                          <span>{activity.cost.toFixed(2)} zł</span>
+                        </div>
+                      </div>
+                      <button className="mt-4 w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:shadow-lg transition-all">
+                        {upcoming ? 'Oznacz obecność →' : 'Zobacz listę →'}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </>
+        ) : (
+          <div>
+            <button
+              onClick={() => {
+                setSelectedActivity(null)
+                setRegistrations([])
+                setSummary({ total: 0, attended: 0, no_show: 0, pending: 0 })
+              }}
+              className="mb-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all font-semibold"
+            >
+              ← Powrót do listy zajęć
+            </button>
+
+            {/* Activity Info */}
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-purple-600 mb-2">{selectedActivity.name}</h2>
+                  <p className="text-gray-600">{selectedActivity.activity_types.name}</p>
+                </div>
+                {!isUpcoming(selectedActivity.date_time) && (
+                  <span className="px-3 py-1 bg-gray-200 text-gray-600 text-sm rounded-lg">
+                    Zakończone
+                  </span>
+                )}
+              </div>
+              <div className="grid md:grid-cols-2 gap-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <span>📅</span>
+                  <span>{formatDate(selectedActivity.date_time)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>📍</span>
+                  <span>{selectedActivity.location}</span>
+                </div>
+                <div className="flex items-center gap-2 font-bold text-purple-600">
+                  <span>💰</span>
+                  <span>Koszt: {selectedActivity.cost.toFixed(2)} zł</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>⏱️</span>
+                  <span>{selectedActivity.duration_minutes} minut</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Summary */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-blue-200 p-4 text-center">
+                <div className="text-3xl font-bold text-blue-600">{summary.total}</div>
+                <div className="text-sm text-gray-600">Zapisani</div>
+              </div>
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-green-200 p-4 text-center">
+                <div className="text-3xl font-bold text-green-600">{summary.attended}</div>
+                <div className="text-sm text-gray-600">Obecni</div>
+              </div>
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-red-200 p-4 text-center">
+                <div className="text-3xl font-bold text-red-600">{summary.no_show}</div>
+                <div className="text-sm text-gray-600">Nieobecni</div>
+              </div>
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-yellow-200 p-4 text-center">
+                <div className="text-3xl font-bold text-yellow-600">{summary.pending}</div>
+                <div className="text-sm text-gray-600">Oczekuje</div>
+              </div>
+            </div>
+
+            {/* Participants List */}
+            <h3 className="text-xl font-bold text-purple-600 mb-4">
+              Lista uczestników
+            </h3>
+
+            {registrations.length === 0 ? (
+              <div className="text-center py-8 bg-white/80 backdrop-blur-sm rounded-xl">
+                <p className="text-gray-600">Brak zapisanych uczestników</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {registrations.map((reg) => {
+                  const balance = reg.section_balance ?? 0
+                  const hasEnough = balance >= selectedActivity.cost
+                  const isPending = reg.status === 'registered'
+                  const isAttended = reg.status === 'attended'
+                  const isNoShow = reg.status === 'no_show'
+
+                  return (
+                    <div
+                      key={reg.id}
+                      className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 ${
+                        isAttended ? 'border-green-200 bg-green-50/50' :
+                        isNoShow ? 'border-red-200 bg-red-50/50' :
+                        'border-purple-200'
+                      } p-4 flex flex-col md:flex-row md:items-center justify-between gap-4`}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-purple-600">{reg.users.display_name}</h4>
+                          {isAttended && <span className="text-green-600 text-sm">✓ Obecny/a</span>}
+                          {isNoShow && <span className="text-red-600 text-sm">✗ Nieobecny/a</span>}
+                        </div>
+                        <p className="text-sm text-gray-600">{reg.users.email}</p>
+                        <p className="text-sm mt-1">
+                          <span className="text-gray-500">Saldo {selectedActivity.activity_types.name}:</span>{' '}
+                          <span className={hasEnough ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                            {balance.toFixed(2)} zł
+                          </span>
+                          {!hasEnough && isPending && (
+                            <span className="ml-2 text-xs text-red-600 bg-red-100 px-2 py-1 rounded">
+                              ⚠️ Niewystarczające saldo
+                            </span>
+                          )}
+                        </p>
+                        {reg.payment_processed && (
+                          <p className="text-xs text-green-600 mt-1">✓ Płatność przetworzona</p>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2 flex-shrink-0">
+                        {isPending ? (
+                          <>
+                            <button
+                              onClick={() => markAttendance(reg.id, reg.user_id, 'attended', selectedActivity.cost, balance)}
+                              disabled={marking === reg.id}
+                              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                            >
+                              {marking === reg.id ? '⏳ Zapisuję...' : '✓ Obecny/a'}
+                            </button>
+                            <button
+                              onClick={() => markAttendance(reg.id, reg.user_id, 'no_show', selectedActivity.cost, balance)}
+                              disabled={marking === reg.id}
+                              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                            >
+                              {marking === reg.id ? '⏳ Zapisuję...' : '✗ Nieobecny/a'}
+                            </button>
+                          </>
+                        ) : (
+                          <div className={`px-4 py-2 rounded-lg font-semibold ${
+                            isAttended ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                          }`}>
+                            {isAttended ? '✓ Opłacono' : '✗ Nieobecność'}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
