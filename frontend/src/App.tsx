@@ -14,6 +14,7 @@ import ProfilePage from './pages/ProfilePage'
 import AdminActivitiesPage from './pages/AdminActivitiesPage'
 import AdminReportsPage from './pages/AdminReportsPage'
 import AdminAttendancePage from './pages/AdminAttendancePage'
+import ActivityParticipantsPage from './pages/ActivityParticipantsPage'
 
 interface UserProfile {
   id: string
@@ -172,6 +173,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/activities" element={<AdminActivitiesPage />} />
+          <Route path="/admin/activities/:activityId/participants" element={<ActivityParticipantsPage />} />
           <Route path="/admin/reports" element={<AdminReportsPage />} />
           <Route path="/admin/attendance" element={<AdminAttendancePage />} />
           <Route path="/admin/*" element={

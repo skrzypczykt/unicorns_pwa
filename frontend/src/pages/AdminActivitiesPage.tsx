@@ -24,6 +24,7 @@ interface Activity {
   parent_activity_id?: string | null
   image_url?: string | null
   is_special_event?: boolean
+  registered_count?: number
 }
 
 interface Trainer {
@@ -68,13 +69,35 @@ const AdminActivitiesPage = () => {
 
   const fetchActivities = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch activities
+      const { data: activitiesData, error: activitiesError } = await supabase
         .from('activities')
         .select('*')
         .order('date_time', { ascending: false })
 
-      if (error) throw error
-      setActivities(data || [])
+      if (activitiesError) throw activitiesError
+
+      // Fetch registration counts for each activity
+      const { data: registrationCounts, error: countsError } = await supabase
+        .from('registrations')
+        .select('activity_id')
+        .in('status', ['registered', 'attended'])
+
+      if (countsError) throw countsError
+
+      // Count registrations per activity
+      const counts: Record<string, number> = {}
+      registrationCounts?.forEach(reg => {
+        counts[reg.activity_id] = (counts[reg.activity_id] || 0) + 1
+      })
+
+      // Add counts to activities
+      const activitiesWithCounts = activitiesData?.map(activity => ({
+        ...activity,
+        registered_count: counts[activity.id] || 0
+      }))
+
+      setActivities(activitiesWithCounts || [])
     } catch (error) {
       console.error('Error fetching activities:', error)
     } finally {
@@ -763,6 +786,12 @@ const AdminActivitiesPage = () => {
                 </div>
 
                 <div className="flex flex-col gap-2 ml-4">
+                  <button
+                    onClick={() => navigate(`/admin/activities/${activity.id}/participants`)}
+                    className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all text-sm whitespace-nowrap"
+                  >
+                    👥 Lista ({activity.registered_count || 0})
+                  </button>
                   <button
                     onClick={() => handleEdit(activity)}
                     className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all text-sm"
