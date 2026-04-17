@@ -76,10 +76,20 @@ export default function AdminReportsPage() {
 
     try {
       if (reportType === 'accounting') {
+        // Get current session to ensure auth header is sent
+        const { data: { session } } = await supabase.auth.getSession()
+
+        if (!session) {
+          throw new Error('Nie jesteś zalogowany. Odśwież stronę i zaloguj się ponownie.')
+        }
+
         const { data, error } = await supabase.functions.invoke('generate-accounting-report', {
           body: {
             month: selectedMonth,
             activityTypeId: selectedSection || null
+          },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
           }
         })
 
