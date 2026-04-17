@@ -2,8 +2,8 @@
 
 [build]
   # Build command - runs in the frontend directory
-  # Use --legacy-peer-deps to avoid npm cache issues on CI
-  command = "npm install --legacy-peer-deps && npm run build"
+  # Use yarn to avoid npm package-lock.json generation bug
+  command = "yarn install && yarn build"
 
   # Directory to publish - Vite outputs to 'dist'
   publish = "dist"
