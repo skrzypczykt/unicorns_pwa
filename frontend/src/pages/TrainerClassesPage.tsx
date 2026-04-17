@@ -101,7 +101,7 @@ const TrainerClassesPage = () => {
           user_id,
           status,
           payment_processed,
-          users (
+          users!registrations_user_id_fkey (
             display_name,
             email
           )
@@ -109,16 +109,37 @@ const TrainerClassesPage = () => {
         .eq('activity_id', activityId)
         .in('status', ['registered', 'attended', 'no_show'])
 
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching registrations:', error)
+        throw error
+      }
 
-      // Transform the data
-      const transformed = data?.map(reg => ({
-        ...reg,
-        users: Array.isArray(reg.users) ? reg.users[0] : reg.users
-      })) || []
+      console.log('Raw registrations data:', data)
+
+      // Transform the data and handle null users
+      const transformed = data?.map(reg => {
+        const userData = Array.isArray(reg.users) ? reg.users[0] : reg.users
+
+        // Log if user is null
+        if (!userData) {
+          console.warn('Registration has null user:', reg)
+        }
+
+        return {
+          ...reg,
+          users: userData || null
+        }
+      }) || []
+
+      // Filter out registrations with null users (deleted users)
+      const validRegistrations = transformed.filter(reg => reg.users !== null)
+
+      if (validRegistrations.length < transformed.length) {
+        console.warn(`Filtered out ${transformed.length - validRegistrations.length} registrations with deleted users`)
+      }
 
       // Fetch section balances for each user
-      const userIds = transformed.map(r => r.user_id)
+      const userIds = validRegistrations.map(r => r.user_id)
 
       if (userIds.length > 0) {
         const { data: balances, error: balanceError } = await supabase
@@ -132,20 +153,20 @@ const TrainerClassesPage = () => {
         } else {
           // Map balances to registrations
           const balanceMap = new Map(balances?.map(b => [b.user_id, b.balance]) || [])
-          transformed.forEach(reg => {
+          validRegistrations.forEach(reg => {
             reg.section_balance = balanceMap.get(reg.user_id) || 0
           })
         }
       }
 
-      setRegistrations(transformed as any)
+      setRegistrations(validRegistrations as any)
 
       // Calculate summary
       const summary: AttendanceSummary = {
-        total: transformed.length,
-        attended: transformed.filter(r => r.status === 'attended').length,
-        no_show: transformed.filter(r => r.status === 'no_show').length,
-        pending: transformed.filter(r => r.status === 'registered').length
+        total: validRegistrations.length,
+        attended: validRegistrations.filter(r => r.status === 'attended').length,
+        no_show: validRegistrations.filter(r => r.status === 'no_show').length,
+        pending: validRegistrations.filter(r => r.status === 'registered').length
       }
       setSummary(summary)
 
