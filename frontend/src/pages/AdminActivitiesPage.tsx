@@ -153,7 +153,13 @@ const AdminActivitiesPage = () => {
 
         // Wyślij powiadomienia push do zainteresowanych użytkowników
         if (newActivity) {
-          const { error: pushError } = await supabase.functions.invoke('send-push-notifications', {
+          console.log('[Push] Calling send-push-notifications with:', {
+            activityId: newActivity.id,
+            activityName: newActivity.name,
+            dateTime: newActivity.date_time
+          })
+
+          const { data: pushData, error: pushError } = await supabase.functions.invoke('send-push-notifications', {
             body: {
               activityId: newActivity.id,
               activityName: newActivity.name,
@@ -162,10 +168,10 @@ const AdminActivitiesPage = () => {
           })
 
           if (pushError) {
-            console.error('Error sending push notifications:', pushError)
+            console.error('[Push] Error sending push notifications:', pushError)
             // Nie pokazuj błędu użytkownikowi - powiadomienia są opcjonalne
           } else {
-            console.log('Push notifications sent successfully')
+            console.log('[Push] Notifications sent successfully:', pushData)
           }
         }
       }
