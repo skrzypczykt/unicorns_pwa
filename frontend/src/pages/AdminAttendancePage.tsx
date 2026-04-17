@@ -261,6 +261,13 @@ const AdminAttendancePage = () => {
       }
     }
 
+    // Validate activity has activity_type_id
+    if (!selectedActivity!.activity_type_id) {
+      alert('❌ Błąd: Te zajęcia nie mają przypisanej sekcji.\n\nSkontaktuj się z administratorem aby naprawić dane.')
+      console.error('Activity missing activity_type_id:', selectedActivity)
+      return
+    }
+
     setMarking(registrationId)
     try {
       const { data: { user } } = await supabase.auth.getUser()
