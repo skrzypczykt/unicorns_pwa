@@ -23,6 +23,7 @@ interface Activity {
   recurrence_end_date?: string | null
   parent_activity_id?: string | null
   image_url?: string | null
+  is_special_event?: boolean
 }
 
 interface Trainer {
@@ -56,7 +57,8 @@ const AdminActivitiesPage = () => {
     is_recurring: false,
     recurrence_pattern: 'none',
     recurrence_end_date: '',
-    image_url: ''
+    image_url: '',
+    is_special_event: false
   })
 
   useEffect(() => {
@@ -113,10 +115,13 @@ const AdminActivitiesPage = () => {
       const dataToSave = {
         ...formData,
         date_time: toISOWithTimezone(formData.date_time),
-        registration_opens_at: toISOWithTimezone(formData.registration_opens_at),
+        // Wydarzenia specjalne nie mają registration_opens_at - zapisy od razu
+        registration_opens_at: formData.is_special_event ? null : toISOWithTimezone(formData.registration_opens_at),
         registration_closes_at: toISOWithTimezone(formData.registration_closes_at),
         recurrence_end_date: toISOWithTimezone(formData.recurrence_end_date),
-        recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : 'none'
+        recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : 'none',
+        // Wydarzenia specjalne nie mają trenera
+        trainer_id: formData.is_special_event ? null : (formData.trainer_id || null)
       }
 
       console.log('[Admin] Saving activity with data:', dataToSave)
@@ -239,7 +244,8 @@ const AdminActivitiesPage = () => {
       is_recurring: activity.is_recurring || false,
       recurrence_pattern: activity.recurrence_pattern || 'none',
       recurrence_end_date: toDateTimeLocal(activity.recurrence_end_date),
-      image_url: activity.image_url || ''
+      image_url: activity.image_url || '',
+      is_special_event: activity.is_special_event || false
     })
     setShowForm(true)
   }
@@ -279,7 +285,8 @@ const AdminActivitiesPage = () => {
       is_recurring: false,
       recurrence_pattern: 'none',
       recurrence_end_date: '',
-      image_url: ''
+      image_url: '',
+      is_special_event: false
     })
     setEditingId(null)
     setShowForm(false)
@@ -381,15 +388,16 @@ const AdminActivitiesPage = () => {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Trener *
+                  Trener {!formData.is_special_event && '*'}
                 </label>
                 <select
                   value={formData.trainer_id}
                   onChange={(e) => setFormData({ ...formData, trainer_id: e.target.value })}
-                  required
-                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                  required={!formData.is_special_event}
+                  disabled={formData.is_special_event}
+                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none disabled:bg-gray-100"
                 >
-                  <option value="">Wybierz trenera</option>
+                  <option value="">{formData.is_special_event ? 'Brak trenera (wydarzenie specjalne)' : 'Wybierz trenera'}</option>
                   {trainers.map((trainer) => (
                     <option key={trainer.id} value={trainer.id}>
                       {trainer.display_name}
@@ -541,10 +549,13 @@ const AdminActivitiesPage = () => {
                       type="datetime-local"
                       value={formData.registration_opens_at || ''}
                       onChange={(e) => setFormData({ ...formData, registration_opens_at: e.target.value || '' })}
-                      className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                      disabled={formData.is_special_event}
+                      className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none disabled:bg-gray-100"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      Pozostaw puste aby zapisy były otwarte od razu
+                      {formData.is_special_event
+                        ? 'Wydarzenia specjalne - zapisy od razu po dodaniu'
+                        : 'Pozostaw puste aby zapisy były otwarte od razu'}
                     </p>
                   </div>
 
@@ -565,6 +576,34 @@ const AdminActivitiesPage = () => {
                 </div>
               </div>
 
+              {/* Wydarzenia specjalne */}
+              <div className="border-t-2 border-yellow-200 pt-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <input
+                    type="checkbox"
+                    id="is_special_event"
+                    checked={formData.is_special_event || false}
+                    onChange={(e) => setFormData({ ...formData, is_special_event: e.target.checked })}
+                    className="h-5 w-5 text-yellow-600 rounded"
+                  />
+                  <label htmlFor="is_special_event" className="text-sm font-semibold text-gray-700">
+                    🏆 Wydarzenie specjalne (zawody, spływy, wyjazdy)
+                  </label>
+                </div>
+
+                {formData.is_special_event && (
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+                    <p className="font-semibold mb-2">ℹ️ Wydarzenia specjalne:</p>
+                    <ul className="list-disc list-inside space-y-1">
+                      <li>Nie wymagają przypisanego trenera</li>
+                      <li>Zapisy otwarte od razu po dodaniu do bazy</li>
+                      <li>Obecność nie jest sprawdzana (brak oznaczeń uczestnictwa)</li>
+                      <li>Idealne dla wycieczek, zawodów, spływów kajakowych itp.</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+
               {/* Zajęcia cykliczne */}
               <div className="border-t-2 border-purple-200 pt-6">
                 <div className="flex items-center gap-3 mb-4">
@@ -574,9 +613,11 @@ const AdminActivitiesPage = () => {
                     checked={formData.is_recurring || false}
                     onChange={(e) => setFormData({ ...formData, is_recurring: e.target.checked })}
                     className="h-5 w-5 text-purple-600 rounded"
+                    disabled={formData.is_special_event}
                   />
-                  <label htmlFor="is_recurring" className="text-sm font-semibold text-gray-700">
+                  <label htmlFor="is_recurring" className={`text-sm font-semibold ${formData.is_special_event ? 'text-gray-400' : 'text-gray-700'}`}>
                     🔄 Zajęcia cykliczne (powtarzające się)
+                    {formData.is_special_event && <span className="text-xs ml-2">(wyłączone dla wydarzeń specjalnych)</span>}
                   </label>
                 </div>
 

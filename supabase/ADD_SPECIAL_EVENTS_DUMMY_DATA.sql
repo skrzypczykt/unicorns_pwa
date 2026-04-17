@@ -5,33 +5,15 @@
 DO $$
 DECLARE
   special_events_type_id UUID;
-  admin_user_id UUID;
 BEGIN
   -- Get the activity type ID
   SELECT id INTO special_events_type_id
   FROM activity_types
   WHERE name = 'Wydarzenia specjalne';
 
-  -- Get an admin user as trainer (fallback to first user if no admin)
-  SELECT id INTO admin_user_id
-  FROM users
-  WHERE role = 'admin'
-  LIMIT 1;
-
-  -- If no admin, use first user
-  IF admin_user_id IS NULL THEN
-    SELECT id INTO admin_user_id
-    FROM users
-    LIMIT 1;
-  END IF;
-
   -- Verify we have the necessary data
   IF special_events_type_id IS NULL THEN
     RAISE EXCEPTION 'Activity type "Wydarzenia specjalne" not found. Run migration 014 first!';
-  END IF;
-
-  IF admin_user_id IS NULL THEN
-    RAISE EXCEPTION 'No users found in database. Create at least one user first!';
   END IF;
 
   -- 1. Spływ kajakowy - 3-dniowe wydarzenie (czerwiec 2026)
@@ -48,7 +30,6 @@ BEGIN
     status,
     cancellation_hours,
     is_special_event,
-    registration_opens_at,
     registration_closes_at
   ) VALUES (
     'Spływ kajakowy - Krutynia 2026',
@@ -59,7 +40,7 @@ BEGIN
     E'💪 Poziom: dla każdego (początkujący mile widziani!)\n\n' ||
     E'Zapisz się szybko - ograniczona liczba miejsc!',
     special_events_type_id,
-    admin_user_id,
+    NULL,  -- Brak trenera dla wydarzeń specjalnych
     '2026-06-12 09:00:00+02',  -- Start: 12 czerwca 2026, 9:00
     4320,  -- 3 dni = 72 godziny = 4320 minut
     30,    -- Max 30 uczestników
@@ -68,8 +49,7 @@ BEGIN
     'scheduled',
     168,   -- Można anulować do 7 dni przed (168 godzin)
     true,  -- is_special_event
-    '2026-04-17 00:00:00+02',  -- Zapisy otwarte od teraz
-    '2026-06-05 23:59:59+02'   -- Zapisy do 5 czerwca
+    '2026-06-05 23:59:59+02'   -- Zapisy do 5 czerwca (brak registration_opens_at - zapisy od razu)
   )
   ON CONFLICT DO NOTHING;
 
@@ -87,7 +67,6 @@ BEGIN
     status,
     cancellation_hours,
     is_special_event,
-    registration_opens_at,
     registration_closes_at
   ) VALUES (
     'Amsterdam Pride & City Trip 2026',
@@ -104,7 +83,7 @@ BEGIN
     E'💰 Cena: 1200 zł (transport, nocleg, śniadania, ubezpieczenie)\n' ||
     E'Wpłata zaliczki 400 zł do 15 maja!',
     special_events_type_id,
-    admin_user_id,
+    NULL,  -- Brak trenera dla wydarzeń specjalnych
     '2026-08-01 06:00:00+02',  -- Wyjazd: 1 sierpnia 2026, 6:00 rano
     5760,  -- 4 dni = 96 godzin = 5760 minut
     40,    -- Max 40 uczestników (pełny autokar)
@@ -113,8 +92,7 @@ BEGIN
     'scheduled',
     720,   -- Można anulować do 30 dni przed (720 godzin)
     true,  -- is_special_event
-    '2026-04-17 00:00:00+02',  -- Zapisy otwarte od teraz
-    '2026-07-15 23:59:59+02'   -- Zapisy do 15 lipca
+    '2026-07-15 23:59:59+02'   -- Zapisy do 15 lipca (brak registration_opens_at - zapisy od razu)
   )
   ON CONFLICT DO NOTHING;
 
@@ -132,7 +110,6 @@ BEGIN
     status,
     cancellation_hours,
     is_special_event,
-    registration_opens_at,
     registration_closes_at
   ) VALUES (
     '🎄 Wigilia Unicorns 2026',
@@ -147,7 +124,7 @@ BEGIN
     E'To najważniejsze wydarzenie roku - nie przegap!\n' ||
     E'Dress code: elegancki lub świąteczny (swetry z reniferami mile widziane! 🦌)',
     special_events_type_id,
-    admin_user_id,
+    NULL,  -- Brak trenera dla wydarzeń specjalnych
     '2026-12-19 18:00:00+01',  -- 19 grudnia 2026, 18:00
     360,   -- 6 godzin (18:00 - 00:00)
     100,   -- Max 100 uczestników
@@ -156,8 +133,7 @@ BEGIN
     'scheduled',
     72,    -- Można anulować do 3 dni przed (72 godziny)
     true,  -- is_special_event
-    '2026-11-01 00:00:00+01',  -- Zapisy od 1 listopada
-    '2026-12-15 23:59:59+01'   -- Zapisy do 15 grudnia
+    '2026-12-15 23:59:59+01'   -- Zapisy do 15 grudnia (brak registration_opens_at - zapisy od razu)
   )
   ON CONFLICT DO NOTHING;
 
