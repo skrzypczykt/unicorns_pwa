@@ -26,15 +26,8 @@ const PublicAboutPage = () => {
             </div>
             <div className="flex gap-2 sm:gap-3 flex-shrink-0">
               <button
-                onClick={() => navigate('/register')}
-                className="px-2 sm:px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-xs sm:text-sm font-semibold transition-all"
-              >
-                <span className="hidden sm:inline">Zarejestruj się</span>
-                <span className="sm:hidden">Rejestracja</span>
-              </button>
-              <button
                 onClick={() => navigate('/login')}
-                className="px-2 sm:px-4 py-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white rounded-lg text-xs sm:text-sm font-semibold transition-all hover:shadow-lg"
+                className="px-3 sm:px-6 py-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white rounded-lg text-xs sm:text-sm font-semibold transition-all hover:shadow-lg"
               >
                 <span className="hidden sm:inline">Zaloguj się</span>
                 <span className="sm:hidden">Login</span>
@@ -122,18 +115,21 @@ const PublicAboutPage = () => {
               Zobacz harmonogram zajęć
             </button>
             <button
-              onClick={() => navigate('/register')}
-              className="px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:scale-105"
-            >
-              Zarejestruj się
-            </button>
-            <button
               onClick={() => navigate('/login')}
-              className="px-6 py-3 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-lg hover:bg-white/30 transition-all"
+              className="px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:scale-105"
             >
               Zaloguj się
             </button>
           </div>
+          <p className="text-sm text-white/80 mt-4 text-center">
+            Nie masz konta?{' '}
+            <a
+              href="/login"
+              className="underline font-semibold hover:text-white transition-colors"
+            >
+              Zaloguj się aby założyć konto
+            </a>
+          </p>
         </div>
 
         {/* Mission */}

@@ -28,6 +28,7 @@ const ActivitiesPage = () => {
   const [registering, setRegistering] = useState<string | null>(null)
   const [userRegistrations, setUserRegistrations] = useState<Set<string>>(new Set())
   const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({})
+  const [showLoginModal, setShowLoginModal] = useState(false)
 
   useEffect(() => {
     fetchActivities()
@@ -104,7 +105,8 @@ const ActivitiesPage = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        alert('Musisz być zalogowany')
+        setShowLoginModal(true)
+        setRegistering(null)
         return
       }
 
@@ -351,6 +353,40 @@ const ActivitiesPage = () => {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">🔐</div>
+              <h3 className="text-2xl font-bold text-purple-600 mb-2">Zaloguj się aby zapisać</h3>
+              <p className="text-gray-600">
+                Aby zapisać się na zajęcia, musisz się zalogować lub założyć konto.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => navigate('/login')}
+                className="w-full px-6 py-3 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold rounded-lg hover:shadow-lg transition-all"
+              >
+                Zaloguj się
+              </button>
+              <button
+                onClick={() => setShowLoginModal(false)}
+                className="w-full px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all"
+              >
+                Anuluj
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 text-center mt-4">
+              💡 Na stronie logowania znajdziesz link do rejestracji nowego konta
+            </p>
+          </div>
         </div>
       )}
     </div>
