@@ -14,53 +14,56 @@ const DashboardPage = ({ profile }: DashboardPageProps) => {
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-8">
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {/* Dashboard Cards */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-4xl">📅</span>
-            <h2 className="text-xl font-bold text-purple-600">Nadchodzące zajęcia</h2>
+      {/* Regular user dashboard cards - hide for external_trainer */}
+      {profile.role !== 'external_trainer' && (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {/* Dashboard Cards */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-4xl">📅</span>
+              <h2 className="text-xl font-bold text-purple-600">Nadchodzące zajęcia</h2>
+            </div>
+            <p className="text-gray-600 mb-4">Zobacz dostępne zajęcia sportowe</p>
+            <button
+              onClick={() => navigate('/activities')}
+              className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            >
+              Przeglądaj zajęcia
+            </button>
           </div>
-          <p className="text-gray-600 mb-4">Zobacz dostępne zajęcia sportowe</p>
-          <button
-            onClick={() => navigate('/activities')}
-            className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
-          >
-            Przeglądaj zajęcia
-          </button>
-        </div>
 
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-4xl">🎯</span>
-            <h2 className="text-xl font-bold text-purple-600">Moje rezerwacje</h2>
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-4xl">🎯</span>
+              <h2 className="text-xl font-bold text-purple-600">Moje rezerwacje</h2>
+            </div>
+            <p className="text-gray-600 mb-4">Sprawdź swoje zapisane zajęcia</p>
+            <button
+              onClick={() => navigate('/my-classes')}
+              className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            >
+              Moje zajęcia
+            </button>
           </div>
-          <p className="text-gray-600 mb-4">Sprawdź swoje zapisane zajęcia</p>
-          <button
-            onClick={() => navigate('/my-classes')}
-            className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
-          >
-            Moje zajęcia
-          </button>
-        </div>
 
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-4xl">👤</span>
-            <h2 className="text-xl font-bold text-purple-600">Profil</h2>
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-4xl">👤</span>
+              <h2 className="text-xl font-bold text-purple-600">Profil</h2>
+            </div>
+            <p className="text-gray-600 mb-4">Zarządzaj swoim kontem</p>
+            <button
+              onClick={() => navigate('/profile')}
+              className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            >
+              Ustawienia
+            </button>
           </div>
-          <p className="text-gray-600 mb-4">Zarządzaj swoim kontem</p>
-          <button
-            onClick={() => navigate('/profile')}
-            className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
-          >
-            Ustawienia
-          </button>
         </div>
-      </div>
+      )}
 
       {/* Role-specific sections */}
-      {profile.role === 'trainer' && (
+      {(profile.role === 'trainer' || profile.role === 'external_trainer') && (
         <div className="mt-8 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-4xl">✅</span>

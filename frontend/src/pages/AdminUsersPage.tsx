@@ -159,22 +159,28 @@ const AdminUsersPage = () => {
                       <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                         user.role === 'admin' ? 'bg-red-100 text-red-700' :
                         user.role === 'trainer' ? 'bg-blue-100 text-blue-700' :
+                        user.role === 'external_trainer' ? 'bg-purple-100 text-purple-700' :
                         'bg-gray-100 text-gray-700'
                       }`}>
-                        {user.role === 'admin' ? 'Administrator' : user.role === 'trainer' ? 'Trener' : 'Użytkownik'}
+                        {user.role === 'admin' ? 'Administrator' :
+                         user.role === 'trainer' ? 'Trener' :
+                         user.role === 'external_trainer' ? 'Trener zewnętrzny' :
+                         'Użytkownik'}
                       </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-500">Saldo</p>
-                    <p className={`text-xl font-bold ${
-                      user.balance > 100 ? 'text-green-600' :
-                      user.balance > 50 ? 'text-yellow-600' :
-                      'text-red-600'
-                    }`}>
-                      {user.balance.toFixed(2)} zł
-                    </p>
-                  </div>
+                  {user.role !== 'external_trainer' && (
+                    <div className="text-right">
+                      <p className="text-xs text-gray-500">Saldo</p>
+                      <p className={`text-xl font-bold ${
+                        user.balance > 100 ? 'text-green-600' :
+                        user.balance > 50 ? 'text-yellow-600' :
+                        'text-red-600'
+                      }`}>
+                        {user.balance.toFixed(2)} zł
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

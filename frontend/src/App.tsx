@@ -131,7 +131,8 @@ function App() {
                     {profile.display_name}
                     <span className="ml-1 sm:ml-2 px-1 sm:px-2 py-1 bg-purple-200 text-purple-700 rounded-full text-xs font-semibold">
                       {profile.role === 'admin' ? 'Admin' :
-                       profile.role === 'trainer' ? 'Trener' : 'User'}
+                       profile.role === 'trainer' ? 'Trener' :
+                       profile.role === 'external_trainer' ? 'Trener zewnętrzny' : 'User'}
                     </span>
                   </p>
                 </div>
@@ -139,18 +140,21 @@ function App() {
 
               {/* Saldo + Wyloguj - Responsywne */}
               <div className="flex items-center gap-1 sm:gap-2 md:gap-4 flex-shrink-0">
-                <div className="text-right">
-                  {/* Ukryj label "Twoje saldo" na mobile */}
-                  <p className="hidden sm:block text-xs text-gray-500">Twoje saldo</p>
-                  <p className={`text-base sm:text-xl md:text-2xl font-bold ${
-                    profile.balance >= 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {profile.balance >= 0 ? '+' : ''}
-                    {profile.balance.toFixed(0)}
-                    <span className="hidden sm:inline"> zł</span>
-                    <span className="ml-1">{profile.balance < 0 ? '💳' : '💰'}</span>
-                  </p>
-                </div>
+                {/* Hide balance for external_trainer - they don't have accounts */}
+                {profile.role !== 'external_trainer' && (
+                  <div className="text-right">
+                    {/* Ukryj label "Twoje saldo" na mobile */}
+                    <p className="hidden sm:block text-xs text-gray-500">Twoje saldo</p>
+                    <p className={`text-base sm:text-xl md:text-2xl font-bold ${
+                      profile.balance >= 0 ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {profile.balance >= 0 ? '+' : ''}
+                      {profile.balance.toFixed(0)}
+                      <span className="hidden sm:inline"> zł</span>
+                      <span className="ml-1">{profile.balance < 0 ? '💳' : '💰'}</span>
+                    </p>
+                  </div>
+                )}
                 <button
                   onClick={handleSignOut}
                   className="px-2 sm:px-3 md:px-4 py-1 sm:py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-xs sm:text-sm font-semibold transition-all"

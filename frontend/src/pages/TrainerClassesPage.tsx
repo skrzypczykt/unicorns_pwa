@@ -25,7 +25,7 @@ interface Registration {
   users: {
     display_name: string
     email: string
-  }
+  } | null
   section_balance?: number
 }
 
@@ -485,11 +485,11 @@ const TrainerClassesPage = () => {
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-purple-600">{reg.users.display_name}</h4>
+                          <h4 className="font-bold text-purple-600">{reg.users?.display_name || 'Nieznany użytkownik'}</h4>
                           {isAttended && <span className="text-green-600 text-sm">✓ Obecny/a</span>}
                           {isNoShow && <span className="text-red-600 text-sm">✗ Nieobecny/a</span>}
                         </div>
-                        <p className="text-sm text-gray-600">{reg.users.email}</p>
+                        <p className="text-sm text-gray-600">{reg.users?.email || 'Brak emaila'}</p>
                         <p className="text-sm mt-1">
                           <span className="text-gray-500">Saldo {selectedActivity.activity_types?.name || 'sekcji'}:</span>{' '}
                           <span className={hasEnough ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
