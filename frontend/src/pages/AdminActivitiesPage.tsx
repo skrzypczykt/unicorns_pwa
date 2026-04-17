@@ -116,6 +116,8 @@ const AdminActivitiesPage = () => {
         recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : 'none'
       }
 
+      console.log('[Admin] Saving activity with data:', dataToSave)
+
       if (editingId) {
         // Update existing activity
         const { error } = await supabase
@@ -134,6 +136,8 @@ const AdminActivitiesPage = () => {
           .single()
 
         if (error) throw error
+
+        console.log('[Admin] Created activity:', newActivity)
 
         // Jeśli cykliczne, generuj instancje
         if (formData.is_recurring && newActivity) {

@@ -24,7 +24,21 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { activityId, activityName, dateTime } = await req.json()
+    // Parse request body with better error handling
+    let body
+    try {
+      const text = await req.text()
+      console.log('Raw request body:', text)
+      body = JSON.parse(text)
+    } catch (e) {
+      console.error('Failed to parse JSON:', e)
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const { activityId, activityName, dateTime } = body
 
     console.log('Received request:', { activityId, activityName, dateTime })
 
