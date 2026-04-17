@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { usePushNotifications } from '../hooks/usePushNotifications'
+import { supabase } from '../supabase/client'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -87,12 +88,18 @@ const InstallPWAPrompt = () => {
     const { outcome } = await deferredPrompt.userChoice
 
     if (outcome === 'accepted') {
-      // Aplikacja zainstalowana - automatycznie włącz powiadomienia
+      // Aplikacja zainstalowana - automatycznie włącz powiadomienia (tylko jeśli zalogowany)
       if (isPushSupported) {
-        // Daj chwilę na zainstalowanie aplikacji, potem włącz powiadomienia
-        setTimeout(async () => {
-          await subscribeToPush()
-        }, 1000)
+        // Sprawdź czy użytkownik jest zalogowany
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (user) {
+          // Daj chwilę na zainstalowanie aplikacji, potem włącz powiadomienia
+          setTimeout(async () => {
+            await subscribeToPush()
+          }, 1000)
+        }
+        // Jeśli niezalogowany - pomiń powiadomienia, użytkownik może włączyć później w profilu
       }
     }
 

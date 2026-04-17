@@ -150,7 +150,11 @@ const AdminActivitiesPage = () => {
         recurrence_end_date: toISOWithTimezone(formData.recurrence_end_date),
         recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : 'none',
         // Wydarzenia specjalne nie mają trenera
-        trainer_id: formData.is_special_event ? null : (formData.trainer_id || null)
+        trainer_id: formData.is_special_event ? null : (formData.trainer_id || null),
+        // Jeśli używamy duration_description, ustaw duration_minutes na 0 (placeholder)
+        duration_minutes: formData.duration_description ? 0 : formData.duration_minutes,
+        // Jeśli duration_description jest puste, wyczyść pole
+        duration_description: formData.duration_description || null
       }
 
       console.log('[Admin] Saving activity with data:', dataToSave)
