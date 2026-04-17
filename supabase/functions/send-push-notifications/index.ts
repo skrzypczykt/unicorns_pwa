@@ -1,10 +1,21 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-// VAPID keys dla Web Push - NALEŻY WYGENEROWAĆ I DODAĆ DO ZMIENNYCH ŚRODOWISKOWYCH
+// Import web-push library for proper VAPID signing
+import webpush from 'npm:web-push@3.6.7'
+
 const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY') ?? ''
 const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY') ?? ''
 const VAPID_SUBJECT = 'mailto:unicorns.lodz@gmail.com'
+
+// Configure web-push
+if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    VAPID_SUBJECT,
+    VAPID_PUBLIC_KEY,
+    VAPID_PRIVATE_KEY
+  )
+}
 
 serve(async (req) => {
   try {
@@ -14,6 +25,8 @@ serve(async (req) => {
     )
 
     const { activityId, activityName, dateTime } = await req.json()
+
+    console.log('Received request:', { activityId, activityName, dateTime })
 
     if (!activityId || !activityName || !dateTime) {
       return new Response(
@@ -25,8 +38,10 @@ serve(async (req) => {
     // Znajdź użytkowników zainteresowanych tym typem zajęć
     const { data: interestedUsers, error: usersError } = await supabase
       .rpc('get_users_interested_in_activity_type', {
-        activity_name_param: activityName.split(' ')[0] // Pierwsze słowo nazwy (np. "Badminton" z "Badminton - Liga")
+        activity_name_param: activityName.split(' ')[0]
       })
+
+    console.log('Interested users:', interestedUsers?.length || 0)
 
     if (usersError) {
       console.error('Error fetching interested users:', usersError)
@@ -47,6 +62,8 @@ serve(async (req) => {
       .from('push_subscriptions')
       .select('*')
       .in('user_id', userIds)
+
+    console.log('Push subscriptions found:', subscriptions?.length || 0)
 
     if (subsError) throw subsError
 
@@ -77,25 +94,22 @@ serve(async (req) => {
       }
     }
 
-    // Wyślij powiadomienia (używając Web Push API)
+    // Wyślij powiadomienia używając web-push library
     const sendResults = await Promise.allSettled(
       subscriptions.map(async (sub) => {
         try {
-          // Web Push wymaga biblioteki - dla uproszczenia używamy fetch
-          // W produkcji użyj biblioteki web-push lub @supabase/functions web-push
-          const response = await fetch(sub.endpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'TTL': '86400',
-              'Authorization': `vapid t=${VAPID_PRIVATE_KEY}, k=${VAPID_PUBLIC_KEY}`
-            },
-            body: JSON.stringify(notification)
-          })
-
-          if (!response.ok) {
-            throw new Error(`Push failed: ${response.status}`)
+          const pushSubscription = {
+            endpoint: sub.endpoint,
+            keys: {
+              p256dh: sub.p256dh,
+              auth: sub.auth
+            }
           }
+
+          await webpush.sendNotification(
+            pushSubscription,
+            JSON.stringify(notification)
+          )
 
           // Loguj wysłane powiadomienie
           await supabase.from('push_notifications_log').insert({
@@ -106,6 +120,7 @@ serve(async (req) => {
             status: 'sent'
           })
 
+          console.log(`Push sent to user ${sub.user_id}`)
           return { success: true, userId: sub.user_id }
         } catch (error: any) {
           console.error(`Failed to send push to user ${sub.user_id}:`, error)
@@ -125,8 +140,10 @@ serve(async (req) => {
       })
     )
 
-    const successCount = sendResults.filter((r) => r.status === 'fulfilled' && r.value.success).length
+    const successCount = sendResults.filter((r) => r.status === 'fulfilled' && (r.value as any).success).length
     const failedCount = sendResults.length - successCount
+
+    console.log(`Push results: ${successCount} sent, ${failedCount} failed`)
 
     return new Response(
       JSON.stringify({
@@ -140,7 +157,7 @@ serve(async (req) => {
   } catch (error: any) {
     console.error('Function error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message, stack: error.stack }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     )
   }
