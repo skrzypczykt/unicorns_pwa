@@ -62,6 +62,7 @@ export interface Database {
           name: string
           description: string | null
           icon_url: string | null
+          whatsapp_group_url: string | null
           created_at: string
         }
         Insert: {
@@ -69,6 +70,7 @@ export interface Database {
           name: string
           description?: string | null
           icon_url?: string | null
+          whatsapp_group_url?: string | null
           created_at?: string
         }
         Update: {
@@ -76,6 +78,7 @@ export interface Database {
           name?: string
           description?: string | null
           icon_url?: string | null
+          whatsapp_group_url?: string | null
           created_at?: string
         }
       }
@@ -94,6 +97,7 @@ export interface Database {
           location: string
           status: 'scheduled' | 'completed' | 'cancelled'
           is_special_event: boolean
+          whatsapp_group_url: string | null
           created_at: string
           updated_at: string
         }
@@ -111,6 +115,7 @@ export interface Database {
           location: string
           status?: 'scheduled' | 'completed' | 'cancelled'
           is_special_event?: boolean
+          whatsapp_group_url?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -128,6 +133,7 @@ export interface Database {
           location?: string
           status?: 'scheduled' | 'completed' | 'cancelled'
           is_special_event?: boolean
+          whatsapp_group_url?: string | null
           created_at?: string
           updated_at?: string
         }

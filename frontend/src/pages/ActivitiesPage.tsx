@@ -19,6 +19,7 @@ interface Activity {
   registration_closes_at?: string | null
   registered_count?: number
   image_url?: string | null
+  whatsapp_group_url?: string | null
 }
 
 const ActivitiesPage = () => {
@@ -191,19 +192,28 @@ const ActivitiesPage = () => {
       // Różne komunikaty w zależności od typu wydarzenia i kosztu
       const isSpecialEvent = specialEvents.some(e => e.id === activityId)
 
+      // Buduj komunikat
+      let message = ''
       if (cost > 0) {
         if (isSpecialEvent) {
-          alert(`✅ Zapisano na wydarzenie! Koszt ${cost.toFixed(2)} zł zostanie pobrany po uczestnictwie. Masz 40 dni na uzupełnienie salda.`)
+          message = `✅ Zapisano na wydarzenie!\n\nKoszt ${cost.toFixed(2)} zł zostanie pobrany po uczestnictwie. Masz 40 dni na uzupełnienie salda.`
         } else {
-          alert(`✅ Zapisano na zajęcia! Koszt ${cost.toFixed(2)} zł zostanie pobrany po oznaczeniu obecności przez trenera. Masz 40 dni na uzupełnienie salda.`)
+          message = `✅ Zapisano na zajęcia!\n\nKoszt ${cost.toFixed(2)} zł zostanie pobrany po oznaczeniu obecności przez trenera. Masz 40 dni na uzupełnienie salda.`
         }
       } else {
         if (isSpecialEvent) {
-          alert('✅ Zapisano na wydarzenie! Udział jest bezpłatny.')
+          message = '✅ Zapisano na wydarzenie!\n\nUdział jest bezpłatny.'
         } else {
-          alert('✅ Zapisano na zajęcia! Udział jest bezpłatny.')
+          message = '✅ Zapisano na zajęcia!\n\nUdział jest bezpłatny.'
         }
       }
+
+      // Dodaj info o WhatsApp jeśli istnieje
+      if (activity.whatsapp_group_url) {
+        message += '\n\n💬 Dołącz do grupy WhatsApp! Poznaj innych uczestników, zadawaj pytania i bądź na bieżąco.'
+      }
+
+      alert(message)
 
       // Refresh registrations and participant counts
       await fetchUserRegistrations()
@@ -432,6 +442,19 @@ const ActivitiesPage = () => {
                          'Zapisz się'}
                       </button>
                     )}
+
+                    {/* WhatsApp Group Link */}
+                    {activity.whatsapp_group_url && (
+                      <a
+                        href={activity.whatsapp_group_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
+                      >
+                        <img src="/whatsapp-icon.svg" alt="" className="h-5 w-5" />
+                        Dołącz do grupy WhatsApp
+                      </a>
+                    )}
                   </div>
                 </div>
               )
@@ -570,6 +593,19 @@ const ActivitiesPage = () => {
                        isAfterClose ? 'Zapisy zamknięte' :
                        'Zapisz się'}
                     </button>
+                  )}
+
+                  {/* WhatsApp Group Link */}
+                  {activity.whatsapp_group_url && (
+                    <a
+                      href={activity.whatsapp_group_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
+                    >
+                      <img src="/whatsapp-icon.svg" alt="" className="h-5 w-5" />
+                      Dołącz do grupy WhatsApp
+                    </a>
                   )}
                 </div>
               </div>

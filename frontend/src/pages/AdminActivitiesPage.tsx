@@ -59,7 +59,8 @@ const AdminActivitiesPage = () => {
     recurrence_pattern: 'none',
     recurrence_end_date: '',
     image_url: '',
-    is_special_event: false
+    is_special_event: false,
+    whatsapp_group_url: ''
   })
 
   useEffect(() => {
@@ -268,7 +269,8 @@ const AdminActivitiesPage = () => {
       recurrence_pattern: activity.recurrence_pattern || 'none',
       recurrence_end_date: toDateTimeLocal(activity.recurrence_end_date),
       image_url: activity.image_url || '',
-      is_special_event: activity.is_special_event || false
+      is_special_event: activity.is_special_event || false,
+      whatsapp_group_url: activity.whatsapp_group_url || ''
     })
     setShowForm(true)
   }
@@ -309,7 +311,8 @@ const AdminActivitiesPage = () => {
       recurrence_pattern: 'none',
       recurrence_end_date: '',
       image_url: '',
-      is_special_event: false
+      is_special_event: false,
+      whatsapp_group_url: ''
     })
     setEditingId(null)
     setShowForm(false)
@@ -540,6 +543,22 @@ const AdminActivitiesPage = () => {
                     />
                   </div>
                 )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Link do grupy WhatsApp
+                </label>
+                <input
+                  type="url"
+                  value={formData.whatsapp_group_url || ''}
+                  onChange={(e) => setFormData({ ...formData, whatsapp_group_url: e.target.value })}
+                  placeholder="https://chat.whatsapp.com/..."
+                  className="w-full px-4 py-2 border-2 border-green-200 rounded-lg focus:border-green-500 focus:outline-none"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  💬 Grupa WhatsApp dla uczestników - ankiety, pytania, integracja. Zachęca do aktywności!
+                </p>
               </div>
 
               <div>
