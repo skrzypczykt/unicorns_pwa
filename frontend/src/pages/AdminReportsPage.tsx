@@ -97,6 +97,28 @@ export default function AdminReportsPage() {
 
         console.log('Edge Function response:', response)
 
+        // Log the raw response for debugging
+        if (response.error?.response) {
+          const errorResponse = response.error.response
+          console.error('Error response status:', errorResponse.status)
+          console.error('Error response headers:', errorResponse.headers)
+
+          // Try to read the response body
+          try {
+            const errorText = await errorResponse.text()
+            console.error('Error response body:', errorText)
+
+            try {
+              const errorJson = JSON.parse(errorText)
+              throw new Error(errorJson.error || errorJson.message || 'Błąd autoryzacji')
+            } catch (parseErr) {
+              throw new Error(errorText || 'Błąd wywołania funkcji')
+            }
+          } catch (readErr) {
+            console.error('Could not read error response:', readErr)
+          }
+        }
+
         if (response.error) {
           console.error('Edge Function error:', response.error)
           throw new Error(response.error.message || 'Błąd wywołania funkcji')
