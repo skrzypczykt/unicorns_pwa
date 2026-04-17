@@ -281,9 +281,13 @@ const AdminActivitiesPage = () => {
       recurrence_end_date: toDateTimeLocal(activity.recurrence_end_date),
       image_url: activity.image_url || '',
       is_special_event: activity.is_special_event || false,
-      whatsapp_group_url: activity.whatsapp_group_url || ''
+      whatsapp_group_url: activity.whatsapp_group_url || '',
+      send_notification: false
     })
     setShowForm(true)
+
+    // Przewiń na górę strony do formularza
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleCancel = async (activityId: string) => {
@@ -388,7 +392,11 @@ const AdminActivitiesPage = () => {
         <div className="flex gap-2">
           {!showForm && (
             <button
-              onClick={() => setShowForm(true)}
+              onClick={() => {
+                setShowForm(true)
+                // Przewiń na górę strony do formularza
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
               className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
             >
               + Dodaj zajęcia
