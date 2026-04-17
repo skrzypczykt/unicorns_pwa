@@ -2,7 +2,7 @@
 
 [build]
   # Build command - runs in the frontend directory
-  command = "pnpm install && pnpm run build"
+  command = "rm -rf node_modules && pnpm install && pnpm run build"
 
   # Directory to publish - Vite outputs to 'dist'
   publish = "dist"
