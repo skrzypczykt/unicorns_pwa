@@ -15,8 +15,8 @@ const DashboardPage = ({ profile }: DashboardPageProps) => {
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-8">
-      {/* Regular user dashboard cards - hide for external_trainer and admin */}
-      {profile.role !== 'external_trainer' && profile.role !== 'admin' && (
+      {/* Regular user dashboard cards - hide for external_trainer only */}
+      {profile.role !== 'external_trainer' && (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Dashboard Cards */}
           <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all">
@@ -80,7 +80,7 @@ const DashboardPage = ({ profile }: DashboardPageProps) => {
       )}
 
       {/* Role-specific sections */}
-      {(profile.role === 'trainer' || profile.role === 'external_trainer') && (
+      {(profile.role === 'trainer' || profile.role === 'external_trainer' || profile.role === 'admin') && (
         <div className="mt-8 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-4xl">✅</span>

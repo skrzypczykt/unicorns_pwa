@@ -9,6 +9,10 @@ interface Member {
   membership_fee_plan: 'monthly' | 'yearly'
   last_membership_charge: string | null
   balance: number
+  membership_fee_exempt: boolean
+  exemption_reason: string | null
+  exemption_granted_by: string | null
+  exemption_granted_at: string | null
 }
 
 const AdminMemberFeesPage = () => {
@@ -21,6 +25,13 @@ const AdminMemberFeesPage = () => {
   // Filters
   const [planFilter, setPlanFilter] = useState<'all' | 'monthly' | 'yearly'>('all')
   const [balanceFilter, setBalanceFilter] = useState<'all' | 'positive' | 'negative'>('all')
+
+  // Exemption modal
+  const [exemptionModal, setExemptionModal] = useState<{
+    userId: string
+    userName: string
+  } | null>(null)
+  const [exemptionData, setExemptionData] = useState({ reason: '' })
 
   useEffect(() => {
     checkAdminAndFetchMembers()
@@ -77,7 +88,7 @@ const AdminMemberFeesPage = () => {
       // Fetch all association members
       const { data: usersData, error: usersError } = await supabase
         .from('users')
-        .select('id, display_name, email, membership_fee_plan, last_membership_charge')
+        .select('id, display_name, email, membership_fee_plan, last_membership_charge, membership_fee_exempt, exemption_reason, exemption_granted_by, exemption_granted_at')
         .eq('is_association_member', true)
         .order('display_name')
 
@@ -285,12 +296,18 @@ const AdminMemberFeesPage = () => {
   }
 
   const handleChargeAll = async () => {
-    if (!confirm('Czy na pewno chcesz naliczyć składkę WSZYSTKIM członkom zgodnie z ich planami?')) return
+    if (!confirm('Czy na pewno chcesz naliczyć składkę WSZYSTKIM członkom (oprócz zwolnionych)?')) return
 
     let successCount = 0
     let errorCount = 0
+    let skippedCount = 0
 
     for (const member of members) {
+      // Skip exempt members
+      if (member.membership_fee_exempt) {
+        skippedCount++
+        continue
+      }
       try {
         const fee = member.membership_fee_plan === 'monthly' ? -15.00 : -160.00
         const description = member.membership_fee_plan === 'monthly' ? 'Składka miesięczna' : 'Składka roczna'
@@ -349,8 +366,83 @@ const AdminMemberFeesPage = () => {
       }
     }
 
-    alert(`✅ Naliczono składki: ${successCount} udanych, ${errorCount} błędów`)
+    alert(`✅ Naliczono składki: ${successCount} udanych${skippedCount > 0 ? `, ${skippedCount} pominiętych (zwolnieni)` : ''}${errorCount > 0 ? `, ${errorCount} błędów` : ''}`)
     await fetchMembers()
+  }
+
+  const handleGrantExemption = async () => {
+    if (!exemptionModal || !exemptionData.reason.trim()) {
+      alert('❌ Powód zwolnienia jest wymagany')
+      return
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      await supabase
+        .from('users')
+        .update({
+          membership_fee_exempt: true,
+          exemption_reason: exemptionData.reason,
+          exemption_granted_by: user.id,
+          exemption_granted_at: new Date().toISOString()
+        })
+        .eq('id', exemptionModal.userId)
+
+      // Opcjonalnie: zapisz w historii
+      await supabase
+        .from('membership_exemption_history')
+        .insert({
+          user_id: exemptionModal.userId,
+          action: 'granted',
+          reason: exemptionData.reason,
+          granted_by: user.id
+        })
+
+      alert('✅ Członek zwolniony ze składki')
+      setExemptionModal(null)
+      setExemptionData({ reason: '' })
+      await fetchMembers()
+    } catch (error: any) {
+      console.error('Error granting exemption:', error)
+      alert('❌ Błąd: ' + error.message)
+    }
+  }
+
+  const revokeExemption = async (userId: string) => {
+    if (!confirm('Na pewno chcesz cofnąć zwolnienie ze składki?')) return
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      await supabase
+        .from('users')
+        .update({
+          membership_fee_exempt: false,
+          exemption_reason: null,
+          exemption_granted_by: null,
+          exemption_granted_at: null
+        })
+        .eq('id', userId)
+
+      // Opcjonalnie: zapisz w historii
+      await supabase
+        .from('membership_exemption_history')
+        .insert({
+          user_id: userId,
+          action: 'revoked',
+          reason: null,
+          granted_by: user.id
+        })
+
+      alert('✅ Zwolnienie cofnięte')
+      await fetchMembers()
+    } catch (error: any) {
+      console.error('Error revoking exemption:', error)
+      alert('❌ Błąd: ' + error.message)
+    }
   }
 
   const formatDate = (dateString: string | null) => {
@@ -465,6 +557,7 @@ const AdminMemberFeesPage = () => {
               <thead className="bg-purple-100">
                 <tr>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-purple-800">Członek</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-purple-800">Status</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-purple-800">Plan</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-purple-800">Saldo</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-purple-800">Ostatnie naliczenie</th>
@@ -474,7 +567,7 @@ const AdminMemberFeesPage = () => {
               <tbody className="divide-y divide-gray-200">
                 {filteredMembers.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-12 text-center text-gray-600">
+                    <td colSpan={6} className="px-4 py-12 text-center text-gray-600">
                       Brak członków spełniających kryteria
                     </td>
                   </tr>
@@ -486,6 +579,25 @@ const AdminMemberFeesPage = () => {
                           <p className="font-semibold text-gray-800">{member.display_name}</p>
                           <p className="text-xs text-gray-500">{member.email}</p>
                         </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        {member.membership_fee_exempt ? (
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                              ✅ Zwolniony
+                            </span>
+                            {member.exemption_reason && (
+                              <span
+                                className="text-xs text-gray-500 cursor-help"
+                                title={member.exemption_reason}
+                              >
+                                ({member.exemption_reason.substring(0, 20)}{member.exemption_reason.length > 20 ? '...' : ''})
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-xs">Standardowo</span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <select
@@ -508,11 +620,16 @@ const AdminMemberFeesPage = () => {
                         {formatDate(member.last_membership_charge)}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                           <button
                             onClick={() => handleChargeFee(member.id, member.membership_fee_plan)}
-                            className="px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white text-xs font-semibold rounded transition-all"
-                            title="Nalicz składkę"
+                            disabled={member.membership_fee_exempt}
+                            className={`px-3 py-1 text-xs font-semibold rounded transition-all ${
+                              member.membership_fee_exempt
+                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                : 'bg-purple-500 hover:bg-purple-600 text-white'
+                            }`}
+                            title={member.membership_fee_exempt ? 'Członek zwolniony ze składki' : 'Nalicz składkę'}
                           >
                             ⚡ Nalicz
                           </button>
@@ -523,6 +640,23 @@ const AdminMemberFeesPage = () => {
                           >
                             ➕ Wpłata
                           </button>
+                          {member.membership_fee_exempt ? (
+                            <button
+                              onClick={() => revokeExemption(member.id)}
+                              className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold rounded transition-all"
+                              title="Cofnij zwolnienie"
+                            >
+                              🔄 Cofnij
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => setExemptionModal({ userId: member.id, userName: member.display_name })}
+                              className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded transition-all"
+                              title="Zwolnij ze składki"
+                            >
+                              🎯 Zwolnij
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -542,10 +676,60 @@ const AdminMemberFeesPage = () => {
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• <strong>Nalicz</strong> - odejmuje składkę (15 zł lub 160 zł) od salda członka</li>
             <li>• <strong>Wpłata</strong> - dodaje wpłatę do salda członka</li>
-            <li>• <strong>Nalicz wszystkim</strong> - automatycznie nalicza składkę każdemu członkowi zgodnie z jego planem</li>
+            <li>• <strong>Zwolnij</strong> - zwolnienie ze składki (członek nie będzie naliczany automatycznie)</li>
+            <li>• <strong>Nalicz wszystkim</strong> - automatycznie nalicza składkę każdemu członkowi zgodnie z jego planem (oprócz zwolnionych)</li>
             <li>• Zmiana planu będzie uwzględniona przy następnym naliczeniu</li>
           </ul>
         </div>
+
+        {/* Exemption Modal */}
+        {exemptionModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+              <h3 className="text-xl font-bold text-purple-600 mb-4">
+                🎯 Zwolnij członka ze składki
+              </h3>
+              <p className="text-gray-700 mb-4">
+                Zwalniasz: <strong>{exemptionModal.userName}</strong>
+              </p>
+
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Powód zwolnienia *
+                </label>
+                <input
+                  type="text"
+                  value={exemptionData.reason}
+                  onChange={(e) => setExemptionData({ reason: e.target.value })}
+                  placeholder="np. Zarząd, Wolontariat, Sytuacja finansowa"
+                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
+                  autoFocus
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Powód będzie widoczny w panelu członków
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleGrantExemption}
+                  className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition-all"
+                >
+                  Potwierdź zwolnienie
+                </button>
+                <button
+                  onClick={() => {
+                    setExemptionModal(null)
+                    setExemptionData({ reason: '' })
+                  }}
+                  className="px-4 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
+                >
+                  Anuluj
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

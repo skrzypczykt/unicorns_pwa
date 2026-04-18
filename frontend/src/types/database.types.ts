@@ -28,6 +28,10 @@ export interface Database {
           sports_terms_accepted_date: string | null
           membership_fee_plan: 'monthly' | 'yearly'
           last_membership_charge: string | null
+          membership_fee_exempt: boolean
+          exemption_reason: string | null
+          exemption_granted_by: string | null
+          exemption_granted_at: string | null
         }
         Insert: {
           id: string
@@ -44,6 +48,10 @@ export interface Database {
           sports_terms_accepted_date?: string | null
           membership_fee_plan?: 'monthly' | 'yearly'
           last_membership_charge?: string | null
+          membership_fee_exempt?: boolean
+          exemption_reason?: string | null
+          exemption_granted_by?: string | null
+          exemption_granted_at?: string | null
         }
         Update: {
           id?: string
@@ -60,6 +68,10 @@ export interface Database {
           sports_terms_accepted_date?: string | null
           membership_fee_plan?: 'monthly' | 'yearly'
           last_membership_charge?: string | null
+          membership_fee_exempt?: boolean
+          exemption_reason?: string | null
+          exemption_granted_by?: string | null
+          exemption_granted_at?: string | null
         }
       }
       activity_types: {
@@ -436,6 +448,27 @@ export interface Database {
         }
         Update: {
           // Votes are immutable - no updates allowed
+        }
+      }
+      membership_exemption_history: {
+        Row: {
+          id: string
+          user_id: string
+          action: 'granted' | 'revoked' | 'updated'
+          reason: string | null
+          granted_by: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          action: 'granted' | 'revoked' | 'updated'
+          reason?: string | null
+          granted_by: string
+          created_at?: string
+        }
+        Update: {
+          // History is immutable - no updates allowed
         }
       }
     }

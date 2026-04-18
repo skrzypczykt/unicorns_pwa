@@ -514,7 +514,7 @@ const TrainerClassesPage = () => {
                         </div>
                       </div>
                       <button className="mt-4 w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:shadow-lg transition-all">
-                        {upcoming ? 'Oznacz obecność →' : 'Zobacz listę →'}
+                        {upcoming ? 'Zobacz listę zapisanych →' : 'Weryfikuj obecność →'}
                       </button>
                     </div>
                   )
