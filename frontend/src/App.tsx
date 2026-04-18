@@ -180,7 +180,8 @@ function App() {
 
         {/* Routes */}
         <Routes>
-          <Route path="/" element={<DashboardPage profile={profile} />} />
+          <Route path="/" element={<PublicAboutPage user={user} profile={profile} onSignOut={handleSignOut} />} />
+          <Route path="/dashboard" element={<DashboardPage profile={profile} />} />
           <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/my-classes" element={<MyClassesPage />} />
           <Route path="/profile" element={<ProfilePage />} />

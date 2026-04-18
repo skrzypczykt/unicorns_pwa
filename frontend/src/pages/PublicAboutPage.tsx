@@ -3,9 +3,22 @@ import Timeline from '../components/about/Timeline'
 import InstagramFeed from '../components/social/InstagramFeed'
 import { useMainWhatsAppChannel } from '../hooks/useMainWhatsAppChannel'
 
-const PublicAboutPage = () => {
+interface PublicAboutPageProps {
+  user?: any
+  profile?: {
+    display_name: string
+    role: string
+    balance: number
+    email: string
+    is_association_member?: boolean
+  }
+  onSignOut?: () => void
+}
+
+const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => {
   const navigate = useNavigate()
   const { whatsappUrl } = useMainWhatsAppChannel()
+  const isLoggedIn = !!user && !!profile
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200">
@@ -27,13 +40,23 @@ const PublicAboutPage = () => {
               </div>
             </div>
             <div className="flex gap-2 sm:gap-3 flex-shrink-0">
-              <button
-                onClick={() => navigate('/login')}
-                className="px-3 sm:px-6 py-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white rounded-lg text-xs sm:text-sm font-semibold transition-all hover:shadow-lg"
-              >
-                <span className="hidden sm:inline">Zaloguj się</span>
-                <span className="sm:hidden">Login</span>
-              </button>
+              {isLoggedIn ? (
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="px-3 sm:px-6 py-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white rounded-lg text-xs sm:text-sm font-semibold transition-all hover:shadow-lg"
+                >
+                  <span className="hidden sm:inline">🏠 Strefa użytkownika</span>
+                  <span className="sm:hidden">🏠</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate('/login')}
+                  className="px-3 sm:px-6 py-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white rounded-lg text-xs sm:text-sm font-semibold transition-all hover:shadow-lg"
+                >
+                  <span className="hidden sm:inline">Zaloguj się</span>
+                  <span className="sm:hidden">Login</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -116,22 +139,34 @@ const PublicAboutPage = () => {
               <span>🗓️</span>
               Zobacz harmonogram zajęć i wydarzeń
             </button>
-            <button
-              onClick={() => navigate('/login')}
-              className="px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:scale-105"
-            >
-              Zaloguj się
-            </button>
+            {isLoggedIn ? (
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
+              >
+                <span>🏠</span>
+                Strefa użytkownika
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate('/login')}
+                className="px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:scale-105"
+              >
+                Zaloguj się
+              </button>
+            )}
           </div>
-          <p className="text-sm text-white/80 mt-4 text-center">
-            Nie masz konta?{' '}
-            <a
-              href="/login"
-              className="underline font-semibold hover:text-white transition-colors"
-            >
-              Zaloguj się aby założyć konto
-            </a>
-          </p>
+          {!isLoggedIn && (
+            <p className="text-sm text-white/80 mt-4 text-center">
+              Nie masz konta?{' '}
+              <a
+                href="/login"
+                className="underline font-semibold hover:text-white transition-colors"
+              >
+                Zaloguj się aby założyć konto
+              </a>
+            </p>
+          )}
         </div>
 
         {/* Mission */}
@@ -323,6 +358,16 @@ const PublicAboutPage = () => {
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-xs text-gray-500">© 2026 Stowarzyszenie Unicorns. Wszystkie prawa zastrzeżone.</p>
           <p className="text-xs text-gray-500 mt-1">Aplikacja stworzona z magią jednorożców 🦄🌈✨</p>
+
+          {/* Wyloguj - ukryty na dole dla zalogowanych */}
+          {isLoggedIn && onSignOut && (
+            <button
+              onClick={onSignOut}
+              className="mt-4 text-xs text-gray-400 hover:text-gray-600 underline transition-colors"
+            >
+              Wyloguj się
+            </button>
+          )}
         </div>
       </footer>
     </div>
