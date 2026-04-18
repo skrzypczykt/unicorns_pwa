@@ -29,6 +29,7 @@ interface Activity {
   whatsapp_group_url?: string | null
   requires_immediate_payment?: boolean
   payment_deadline_hours?: number
+  requires_registration?: boolean
 }
 
 interface Trainer {
@@ -75,7 +76,8 @@ const AdminActivitiesPage = () => {
     whatsapp_group_url: '',
     send_notification: false,
     requires_immediate_payment: false,
-    payment_deadline_hours: 48
+    payment_deadline_hours: 48,
+    requires_registration: true
   })
 
   useEffect(() => {
@@ -349,7 +351,8 @@ const AdminActivitiesPage = () => {
       whatsapp_group_url: activity.whatsapp_group_url || '',
       send_notification: false,
       requires_immediate_payment: (activity as any).requires_immediate_payment || false,
-      payment_deadline_hours: (activity as any).payment_deadline_hours || 48
+      payment_deadline_hours: (activity as any).payment_deadline_hours || 48,
+      requires_registration: (activity as any).requires_registration !== undefined ? (activity as any).requires_registration : true
     })
     setShowForm(true)
 
@@ -399,7 +402,8 @@ const AdminActivitiesPage = () => {
       whatsapp_group_url: '',
       send_notification: false,
       requires_immediate_payment: false,
-      payment_deadline_hours: 48
+      payment_deadline_hours: 48,
+      requires_registration: true
     })
     setEditingId(null)
     setShowForm(false)
@@ -822,9 +826,10 @@ const AdminActivitiesPage = () => {
                 )}
               </div>
 
-              {/* Ustawienia płatności */}
-              <div className="border-t-2 border-green-200 pt-6">
-                <h3 className="text-lg font-semibold text-green-700 mb-4">💳 Ustawienia płatności</h3>
+              {/* Ustawienia płatności - tylko dla wydarzeń płatnych */}
+              {formData.cost > 0 && (
+                <div className="border-t-2 border-green-200 pt-6">
+                  <h3 className="text-lg font-semibold text-green-700 mb-4">💳 Ustawienia płatności</h3>
 
                 <div className="flex items-center gap-3 mb-4">
                   <input
@@ -887,7 +892,50 @@ const AdminActivitiesPage = () => {
                     </div>
                   </div>
                 )}
-              </div>
+                </div>
+              )}
+
+              {/* Wydarzenia bezpłatne - opcja "Nie wymaga zapisu" */}
+              {formData.cost === 0 && (
+                <div className="border-t-2 border-blue-200 pt-6">
+                  <h3 className="text-lg font-semibold text-blue-700 mb-4">🎟️ Wydarzenie bezpłatne</h3>
+
+                  <div className="flex items-center gap-3 mb-4">
+                    <input
+                      type="checkbox"
+                      id="requires_registration"
+                      checked={formData.requires_registration}
+                      onChange={(e) => setFormData({ ...formData, requires_registration: e.target.checked })}
+                      className="h-5 w-5 text-blue-600 rounded"
+                    />
+                    <label htmlFor="requires_registration" className="text-sm font-semibold text-gray-700">
+                      📝 Wymaga zapisu (rejestracji)
+                    </label>
+                  </div>
+
+                  {formData.requires_registration ? (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+                      <p className="font-semibold mb-2">✅ Rejestracja wymagana</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>Użytkownicy muszą się zapisać</li>
+                        <li>Widoczny przycisk "Zapisz się"</li>
+                        <li>Można anulować zapis (wg. ustawionego terminu)</li>
+                        <li>Liczba miejsc jest kontrolowana</li>
+                      </ul>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
+                      <p className="font-semibold mb-2">🎉 Wstęp wolny - bez zapisu</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>Wydarzenie widoczne na liście</li>
+                        <li>BRAK przycisku "Zapisz się"</li>
+                        <li>Info: "Wstęp wolny, nie wymaga rejestracji"</li>
+                        <li>Idealne dla: dzień otwarty, pokazy, koncerty</li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Zajęcia cykliczne */}
               <div className="border-t-2 border-purple-200 pt-6">
