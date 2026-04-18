@@ -11,7 +11,7 @@ interface Activity {
   date_time: string
   duration_minutes: number
   duration_description?: string | null
-  max_participants: number
+  max_participants: number | null
   cost: number
   location: string
   trainer_id: string
@@ -464,7 +464,8 @@ const ActivitiesPage = () => {
               const isProcessing = registering === activity.id
               const { isOpen, isBeforeOpen, isAfterClose, opensAt } = checkRegistrationWindow(activity)
               const registered = participantCounts[activity.id] || 0
-              const isFull = registered >= activity.max_participants
+              const isFull = activity.max_participants !== null && registered >= activity.max_participants
+              const hasLimit = activity.max_participants !== null && activity.requires_registration !== false
 
               return (
                 <div
@@ -514,9 +515,9 @@ const ActivitiesPage = () => {
                       <div className="flex items-center gap-2 text-sm">
                         <span>👥</span>
                         <span>
-                          {(() => {
+                          {hasLimit ? (() => {
                             const registered = participantCounts[activity.id] || 0
-                            const available = activity.max_participants - registered
+                            const available = activity.max_participants! - registered
                             const isFull = available <= 0
                             const isAlmostFull = available <= 3 && available > 0
 
@@ -526,7 +527,9 @@ const ActivitiesPage = () => {
                                 {isFull ? ' - PEŁNE' : ` (${available} ${available === 1 ? 'wolne miejsce' : 'wolnych miejsc'})`}
                               </span>
                             )
-                          })()}
+                          })() : (
+                            <span className="text-green-600 font-semibold">♾️ Nielimitowane miejsca</span>
+                          )}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm font-bold text-purple-600">
@@ -635,7 +638,8 @@ const ActivitiesPage = () => {
             const isProcessing = registering === activity.id
             const { isOpen, isBeforeOpen, isAfterClose, opensAt } = checkRegistrationWindow(activity)
             const registered = participantCounts[activity.id] || 0
-            const isFull = registered >= activity.max_participants
+            const isFull = activity.max_participants !== null && registered >= activity.max_participants
+            const hasLimit = activity.max_participants !== null && activity.requires_registration !== false
 
             return (
               <div
@@ -679,9 +683,9 @@ const ActivitiesPage = () => {
                   <div className="flex items-center gap-2 text-sm">
                     <span>👥</span>
                     <span>
-                      {(() => {
+                      {hasLimit ? (() => {
                         const registered = participantCounts[activity.id] || 0
-                        const available = activity.max_participants - registered
+                        const available = activity.max_participants! - registered
                         const isFull = available <= 0
                         const isAlmostFull = available <= 3 && available > 0
 
@@ -691,7 +695,9 @@ const ActivitiesPage = () => {
                             {isFull ? ' - PEŁNE' : ` (${available} ${available === 1 ? 'wolne miejsce' : 'wolnych miejsc'})`}
                           </span>
                         )
-                      })()}
+                      })() : (
+                        <span className="text-green-600 font-semibold">♾️ Nielimitowane miejsca</span>
+                      )}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm font-bold text-purple-600">

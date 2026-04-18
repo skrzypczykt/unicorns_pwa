@@ -10,7 +10,7 @@ interface Activity {
   date_time: string
   duration_minutes: number
   duration_description?: string | null
-  max_participants: number
+  max_participants: number | null
   cost: number
   location: string
   trainer_id: string
@@ -60,6 +60,7 @@ const AdminActivitiesPage = () => {
     duration_minutes: 60,
     duration_description: '',
     max_participants: 15,
+    unlimited_participants: false,
     cost: 30,
     location: '',
     trainer_id: '',
@@ -182,8 +183,8 @@ const AdminActivitiesPage = () => {
       }
 
       // Konwertuj puste stringi na null i datetime-local na ISO z timezone
-      // Wykluczamy send_notification - to tylko parametr UI, nie kolumna w bazie
-      const { send_notification, ...formDataWithoutNotification } = formData
+      // Wykluczamy send_notification i unlimited_participants - to tylko parametry UI, nie kolumny w bazie
+      const { send_notification, unlimited_participants, ...formDataWithoutNotification } = formData
 
       const dataToSave = {
         ...formDataWithoutNotification,
@@ -198,7 +199,9 @@ const AdminActivitiesPage = () => {
         // Jeśli używamy duration_description, ustaw duration_minutes na 0 (placeholder)
         duration_minutes: formData.duration_description ? 0 : formData.duration_minutes,
         // Jeśli duration_description jest puste, wyczyść pole
-        duration_description: formData.duration_description || null
+        duration_description: formData.duration_description || null,
+        // Nielimitowane miejsca = NULL, bez zapisu również NULL
+        max_participants: (formData.unlimited_participants || !formData.requires_registration) ? null : formData.max_participants
       }
 
       console.log('[Admin] Saving activity with data:', dataToSave)
@@ -334,7 +337,8 @@ const AdminActivitiesPage = () => {
       date_time: toDateTimeLocal(activity.date_time),
       duration_minutes: activity.duration_minutes,
       duration_description: activity.duration_description || '',
-      max_participants: activity.max_participants,
+      max_participants: activity.max_participants || 15,
+      unlimited_participants: activity.max_participants === null,
       cost: activity.cost,
       location: activity.location,
       trainer_id: activity.trainer_id,
@@ -386,6 +390,7 @@ const AdminActivitiesPage = () => {
       duration_minutes: 60,
       duration_description: '',
       max_participants: 15,
+      unlimited_participants: false,
       cost: 30,
       location: '',
       trainer_id: '',
@@ -622,16 +627,43 @@ const AdminActivitiesPage = () => {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Maksymalna liczba uczestników *
+                  Maksymalna liczba uczestników {!formData.requires_registration && !formData.unlimited_participants && '*'}
                 </label>
-                <input
-                  type="number"
-                  value={formData.max_participants}
-                  onChange={(e) => setFormData({ ...formData, max_participants: parseInt(e.target.value) })}
-                  required
-                  min="1"
-                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                />
+
+                <div className="flex items-center gap-3 mb-2">
+                  <input
+                    type="checkbox"
+                    id="unlimited_participants"
+                    checked={formData.unlimited_participants || !formData.requires_registration}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      unlimited_participants: e.target.checked,
+                      max_participants: e.target.checked ? null : 15
+                    })}
+                    disabled={!formData.requires_registration}
+                    className="h-4 w-4 text-purple-600 rounded"
+                  />
+                  <label htmlFor="unlimited_participants" className="text-sm text-gray-700">
+                    ♾️ Bez limitu miejsc (nielimitowane)
+                  </label>
+                </div>
+
+                {formData.requires_registration && !formData.unlimited_participants && (
+                  <input
+                    type="number"
+                    value={formData.max_participants || 15}
+                    onChange={(e) => setFormData({ ...formData, max_participants: parseInt(e.target.value) || 15 })}
+                    required
+                    min="1"
+                    className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                  />
+                )}
+
+                {!formData.requires_registration && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    ⚠️ Wydarzenie nie wymaga zapisu - limit miejsc nieaktywny
+                  </p>
+                )}
               </div>
 
               <div>
