@@ -9,6 +9,9 @@ interface Registration {
   can_cancel_until: string
   registered_at: string
   payment_processed: boolean
+  payment_status: 'paid' | 'pending' | 'overdue'
+  payment_due_date: string | null
+  paid_at: string | null
   activity: {
     name: string
     description: string
@@ -59,6 +62,9 @@ const MyClassesPage = () => {
           can_cancel_until,
           registered_at,
           payment_processed,
+          payment_status,
+          payment_due_date,
+          paid_at,
           activities (
             name,
             description,
@@ -91,6 +97,18 @@ const MyClassesPage = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handlePayNow = async (registrationId: string, cost: number) => {
+    alert('💳 Moduł płatności BLIK jest w wersji testowej i zostanie wkrótce aktywowany.\n\n' +
+          'Po integracji z systemem płatności będziesz mógł opłacić zajęcia bezpośrednio tutaj.\n\n' +
+          `Kwota do zapłaty: ${cost.toFixed(2)} zł`)
+
+    // TODO: Po integracji BLIK:
+    // 1. Pokaż BLIK modal z kodem
+    // 2. Po udanej płatności wywołaj Edge Function process-payment
+    // 3. Zaktualizuj payment_status na 'paid' i ustaw paid_at
+    // 4. Odśwież listę rejestracji
   }
 
   const handleCancel = async (registrationId: string, canCancelUntil: string, paymentProcessed: boolean) => {
@@ -226,6 +244,21 @@ const MyClassesPage = () => {
                           ✓ Opłacone
                         </span>
                       )}
+                      {reg.payment_status === 'paid' && (
+                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                          ✅ Opłacone
+                        </span>
+                      )}
+                      {reg.payment_status === 'pending' && (
+                        <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">
+                          ⏳ Do zapłaty
+                        </span>
+                      )}
+                      {reg.payment_status === 'overdue' && (
+                        <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
+                          ❗ Przeterminowane
+                        </span>
+                      )}
                     </div>
 
                     <p className="text-gray-600 mb-4 text-sm">{reg.activity.description}</p>
@@ -252,6 +285,21 @@ const MyClassesPage = () => {
                     {reg.status === 'registered' && !reg.payment_processed && (
                       <div className="mt-3 text-xs text-gray-500">
                         <span>⚠️ Możesz anulować do: {formatDate(reg.can_cancel_until)}</span>
+                      </div>
+                    )}
+
+                    {/* Payment Section */}
+                    {reg.status === 'registered' && reg.payment_status !== 'paid' && reg.payment_due_date && (
+                      <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                        <p className="text-sm text-orange-800 mb-2">
+                          ⏰ Termin płatności: {formatDate(reg.payment_due_date)}
+                        </p>
+                        <button
+                          onClick={() => handlePayNow(reg.id, reg.activity.cost)}
+                          className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
+                        >
+                          💳 Opłać teraz
+                        </button>
                       </div>
                     )}
 
