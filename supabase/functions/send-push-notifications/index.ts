@@ -161,10 +161,11 @@ serve(async (req) => {
       )
     }
 
-    // Pobierz szczegóły aktywności (w tym link WhatsApp z fallbackiem do activity_type)
+    // Pobierz szczegóły aktywności (w tym is_special_event i link WhatsApp)
     const { data: activity } = await supabase
       .from('activities')
       .select(`
+        is_special_event,
         whatsapp_group_url,
         activity_types (
           whatsapp_group_url
@@ -182,6 +183,10 @@ serve(async (req) => {
       minute: '2-digit'
     })
 
+    // Rozróżnij tytuł: wydarzenie specjalne vs zwykłe zajęcia
+    const isSpecialEvent = activity?.is_special_event || sendToAll
+    const titlePrefix = isSpecialEvent ? '🎉 Nowe wydarzenie' : '🦄 Nowe zajęcia'
+
     // Dodaj wzmiankę o WhatsApp jeśli dostępna (z fallbackiem do activity_type)
     let bodyText = `📅 ${formattedDate} - Zapisz się teraz!`
     const whatsappLink = activity?.whatsapp_group_url || activity?.activity_types?.whatsapp_group_url
@@ -190,14 +195,15 @@ serve(async (req) => {
     }
 
     const notification = {
-      title: `🦄 Nowe zajęcia: ${activityName}`,
+      title: `${titlePrefix}: ${activityName}`,
       body: bodyText,
       icon: '/unicorns-logo.png',
       badge: '/badge-icon.svg',
       data: {
         url: '/activities',
         activityId,
-        hasWhatsApp: !!whatsappLink
+        hasWhatsApp: !!whatsappLink,
+        isSpecialEvent: isSpecialEvent
       }
     }
 
