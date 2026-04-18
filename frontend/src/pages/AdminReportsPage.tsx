@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase/client'
-import { AccountingReportRow, generateAccountingCSV, downloadCSV } from '../utils/csvExport'
+import type { AccountingReportRow } from '../utils/csvExport'
+import { generateAccountingCSV, downloadCSV } from '../utils/csvExport'
 
 interface ActivityType {
   id: string

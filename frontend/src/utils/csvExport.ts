@@ -1,4 +1,4 @@
-export interface AccountingReportRow {
+type AccountingReportRow = {
   user_id: string
   user_name: string
   email: string
@@ -11,6 +11,8 @@ export interface AccountingReportRow {
   classes_total: number
   debt: number
 }
+
+export type { AccountingReportRow }
 
 export function generateAccountingCSV(data: AccountingReportRow[]): string {
   const headers = [
