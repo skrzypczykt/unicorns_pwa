@@ -359,11 +359,25 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
           <p className="text-xs text-gray-500">© 2026 Stowarzyszenie Unicorns. Wszystkie prawa zastrzeżone.</p>
           <p className="text-xs text-gray-500 mt-1">Aplikacja stworzona z magią jednorożców 🦄🌈✨</p>
 
+          {/* Przycisk instalacji PWA */}
+          <button
+            onClick={() => {
+              // Wyczyść dismissed localStorage żeby pokazać prompt ponownie
+              localStorage.removeItem('pwa-install-dismissed-ios')
+              localStorage.removeItem('pwa-install-dismissed')
+              // Odśwież stronę żeby prompt się pojawił
+              window.location.reload()
+            }}
+            className="mt-4 text-xs text-purple-400 hover:text-purple-600 underline transition-colors"
+          >
+            📱 Zainstaluj aplikację
+          </button>
+
           {/* Wyloguj - ukryty na dole dla zalogowanych */}
           {isLoggedIn && onSignOut && (
             <button
               onClick={onSignOut}
-              className="mt-4 text-xs text-gray-400 hover:text-gray-600 underline transition-colors"
+              className="mt-2 text-xs text-gray-400 hover:text-gray-600 underline transition-colors block mx-auto"
             >
               Wyloguj się
             </button>
