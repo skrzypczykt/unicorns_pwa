@@ -55,12 +55,21 @@ const ActivitiesPage = () => {
   } | null>(null)
   const [showCalendarPrompt, setShowCalendarPrompt] = useState(false)
   const [registeredActivity, setRegisteredActivity] = useState<Activity | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
     fetchActivities()
     fetchSpecialEvents()
     fetchUserRegistrations()
     fetchParticipantCounts()
+  }, [])
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setIsLoggedIn(!!user)
+    }
+    checkAuth()
   }, [])
 
   // Helper: Pobierz link WhatsApp z fallback do activity_type
@@ -498,17 +507,6 @@ const ActivitiesPage = () => {
       </div>
     )
   }
-
-  // Check if user is logged in
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setIsLoggedIn(!!user)
-    }
-    checkAuth()
-  }, [])
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
