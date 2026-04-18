@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../supabase/client'
 import { useNavigate } from 'react-router-dom'
 import { getActivityImage } from '../data/activityImages'
+import PaymentChoiceModal from '../components/PaymentChoiceModal'
 
 interface Activity {
   id: string
@@ -21,6 +22,8 @@ interface Activity {
   registered_count?: number
   image_url?: string | null
   whatsapp_group_url?: string | null
+  requires_immediate_payment?: boolean
+  payment_deadline_hours?: number
   activity_types?: {
     whatsapp_group_url?: string | null
   }
@@ -35,6 +38,14 @@ const ActivitiesPage = () => {
   const [userRegistrations, setUserRegistrations] = useState<Set<string>>(new Set())
   const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({})
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [pendingRegistration, setPendingRegistration] = useState<{
+    activityId: string
+    activityName: string
+    cost: number
+    cancellationHours: number
+    requiresImmediate: boolean
+  } | null>(null)
 
   useEffect(() => {
     fetchActivities()
@@ -169,8 +180,53 @@ const ActivitiesPage = () => {
       const activity = allActivities.find(a => a.id === activityId)
       if (!activity) return
 
+      // Jeśli zajęcia wymagają płatności (cost > 0), pokaż modal wyboru
+      if (cost > 0) {
+        setPendingRegistration({
+          activityId,
+          activityName: activity.name,
+          cost,
+          cancellationHours,
+          requiresImmediate: activity.requires_immediate_payment || false
+        })
+        setShowPaymentModal(true)
+        setRegistering(null)
+        return
+      }
+
+      // Bezpłatne zajęcia - zapisz od razu
+      await performRegistration(activityId, cost, cancellationHours, 'paid')
+    } catch (error) {
+      console.error('Error starting registration:', error)
+      alert('Wystąpił błąd podczas zapisu')
+    } finally {
+      setRegistering(null)
+    }
+  }
+
+  const performRegistration = async (
+    activityId: string,
+    cost: number,
+    cancellationHours: number,
+    paymentStatus: 'paid' | 'pending'
+  ) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const allActivities = [...activities, ...specialEvents]
+      const activity = allActivities.find(a => a.id === activityId)
+      if (!activity) return
+
       const activityDate = new Date(activity.date_time)
       const cancellationDeadline = new Date(activityDate.getTime() - (cancellationHours * 60 * 60 * 1000))
+
+      // Calculate payment_due_date
+      let paymentDueDate: string | null = null
+      if (paymentStatus === 'pending' && activity.payment_deadline_hours) {
+        const dueDate = new Date(activityDate.getTime() - (activity.payment_deadline_hours * 60 * 60 * 1000))
+        paymentDueDate = dueDate.toISOString()
+      }
 
       // Check if user already has a registration (including cancelled ones)
       const { data: existingReg, error: checkError } = await supabase
@@ -195,7 +251,10 @@ const ActivitiesPage = () => {
             .update({
               status: 'registered',
               can_cancel_until: cancellationDeadline.toISOString(),
-              payment_processed: false,
+              payment_processed: paymentStatus === 'paid',
+              payment_status: paymentStatus,
+              payment_due_date: paymentDueDate,
+              paid_at: paymentStatus === 'paid' ? new Date().toISOString() : null,
               cancelled_at: null
             })
             .eq('id', existingReg.id)
@@ -211,7 +270,10 @@ const ActivitiesPage = () => {
             user_id: user.id,
             status: 'registered',
             can_cancel_until: cancellationDeadline.toISOString(),
-            payment_processed: false
+            payment_processed: paymentStatus === 'paid',
+            payment_status: paymentStatus,
+            payment_due_date: paymentDueDate,
+            paid_at: paymentStatus === 'paid' ? new Date().toISOString() : null
           })
 
         if (insertError) throw insertError
@@ -253,6 +315,47 @@ const ActivitiesPage = () => {
     } finally {
       setRegistering(null)
     }
+  }
+
+  const handlePayNow = async () => {
+    if (!pendingRegistration) return
+
+    setShowPaymentModal(false)
+    setRegistering(pendingRegistration.activityId)
+
+    // Symulacja płatności BLIK (na razie disabled)
+    alert('💳 Moduł płatności BLIK jest w wersji testowej.\n\nW pełnej wersji aplikacji tutaj pojawi się formularz płatności.\n\nTeraz zapiszemy Cię z statusem "opłacone".')
+
+    await performRegistration(
+      pendingRegistration.activityId,
+      pendingRegistration.cost,
+      pendingRegistration.cancellationHours,
+      'paid'
+    )
+
+    setPendingRegistration(null)
+  }
+
+  const handlePayLater = async () => {
+    if (!pendingRegistration) return
+
+    setShowPaymentModal(false)
+    setRegistering(pendingRegistration.activityId)
+
+    await performRegistration(
+      pendingRegistration.activityId,
+      pendingRegistration.cost,
+      pendingRegistration.cancellationHours,
+      'pending'
+    )
+
+    setPendingRegistration(null)
+  }
+
+  const handleCancelPayment = () => {
+    setShowPaymentModal(false)
+    setPendingRegistration(null)
+    setRegistering(null)
   }
 
   const formatDate = (dateString: string) => {
@@ -682,6 +785,18 @@ const ActivitiesPage = () => {
             </p>
           </div>
         </div>
+      )}
+
+      {/* Payment Choice Modal */}
+      {showPaymentModal && pendingRegistration && (
+        <PaymentChoiceModal
+          activityName={pendingRegistration.activityName}
+          activityCost={pendingRegistration.cost}
+          requiresImmediate={pendingRegistration.requiresImmediate}
+          onPayNow={handlePayNow}
+          onPayLater={handlePayLater}
+          onCancel={handleCancelPayment}
+        />
       )}
     </div>
   )
