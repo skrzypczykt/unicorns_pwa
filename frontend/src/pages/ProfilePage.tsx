@@ -184,20 +184,11 @@ const ProfilePage = () => {
           </p>
 
           <div className="mt-6 pt-4 border-t border-white/30">
-            <p className="text-sm opacity-75 mb-3">
+            <p className="text-sm opacity-75">
               {profile.balance > 100 ? '✅ Świetne saldo!' :
                profile.balance > 50 ? '⚠️ Rozważ doładowanie' :
-               '❗ Niskie saldo'}
+               '❗ Niskie saldo - opłać zajęcia w historii transakcji'}
             </p>
-
-            {/* BLIK Payment Button */}
-            <button
-              onClick={() => setShowBlikModal(true)}
-              className="w-full bg-white text-purple-600 font-semibold py-2 px-4 rounded-lg hover:bg-purple-50 transition-all flex items-center justify-center gap-2"
-            >
-              <span className="text-xl">💳</span>
-              Doładuj przez BLIK
-            </button>
           </div>
         </div>
       </div>
@@ -346,6 +337,7 @@ const ProfilePage = () => {
                   <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Kwota</th>
                   <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Saldo przed</th>
                   <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Saldo po</th>
+                  <th className="text-center py-3 px-2 text-sm font-semibold text-gray-600">Akcje</th>
                 </tr>
               </thead>
               <tbody>
@@ -381,6 +373,16 @@ const ProfilePage = () => {
                     </td>
                     <td className="py-3 px-2 text-right text-sm font-semibold text-gray-800">
                       {transaction.balance_after.toFixed(2)} zł
+                    </td>
+                    <td className="py-3 px-2 text-center">
+                      {transaction.amount < 0 && (
+                        <button
+                          onClick={() => setShowBlikModal(true)}
+                          className="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
+                        >
+                          💳 Opłać
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
