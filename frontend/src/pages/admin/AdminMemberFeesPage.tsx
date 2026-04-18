@@ -4,7 +4,7 @@ import { supabase } from '../../supabase/client'
 
 interface Member {
   id: string
-  full_name: string
+  display_name: string
   email: string
   membership_fee_plan: 'monthly' | 'yearly'
   last_membership_charge: string | null
@@ -77,9 +77,9 @@ const AdminMemberFeesPage = () => {
       // Fetch all association members
       const { data: usersData, error: usersError } = await supabase
         .from('users')
-        .select('id, full_name, email, membership_fee_plan, last_membership_charge')
+        .select('id, display_name, email, membership_fee_plan, last_membership_charge')
         .eq('is_association_member', true)
-        .order('full_name')
+        .order('display_name')
 
       if (usersError) throw usersError
 
@@ -483,7 +483,7 @@ const AdminMemberFeesPage = () => {
                     <tr key={member.id} className="hover:bg-purple-50">
                       <td className="px-4 py-3">
                         <div>
-                          <p className="font-semibold text-gray-800">{member.full_name}</p>
+                          <p className="font-semibold text-gray-800">{member.display_name}</p>
                           <p className="text-xs text-gray-500">{member.email}</p>
                         </div>
                       </td>
