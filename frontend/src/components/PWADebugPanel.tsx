@@ -47,36 +47,8 @@ const PWADebugPanel = () => {
 
     addLog('=== Listening for events... ===')
 
-    // Przechwytuj błędy konsoli
-    const originalError = console.error
-    console.error = (...args: any[]) => {
-      addLog(`❌ Console Error: ${args.join(' ')}`)
-      originalError.apply(console, args)
-    }
-
-    const originalWarn = console.warn
-    console.warn = (...args: any[]) => {
-      addLog(`⚠️ Console Warn: ${args.join(' ')}`)
-      originalWarn.apply(console, args)
-    }
-
-    // Przechwytuj nieobsłużone błędy
-    const handleError = (event: ErrorEvent) => {
-      addLog(`🔥 Uncaught Error: ${event.message} at ${event.filename}:${event.lineno}`)
-    }
-    window.addEventListener('error', handleError)
-
-    const handleRejection = (event: PromiseRejectionEvent) => {
-      addLog(`🔥 Unhandled Rejection: ${event.reason}`)
-    }
-    window.addEventListener('unhandledrejection', handleRejection)
-
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
-      window.removeEventListener('error', handleError)
-      window.removeEventListener('unhandledrejection', handleRejection)
-      console.error = originalError
-      console.warn = originalWarn
     }
   }, [])
 
