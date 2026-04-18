@@ -26,6 +26,8 @@ export interface Database {
           association_member_since: string | null
           gdpr_consent_date: string | null
           sports_terms_accepted_date: string | null
+          membership_fee_plan: 'monthly' | 'yearly'
+          last_membership_charge: string | null
         }
         Insert: {
           id: string
@@ -40,6 +42,8 @@ export interface Database {
           association_member_since?: string | null
           gdpr_consent_date?: string | null
           sports_terms_accepted_date?: string | null
+          membership_fee_plan?: 'monthly' | 'yearly'
+          last_membership_charge?: string | null
         }
         Update: {
           id?: string
@@ -54,6 +58,8 @@ export interface Database {
           association_member_since?: string | null
           gdpr_consent_date?: string | null
           sports_terms_accepted_date?: string | null
+          membership_fee_plan?: 'monthly' | 'yearly'
+          last_membership_charge?: string | null
         }
       }
       activity_types: {
@@ -267,6 +273,153 @@ export interface Database {
           // Audit log is immutable - no updates allowed
         }
       }
+      association_news: {
+        Row: {
+          id: string
+          title: string
+          content: string
+          author_id: string
+          published_at: string
+          expires_at: string | null
+          is_pinned: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          content: string
+          author_id: string
+          published_at?: string
+          expires_at?: string | null
+          is_pinned?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          content?: string
+          author_id?: string
+          published_at?: string
+          expires_at?: string | null
+          is_pinned?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      association_documents: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          document_url: string
+          category: 'statute' | 'resolution' | 'report' | 'other'
+          uploaded_by: string
+          upload_date: string
+          file_size_kb: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          document_url: string
+          category: 'statute' | 'resolution' | 'report' | 'other'
+          uploaded_by: string
+          upload_date?: string
+          file_size_kb?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          document_url?: string
+          category?: 'statute' | 'resolution' | 'report' | 'other'
+          uploaded_by?: string
+          upload_date?: string
+          file_size_kb?: number | null
+          created_at?: string
+        }
+      }
+      association_polls: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          created_by: string
+          start_date: string
+          end_date: string
+          is_active: boolean
+          poll_type: 'resolution' | 'survey' | 'other'
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          created_by: string
+          start_date?: string
+          end_date: string
+          is_active?: boolean
+          poll_type?: 'resolution' | 'survey' | 'other'
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          created_by?: string
+          start_date?: string
+          end_date?: string
+          is_active?: boolean
+          poll_type?: 'resolution' | 'survey' | 'other'
+          created_at?: string
+        }
+      }
+      association_poll_options: {
+        Row: {
+          id: string
+          poll_id: string
+          option_text: string
+          display_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          poll_id: string
+          option_text: string
+          display_order?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          poll_id?: string
+          option_text?: string
+          display_order?: number
+          created_at?: string
+        }
+      }
+      association_poll_votes: {
+        Row: {
+          id: string
+          poll_id: string
+          option_id: string
+          user_id: string
+          voted_at: string
+        }
+        Insert: {
+          id?: string
+          poll_id: string
+          option_id: string
+          user_id: string
+          voted_at?: string
+        }
+        Update: {
+          // Votes are immutable - no updates allowed
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -289,6 +442,16 @@ export interface Database {
           activity_uuid: string
         }
         Returns: string
+      }
+      get_poll_results: {
+        Args: {
+          poll_uuid: string
+        }
+        Returns: Array<{
+          option_id: string
+          option_text: string
+          vote_count: number
+        }>
       }
     }
     Enums: {
