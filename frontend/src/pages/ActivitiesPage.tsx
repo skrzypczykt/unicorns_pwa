@@ -24,6 +24,7 @@ interface Activity {
   whatsapp_group_url?: string | null
   requires_immediate_payment?: boolean
   payment_deadline_hours?: number
+  requires_registration?: boolean
   activity_types?: {
     whatsapp_group_url?: string | null
   }
@@ -551,28 +552,38 @@ const ActivitiesPage = () => {
                       </div>
                     )}
 
-                    {isFull && !isRegistered && (
-                      <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
-                        <strong>🚫 Brak wolnych miejsc</strong>
-                      </div>
-                    )}
-
-                    {isRegistered ? (
-                      <div className="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg text-center">
-                        ✓ Zapisany/a
+                    {/* Sprawdź czy wydarzenie wymaga rejestracji */}
+                    {activity.requires_registration === false ? (
+                      <div className="w-full bg-gradient-to-r from-green-400 to-blue-400 text-white font-semibold py-4 px-6 rounded-lg text-center shadow-lg">
+                        <div className="text-xl mb-1">🎉 Wstęp wolny</div>
+                        <div className="text-sm opacity-90">Nie wymaga rejestracji - wpadaj!</div>
                       </div>
                     ) : (
-                      <button
-                        onClick={() => handleRegister(activity.id, activity.cost, activity.cancellation_hours)}
-                        disabled={isProcessing || !isOpen || isFull}
-                        className="w-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isProcessing ? 'Zapisywanie...' :
-                         isFull ? 'Brak miejsc' :
-                         isBeforeOpen ? `Zapisy otwarte za ${opensAt && formatTimeUntil(opensAt)}` :
-                         isAfterClose ? 'Zapisy zamknięte' :
-                         'Zapisz się'}
-                      </button>
+                      <>
+                        {isFull && !isRegistered && (
+                          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+                            <strong>🚫 Brak wolnych miejsc</strong>
+                          </div>
+                        )}
+
+                        {isRegistered ? (
+                          <div className="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg text-center">
+                            ✓ Zapisany/a
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleRegister(activity.id, activity.cost, activity.cancellation_hours)}
+                            disabled={isProcessing || !isOpen || isFull}
+                            className="w-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isProcessing ? 'Zapisywanie...' :
+                             isFull ? 'Brak miejsc' :
+                             isBeforeOpen ? `Zapisy otwarte za ${opensAt && formatTimeUntil(opensAt)}` :
+                             isAfterClose ? 'Zapisy zamknięte' :
+                             'Zapisz się'}
+                          </button>
+                        )}
+                      </>
                     )}
 
                     {/* WhatsApp Group Link z fallbackiem */}
@@ -706,29 +717,39 @@ const ActivitiesPage = () => {
                   </div>
                 )}
 
-                {isFull && !isRegistered && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
-                    <strong>🚫 Brak wolnych miejsc</strong>
+                {/* Sprawdź czy wydarzenie wymaga rejestracji */}
+                {activity.requires_registration === false ? (
+                  <div className="w-full bg-gradient-to-r from-green-400 to-blue-400 text-white font-semibold py-4 px-6 rounded-lg text-center shadow-lg">
+                    <div className="text-xl mb-1">🎉 Wstęp wolny</div>
+                    <div className="text-sm opacity-90">Nie wymaga rejestracji - wpadaj!</div>
                   </div>
-                )}
+                ) : (
+                  <>
+                    {isFull && !isRegistered && (
+                      <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+                        <strong>🚫 Brak wolnych miejsc</strong>
+                      </div>
+                    )}
 
-                  {isRegistered ? (
-                    <div className="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg text-center">
-                      ✓ Zapisany/a
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleRegister(activity.id, activity.cost, activity.cancellation_hours)}
-                      disabled={isProcessing || !isOpen || isFull}
-                      className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isProcessing ? 'Zapisywanie...' :
-                       isFull ? 'Brak miejsc' :
-                       isBeforeOpen ? `Zapisy otwarte za ${opensAt && formatTimeUntil(opensAt)}` :
-                       isAfterClose ? 'Zapisy zamknięte' :
-                       'Zapisz się'}
-                    </button>
-                  )}
+                    {isRegistered ? (
+                      <div className="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg text-center">
+                        ✓ Zapisany/a
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleRegister(activity.id, activity.cost, activity.cancellation_hours)}
+                        disabled={isProcessing || !isOpen || isFull}
+                        className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isProcessing ? 'Zapisywanie...' :
+                         isFull ? 'Brak miejsc' :
+                         isBeforeOpen ? `Zapisy otwarte za ${opensAt && formatTimeUntil(opensAt)}` :
+                         isAfterClose ? 'Zapisy zamknięte' :
+                         'Zapisz się'}
+                      </button>
+                    )}
+                  </>
+                )}
 
                   {/* WhatsApp Group Link z fallbackiem */}
                   {(() => {
