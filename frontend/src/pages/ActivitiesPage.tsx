@@ -499,6 +499,17 @@ const ActivitiesPage = () => {
     )
   }
 
+  // Check if user is logged in
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setIsLoggedIn(!!user)
+    }
+    checkAuth()
+  }, [])
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
@@ -507,7 +518,7 @@ const ActivitiesPage = () => {
           <p className="text-gray-600">Wybierz zajęcia i zapisz się!</p>
         </div>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate(isLoggedIn ? '/dashboard' : '/')}
           className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
         >
           ← Powrót
