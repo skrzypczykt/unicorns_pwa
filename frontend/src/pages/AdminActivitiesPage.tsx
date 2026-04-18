@@ -27,6 +27,8 @@ interface Activity {
   is_special_event?: boolean
   registered_count?: number
   whatsapp_group_url?: string | null
+  requires_immediate_payment?: boolean
+  payment_deadline_hours?: number
 }
 
 interface Trainer {
@@ -64,7 +66,9 @@ const AdminActivitiesPage = () => {
     image_url: '',
     is_special_event: false,
     whatsapp_group_url: '',
-    send_notification: false
+    send_notification: false,
+    requires_immediate_payment: false,
+    payment_deadline_hours: 48
   })
 
   useEffect(() => {
@@ -312,7 +316,9 @@ const AdminActivitiesPage = () => {
       image_url: activity.image_url || '',
       is_special_event: activity.is_special_event || false,
       whatsapp_group_url: activity.whatsapp_group_url || '',
-      send_notification: false
+      send_notification: false,
+      requires_immediate_payment: (activity as any).requires_immediate_payment || false,
+      payment_deadline_hours: (activity as any).payment_deadline_hours || 48
     })
     setShowForm(true)
 
@@ -359,7 +365,9 @@ const AdminActivitiesPage = () => {
       image_url: '',
       is_special_event: false,
       whatsapp_group_url: '',
-      send_notification: false
+      send_notification: false,
+      requires_immediate_payment: false,
+      payment_deadline_hours: 48
     })
     setEditingId(null)
     setShowForm(false)
@@ -759,6 +767,73 @@ const AdminActivitiesPage = () => {
                         <p>Powiadomienie zostanie wysłane tylko do użytkowników zainteresowanych tym typem zajęć (np. Taniec, Siatkówka).</p>
                       </>
                     )}
+                  </div>
+                )}
+              </div>
+
+              {/* Ustawienia płatności */}
+              <div className="border-t-2 border-green-200 pt-6">
+                <h3 className="text-lg font-semibold text-green-700 mb-4">💳 Ustawienia płatności</h3>
+
+                <div className="flex items-center gap-3 mb-4">
+                  <input
+                    type="checkbox"
+                    id="requires_immediate_payment"
+                    checked={formData.requires_immediate_payment || false}
+                    onChange={(e) => setFormData({ ...formData, requires_immediate_payment: e.target.checked })}
+                    className="h-5 w-5 text-green-600 rounded"
+                  />
+                  <label htmlFor="requires_immediate_payment" className="text-sm font-semibold text-gray-700">
+                    ⚡ Wymagaj natychmiastowej płatności przy zapisie
+                  </label>
+                </div>
+
+                {formData.requires_immediate_payment ? (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
+                    <p className="font-semibold mb-2">✅ Płatność natychmiastowa aktywna</p>
+                    <ul className="list-disc list-inside space-y-1">
+                      <li>Użytkownik MUSI zapłacić w momencie zapisu</li>
+                      <li>Brak opcji "Opłać później"</li>
+                      <li>Idealne dla zajęć z ograniczoną liczbą miejsc</li>
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+                      <p className="font-semibold mb-2">⏰ Płatność z terminem</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>Użytkownik może wybrać "Opłać teraz" lub "Opłać później"</li>
+                        <li>System automatycznie wyśle przypomnienia push</li>
+                        <li>Po przekroczeniu terminu status zmieni się na "Przeterminowane"</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Termin płatności (godziny przed zajęciami) *
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="720"
+                        value={formData.payment_deadline_hours}
+                        onChange={(e) => setFormData({ ...formData, payment_deadline_hours: parseInt(e.target.value) || 48 })}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Np. 24 = użytkownik musi zapłacić minimum 24h przed zajęciami
+                        <br />
+                        Domyślnie: 48 godzin
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-800">
+                      <p className="font-semibold">📢 Automatyczne przypomnienia:</p>
+                      <ul className="list-disc list-inside mt-1 space-y-1">
+                        <li>Jeśli termin &gt; 24h: przypomnienie co 24h</li>
+                        <li>Jeśli termin ≤ 24h: przypomnienie co 6h</li>
+                      </ul>
+                    </div>
                   </div>
                 )}
               </div>
