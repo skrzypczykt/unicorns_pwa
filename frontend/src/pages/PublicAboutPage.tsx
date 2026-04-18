@@ -22,8 +22,9 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200">
-      {/* Publiczny header bez informacji o użytkowniku */}
-      <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b-4 border-purple-500">
+      {/* Publiczny header bez informacji o użytkowniku - ukryj dla zalogowanych (mają header w App.tsx) */}
+      {!isLoggedIn && (
+        <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b-4 border-purple-500">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -61,6 +62,7 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
           </div>
         </div>
       </header>
+      )}
 
       {/* Zawartość strony O Nas */}
       <div className="max-w-4xl mx-auto px-4 py-8">

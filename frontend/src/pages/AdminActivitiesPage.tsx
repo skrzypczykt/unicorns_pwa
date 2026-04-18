@@ -131,7 +131,7 @@ const AdminActivitiesPage = () => {
       const { data, error } = await supabase
         .from('users')
         .select('id, display_name, email, role')
-        .eq('role', 'trainer')
+        .in('role', ['trainer', 'admin', 'external_trainer'])
         .order('display_name', { ascending: true })
 
       if (error) throw error
@@ -548,16 +548,15 @@ const AdminActivitiesPage = () => {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Trener {!formData.is_special_event && '*'}
+                  {formData.is_special_event ? 'Organizator (opcjonalnie)' : 'Trener *'}
                 </label>
                 <select
                   value={formData.trainer_id}
                   onChange={(e) => setFormData({ ...formData, trainer_id: e.target.value })}
                   required={!formData.is_special_event}
-                  disabled={formData.is_special_event}
-                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none disabled:bg-gray-100"
+                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
                 >
-                  <option value="">{formData.is_special_event ? 'Brak trenera (wydarzenie specjalne)' : 'Wybierz trenera'}</option>
+                  <option value="">{formData.is_special_event ? 'Brak organizatora' : 'Wybierz trenera'}</option>
                   {trainers.map((trainer) => (
                     <option key={trainer.id} value={trainer.id}>
                       {trainer.display_name}
