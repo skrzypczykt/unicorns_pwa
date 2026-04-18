@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { supabase } from './supabase/client'
 import SimpleLoginPage from './pages/SimpleLoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -117,10 +117,22 @@ function App() {
 
   return (
     <BrowserRouter>
+      <AppContent user={user} profile={profile} handleSignOut={handleSignOut} />
+    </BrowserRouter>
+  )
+}
+
+const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any, handleSignOut: () => void }) => {
+  const location = useLocation()
+  const isHomePage = location.pathname === '/'
+
+  return (
+    <>
       <InstallPWAPrompt />
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200">
-        {/* Header - Responsywny */}
-        <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b-4 border-purple-500">
+        {/* Header - Responsywny - ukryj na stronie głównej (PublicAboutPage ma własny) */}
+        {!isHomePage && profile && (
+          <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b-4 border-purple-500">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
             <div className="flex items-center justify-between gap-2">
               {/* Logo + Tytuł - Responsywne */}
@@ -141,19 +153,11 @@ function App() {
                   <p className="hidden md:block text-xs text-gray-500 uppercase tracking-wide">
                     Sport | Kultura | Rozrywka
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-600 mt-1 truncate">
-                    {profile.display_name}
-                    <span className="ml-1 sm:ml-2 px-1 sm:px-2 py-1 bg-purple-200 text-purple-700 rounded-full text-xs font-semibold">
-                      {profile.role === 'admin' ? 'Admin' :
-                       profile.role === 'trainer' ? 'Trener' :
-                       profile.role === 'external_trainer' ? 'Trener zewnętrzny' : 'User'}
-                    </span>
-                  </p>
                 </div>
               </button>
 
-              {/* Saldo + Wyloguj - Responsywne */}
-              <div className="flex items-center gap-1 sm:gap-2 md:gap-4 flex-shrink-0">
+              {/* Saldo + Wyloguj + Profil - Responsywne */}
+              <div className="flex items-center gap-1 sm:gap-2 md:gap-3 flex-shrink-0">
                 {/* Pokaż saldo tylko jeśli jest ujemne i user nie jest external_trainer */}
                 {profile.role !== 'external_trainer' && profile.balance < 0 && (
                   <div className="text-right">
@@ -173,10 +177,34 @@ function App() {
                   <span className="hidden sm:inline">Wyloguj</span>
                   <span className="sm:hidden">🚪</span>
                 </button>
+
+                {/* Profil użytkownika - po prawej */}
+                <div className="hidden sm:flex items-center gap-2 text-right">
+                  <div>
+                    <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">
+                      {profile.display_name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {profile.role === 'admin' ? 'Admin' :
+                       profile.role === 'trainer' ? 'Trener' :
+                       profile.role === 'external_trainer' ? 'Trener zewnętrzny' : 'User'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Przycisk ustawień - kółko zębate */}
+                <button
+                  onClick={() => window.location.href = '/profile'}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-all"
+                  title="Ustawienia profilu"
+                >
+                  <span className="text-2xl">⚙️</span>
+                </button>
               </div>
             </div>
           </div>
         </header>
+        )}
 
         {/* Routes */}
         <Routes>
@@ -299,7 +327,7 @@ function App() {
           </div>
         </footer>
       </div>
-    </BrowserRouter>
+    </>
   )
 }
 

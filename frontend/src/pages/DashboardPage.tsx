@@ -47,20 +47,6 @@ const DashboardPage = ({ profile }: DashboardPageProps) => {
             </button>
           </div>
 
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-4xl">👤</span>
-              <h2 className="text-xl font-bold text-purple-600">Profil</h2>
-            </div>
-            <p className="text-gray-600 mb-4">Zarządzaj swoim kontem</p>
-            <button
-              onClick={() => navigate('/profile')}
-              className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
-            >
-              Ustawienia
-            </button>
-          </div>
-
           {profile.is_association_member && (
             <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all">
               <div className="flex items-center gap-3 mb-4">
