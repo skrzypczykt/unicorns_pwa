@@ -512,30 +512,40 @@ const ActivitiesPage = () => {
                         <span>📍</span>
                         <span>{activity.location}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <span>👥</span>
-                        <span>
-                          {hasLimit ? (() => {
-                            const registered = participantCounts[activity.id] || 0
-                            const available = activity.max_participants! - registered
-                            const isFull = available <= 0
-                            const isAlmostFull = available <= 3 && available > 0
+                      {/* Dla wydarzeń bezpłatnych pokaż tylko "Wstęp wolny" */}
+                      {activity.cost === 0 ? (
+                        <div className="flex items-center gap-2 text-sm font-bold text-green-600">
+                          <span>🎉</span>
+                          <span>Wstęp wolny</span>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2 text-sm">
+                            <span>👥</span>
+                            <span>
+                              {hasLimit ? (() => {
+                                const registered = participantCounts[activity.id] || 0
+                                const available = activity.max_participants! - registered
+                                const isFull = available <= 0
+                                const isAlmostFull = available <= 3 && available > 0
 
-                            return (
-                              <span className={isFull ? 'text-red-600 font-bold' : isAlmostFull ? 'text-orange-600 font-semibold' : ''}>
-                                {registered}/{activity.max_participants} zapisanych
-                                {isFull ? ' - PEŁNE' : ` (${available} ${available === 1 ? 'wolne miejsce' : 'wolnych miejsc'})`}
-                              </span>
-                            )
-                          })() : (
-                            <span className="text-green-600 font-semibold">♾️ Nielimitowane miejsca</span>
-                          )}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm font-bold text-purple-600">
-                        <span>💰</span>
-                        <span>{activity.cost.toFixed(2)} zł</span>
-                      </div>
+                                return (
+                                  <span className={isFull ? 'text-red-600 font-bold' : isAlmostFull ? 'text-orange-600 font-semibold' : ''}>
+                                    {registered}/{activity.max_participants} zapisanych
+                                    {isFull ? ' - PEŁNE' : ` (${available} ${available === 1 ? 'wolne miejsce' : 'wolnych miejsc'})`}
+                                  </span>
+                                )
+                              })() : (
+                                <span className="text-green-600 font-semibold">♾️ Nielimitowane miejsca</span>
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm font-bold text-purple-600">
+                            <span>💰</span>
+                            <span>{activity.cost.toFixed(2)} zł</span>
+                          </div>
+                        </>
+                      )}
                       <div className="flex items-center gap-2 text-xs text-gray-500">
                         <span>⚠️</span>
                         <span>Anulowanie: {activity.cancellation_hours}h przed zajęciami</span>
@@ -680,30 +690,40 @@ const ActivitiesPage = () => {
                     <span>📍</span>
                     <span>{activity.location}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span>👥</span>
-                    <span>
-                      {hasLimit ? (() => {
-                        const registered = participantCounts[activity.id] || 0
-                        const available = activity.max_participants! - registered
-                        const isFull = available <= 0
-                        const isAlmostFull = available <= 3 && available > 0
+                  {/* Dla wydarzeń bezpłatnych pokaż tylko "Wstęp wolny" */}
+                  {activity.cost === 0 ? (
+                    <div className="flex items-center gap-2 text-sm font-bold text-green-600">
+                      <span>🎉</span>
+                      <span>Wstęp wolny</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2 text-sm">
+                        <span>👥</span>
+                        <span>
+                          {hasLimit ? (() => {
+                            const registered = participantCounts[activity.id] || 0
+                            const available = activity.max_participants! - registered
+                            const isFull = available <= 0
+                            const isAlmostFull = available <= 3 && available > 0
 
-                        return (
-                          <span className={isFull ? 'text-red-600 font-bold' : isAlmostFull ? 'text-orange-600 font-semibold' : ''}>
-                            {registered}/{activity.max_participants} zapisanych
-                            {isFull ? ' - PEŁNE' : ` (${available} ${available === 1 ? 'wolne miejsce' : 'wolnych miejsc'})`}
-                          </span>
-                        )
-                      })() : (
-                        <span className="text-green-600 font-semibold">♾️ Nielimitowane miejsca</span>
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm font-bold text-purple-600">
-                    <span>💰</span>
-                    <span>{activity.cost.toFixed(2)} zł</span>
-                  </div>
+                            return (
+                              <span className={isFull ? 'text-red-600 font-bold' : isAlmostFull ? 'text-orange-600 font-semibold' : ''}>
+                                {registered}/{activity.max_participants} zapisanych
+                                {isFull ? ' - PEŁNE' : ` (${available} ${available === 1 ? 'wolne miejsce' : 'wolnych miejsc'})`}
+                              </span>
+                            )
+                          })() : (
+                            <span className="text-green-600 font-semibold">♾️ Nielimitowane miejsca</span>
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm font-bold text-purple-600">
+                        <span>💰</span>
+                        <span>{activity.cost.toFixed(2)} zł</span>
+                      </div>
+                    </>
+                  )}
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <span>⚠️</span>
                     <span>Anulowanie: {activity.cancellation_hours}h przed zajęciami</span>
