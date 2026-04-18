@@ -107,7 +107,7 @@ const MemberZonePage = () => {
             <p className="text-gray-600">Witaj w dedykowanej strefie dla członków stowarzyszenia!</p>
           </div>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/dashboard')}
             className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
           >
             ← Powrót
