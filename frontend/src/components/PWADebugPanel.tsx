@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 
 const PWADebugPanel = () => {
   const [logs, setLogs] = useState<string[]>([])
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(true) // Domyślnie rozwinięty dla adminów
 
   useEffect(() => {
     const addLog = (message: string) => {
-      setLogs((prev) => [...prev, `${new Date().toLocaleTimeString()}: ${message}`])
+      const timestamp = new Date().toLocaleTimeString()
+      setLogs((prev) => [...prev, `${timestamp}: ${message}`])
     }
 
     // Sprawdź podstawowe informacje
@@ -16,6 +17,8 @@ const PWADebugPanel = () => {
     addLog(`iOS standalone: ${(navigator as any).standalone}`)
     addLog(`Location: ${window.location.href}`)
     addLog(`Protocol: ${window.location.protocol}`)
+    addLog(`Window size: ${window.innerWidth}x${window.innerHeight}`)
+    addLog(`Screen size: ${window.screen.width}x${window.screen.height}`)
 
     // Service Worker
     if ('serviceWorker' in navigator) {
@@ -44,8 +47,36 @@ const PWADebugPanel = () => {
 
     addLog('=== Listening for events... ===')
 
+    // Przechwytuj błędy konsoli
+    const originalError = console.error
+    console.error = (...args: any[]) => {
+      addLog(`❌ Console Error: ${args.join(' ')}`)
+      originalError.apply(console, args)
+    }
+
+    const originalWarn = console.warn
+    console.warn = (...args: any[]) => {
+      addLog(`⚠️ Console Warn: ${args.join(' ')}`)
+      originalWarn.apply(console, args)
+    }
+
+    // Przechwytuj nieobsłużone błędy
+    const handleError = (event: ErrorEvent) => {
+      addLog(`🔥 Uncaught Error: ${event.message} at ${event.filename}:${event.lineno}`)
+    }
+    window.addEventListener('error', handleError)
+
+    const handleRejection = (event: PromiseRejectionEvent) => {
+      addLog(`🔥 Unhandled Rejection: ${event.reason}`)
+    }
+    window.addEventListener('unhandledrejection', handleRejection)
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
+      window.removeEventListener('error', handleError)
+      window.removeEventListener('unhandledrejection', handleRejection)
+      console.error = originalError
+      console.warn = originalWarn
     }
   }, [])
 
@@ -55,27 +86,16 @@ const PWADebugPanel = () => {
     setLogs((prev) => [...prev, '🗑️ Cleared localStorage'])
   }
 
-  if (!isOpen) {
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed top-4 right-4 z-[100] bg-red-500 text-white px-3 py-2 rounded-lg text-xs font-bold shadow-lg"
-      >
-        🐛 PWA DEBUG
-      </button>
-    )
-  }
-
   return (
-    <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
-        <div className="bg-purple-600 text-white p-4 flex items-center justify-between">
-          <h2 className="font-bold">🐛 PWA Debug Panel</h2>
+    <div className={`${isOpen ? 'block' : 'hidden'}`}>
+      <div className="bg-white rounded-xl shadow-2xl border-2 border-red-500 max-w-4xl w-full overflow-hidden flex flex-col">
+        <div className="bg-red-600 text-white p-4 flex items-center justify-between">
+          <h2 className="font-bold text-lg">🐛 PWA Debug Panel (tylko Admin)</h2>
           <button
-            onClick={() => setIsOpen(false)}
-            className="text-white hover:text-gray-200 text-2xl leading-none"
+            onClick={() => setIsOpen(!isOpen)}
+            className="text-white hover:text-gray-200 font-bold"
           >
-            ×
+            {isOpen ? '▼ Zwiń' : '▶ Rozwiń'}
           </button>
         </div>
 

@@ -3,6 +3,7 @@ import { supabase } from '../supabase/client'
 import { useNavigate } from 'react-router-dom'
 import PushNotificationToggle from '../components/common/PushNotificationToggle'
 import { useInstallPWA } from '../hooks/useInstallPWA'
+import PWADebugPanel from '../components/PWADebugPanel'
 
 interface Transaction {
   id: string
@@ -397,6 +398,13 @@ const ProfilePage = () => {
           przez administratora.
         </p>
       </div>
+
+      {/* PWA Debug Panel - tylko dla adminów */}
+      {profile?.role === 'admin' && (
+        <div className="mt-8">
+          <PWADebugPanel />
+        </div>
+      )}
     </div>
   )
 }
