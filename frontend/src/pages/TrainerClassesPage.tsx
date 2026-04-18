@@ -205,7 +205,7 @@ const TrainerClassesPage = () => {
 
     // Confirm if reversing attended status (refund)
     if (currentStatus === 'attended' && newStatus !== 'attended') {
-      if (!confirm(`Czy na pewno chcesz zmienić status z "Obecny/a"?\n\nPłatność zostanie zwrócona na konto użytkownika (+${activityCost.toFixed(2)} zł).`)) {
+      if (!confirm(`Czy na pewno chcesz zmienić status z "Obecny"?\n\nPłatność zostanie zwrócona na konto użytkownika (+${activityCost.toFixed(2)} zł).`)) {
         return
       }
     }
@@ -618,8 +618,8 @@ const TrainerClassesPage = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h4 className="font-bold text-purple-600">{reg.users?.display_name || 'Nieznany użytkownik'}</h4>
-                          {isAttended && <span className="text-green-600 text-sm">✓ Obecny/a</span>}
-                          {isNoShow && <span className="text-red-600 text-sm">✗ Nieobecny/a</span>}
+                          {isAttended && <span className="text-green-600 text-sm">✓ Obecny</span>}
+                          {isNoShow && <span className="text-red-600 text-sm">✗ Nieobecny</span>}
                         </div>
                         <p className="text-sm text-gray-600">{reg.users?.email || 'Brak emaila'}</p>
                         <p className="text-sm mt-1">
@@ -649,7 +649,7 @@ const TrainerClassesPage = () => {
                               : 'bg-green-500 hover:bg-green-600 text-white disabled:opacity-50 disabled:cursor-not-allowed'
                           }`}
                         >
-                          {marking === reg.id ? '⏳' : isAttended ? '✓ Obecny/a' : '✓ Obecny/a'}
+                          {marking === reg.id ? '⏳ Zapisuję...' : isAttended ? '✓ Obecny' : 'Obecny'}
                         </button>
                         <button
                           onClick={() => markAttendance(reg.id, reg.user_id, 'no_show', selectedActivity.cost, balance)}
@@ -660,7 +660,7 @@ const TrainerClassesPage = () => {
                               : 'bg-red-500 hover:bg-red-600 text-white disabled:opacity-50 disabled:cursor-not-allowed'
                           }`}
                         >
-                          {marking === reg.id ? '⏳' : isNoShow ? '✗ Nieobecny/a' : '✗ Nieobecny/a'}
+                          {marking === reg.id ? '⏳ Zapisuję...' : isNoShow ? '✗ Nieobecny' : 'Nieobecny'}
                         </button>
                         {/* Add reset button for already marked attendance */}
                         {!isPending && (

@@ -645,8 +645,8 @@ const AdminAttendancePage = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h4 className="font-bold text-purple-600">{reg.users?.display_name || 'Nieznany użytkownik'}</h4>
-                          {isAttended && <span className="text-green-600 text-sm">✓ Obecny/a</span>}
-                          {isNoShow && <span className="text-red-600 text-sm">✗ Nieobecny/a</span>}
+                          {isAttended && <span className="text-green-600 text-sm">✓ Obecny</span>}
+                          {isNoShow && <span className="text-red-600 text-sm">✗ Nieobecny</span>}
                         </div>
                         <p className="text-sm text-gray-600">{reg.users?.email || 'Brak emaila'}</p>
                         <p className="text-sm mt-1">
@@ -673,14 +673,14 @@ const AdminAttendancePage = () => {
                               disabled={marking === reg.id}
                               className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
                             >
-                              {marking === reg.id ? '⏳ Zapisuję...' : '✓ Obecny/a'}
+                              {marking === reg.id ? '⏳ Zapisuję...' : 'Obecny'}
                             </button>
                             <button
                               onClick={() => markAttendance(reg.id, reg.user_id, 'no_show', selectedActivity.cost, balance)}
                               disabled={marking === reg.id}
                               className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
                             >
-                              {marking === reg.id ? '⏳ Zapisuję...' : '✗ Nieobecny/a'}
+                              {marking === reg.id ? '⏳ Zapisuję...' : 'Nieobecny'}
                             </button>
                           </>
                         ) : (
