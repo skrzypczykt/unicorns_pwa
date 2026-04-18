@@ -6,6 +6,7 @@ interface DashboardPageProps {
     role: string
     balance: number
     email: string
+    is_association_member?: boolean
   }
 }
 
@@ -59,6 +60,22 @@ const DashboardPage = ({ profile }: DashboardPageProps) => {
               Ustawienia
             </button>
           </div>
+
+          {profile.is_association_member && (
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-4xl">🏛️</span>
+                <h2 className="text-xl font-bold text-purple-600">Strefa Członka</h2>
+              </div>
+              <p className="text-gray-600 mb-4">Głosowania, dokumenty, aktualności</p>
+              <button
+                onClick={() => navigate('/member-zone')}
+                className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              >
+                Przejdź do strefy
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -111,6 +128,36 @@ const DashboardPage = ({ profile }: DashboardPageProps) => {
               👥 Zarządzaj Obecnością
             </button>
           </div>
+
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold text-purple-600 mb-3">Strefa Członka - Admin</h3>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <button
+                onClick={() => navigate('/admin/member-news')}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              >
+                📰 Ogłoszenia
+              </button>
+              <button
+                onClick={() => navigate('/admin/member-documents')}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              >
+                📄 Dokumenty
+              </button>
+              <button
+                onClick={() => navigate('/admin/member-polls')}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              >
+                🗳️ Głosowania
+              </button>
+              <button
+                onClick={() => navigate('/admin/member-fees')}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              >
+                💰 Składki Członkowskie
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -120,7 +167,7 @@ const DashboardPage = ({ profile }: DashboardPageProps) => {
           <span className="text-6xl">🌈</span>
           <div>
             <h3 className="text-xl font-bold text-purple-600 mb-2">
-              Witamy w Stowarzyszeniu Unicorns Łódź! 🦄
+              Witamy w Unicorns Łódź! 🦄
             </h3>
             <p className="text-gray-700 mb-3">
               Dołącz do naszej społeczności pasjonatów sportu, kultury i rozrywki!

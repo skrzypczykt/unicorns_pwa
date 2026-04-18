@@ -16,6 +16,15 @@ import AdminReportsPage from './pages/AdminReportsPage'
 import AdminAttendancePage from './pages/AdminAttendancePage'
 import ActivityParticipantsPage from './pages/ActivityParticipantsPage'
 import InstallPWAPrompt from './components/InstallPWAPrompt'
+import MemberZonePage from './pages/MemberZonePage'
+import MemberNewsPage from './pages/MemberNewsPage'
+import MemberDocumentsPage from './pages/MemberDocumentsPage'
+import MemberPollsPage from './pages/MemberPollsPage'
+import MemberBalancePage from './pages/MemberBalancePage'
+import AdminMemberNewsPage from './pages/admin/AdminMemberNewsPage'
+import AdminMemberDocumentsPage from './pages/admin/AdminMemberDocumentsPage'
+import AdminMemberPollsPage from './pages/admin/AdminMemberPollsPage'
+import AdminMemberFeesPage from './pages/admin/AdminMemberFeesPage'
 
 interface UserProfile {
   id: string
@@ -23,6 +32,7 @@ interface UserProfile {
   display_name: string
   role: string
   balance: number
+  is_association_member?: boolean
 }
 
 function App() {
@@ -179,6 +189,15 @@ function App() {
           <Route path="/admin/activities/:activityId/participants" element={<ActivityParticipantsPage />} />
           <Route path="/admin/reports" element={<AdminReportsPage />} />
           <Route path="/admin/attendance" element={<AdminAttendancePage />} />
+          <Route path="/admin/member-news" element={<AdminMemberNewsPage />} />
+          <Route path="/admin/member-documents" element={<AdminMemberDocumentsPage />} />
+          <Route path="/admin/member-polls" element={<AdminMemberPollsPage />} />
+          <Route path="/admin/member-fees" element={<AdminMemberFeesPage />} />
+          <Route path="/member-zone" element={<MemberZonePage />} />
+          <Route path="/member-zone/news" element={<MemberNewsPage />} />
+          <Route path="/member-zone/documents" element={<MemberDocumentsPage />} />
+          <Route path="/member-zone/polls" element={<MemberPollsPage />} />
+          <Route path="/member-zone/fees" element={<MemberBalancePage />} />
           <Route path="/admin/*" element={
             <div className="p-8 text-center max-w-2xl mx-auto">
               <div className="text-6xl mb-4">⚙️</div>

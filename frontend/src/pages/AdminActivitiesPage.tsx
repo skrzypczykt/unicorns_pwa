@@ -160,15 +160,23 @@ const AdminActivitiesPage = () => {
       }
 
       console.log('[Admin] Saving activity with data:', dataToSave)
+      console.log('[Admin] Is editing?', !!editingId, 'ID:', editingId)
 
       if (editingId) {
         // Update existing activity
-        const { error } = await supabase
+        console.log('[Admin] Updating activity ID:', editingId)
+        const { data: updatedActivity, error } = await supabase
           .from('activities')
           .update(dataToSave)
           .eq('id', editingId)
+          .select()
+          .single()
 
-        if (error) throw error
+        if (error) {
+          console.error('[Admin] Update error:', error)
+          throw error
+        }
+        console.log('[Admin] Updated activity:', updatedActivity)
         alert('✅ Zajęcia zaktualizowane!')
       } else {
         // Create new activity
@@ -247,10 +255,16 @@ const AdminActivitiesPage = () => {
         }
       }
 
+      console.log('[Admin] Resetting form and refreshing activities list')
       resetForm()
       await fetchActivities()
     } catch (error) {
-      console.error('Error saving activity:', error)
+      console.error('[Admin] ❌ ERROR saving activity:', error)
+      console.error('[Admin] Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        fullError: error
+      })
       alert('Wystąpił błąd podczas zapisywania')
     }
   }
@@ -269,6 +283,8 @@ const AdminActivitiesPage = () => {
   }
 
   const handleEdit = (activity: Activity) => {
+    console.log('[Admin] Editing activity:', activity.id, activity.name)
+    console.log('[Admin] Activity data:', activity)
     setEditingId(activity.id)
     setFormData({
       name: activity.name,
@@ -357,13 +373,27 @@ const AdminActivitiesPage = () => {
 
   const calculateInstanceCount = () => {
     if (!formData.date_time || !formData.recurrence_end_date || !formData.is_recurring) {
+      console.log('[Admin] Instance count = 0: missing data', {
+        date_time: formData.date_time,
+        recurrence_end_date: formData.recurrence_end_date,
+        is_recurring: formData.is_recurring
+      })
       return 0
     }
 
     const start = new Date(formData.date_time)
     const end = new Date(formData.recurrence_end_date)
 
+    console.log('[Admin] Calculating instances:', {
+      start: start.toISOString(),
+      end: end.toISOString(),
+      pattern: formData.recurrence_pattern,
+      startTime: start.getTime(),
+      endTime: end.getTime()
+    })
+
     if (start >= end) {
+      console.log('[Admin] Instance count = 0: start >= end')
       return 0
     }
 
@@ -371,12 +401,17 @@ const AdminActivitiesPage = () => {
 
     if (formData.recurrence_pattern === 'weekly') {
       const weeks = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000))
-      return Math.min(weeks + 1, 52)
+      const count = Math.min(weeks + 1, 52)
+      console.log('[Admin] Weekly instances:', { weeks, count })
+      return count
     } else if (formData.recurrence_pattern === 'monthly') {
       const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth())
-      return Math.min(months + 1, 52)
+      const count = Math.min(months + 1, 52)
+      console.log('[Admin] Monthly instances:', { months, count })
+      return count
     }
 
+    console.log('[Admin] Instance count = 0: unknown pattern')
     return 0
   }
 
