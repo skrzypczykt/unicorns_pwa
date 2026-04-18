@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { supabase } from './supabase/client'
 import SimpleLoginPage from './pages/SimpleLoginPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import RegisterPage from './pages/RegisterPage'
 import PublicAboutPage from './pages/PublicAboutPage'
 import AuthCallbackPage from './pages/AuthCallbackPage'
@@ -107,6 +108,7 @@ function App() {
           <Route path="/" element={<PublicAboutPage />} />
           <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/login" element={<SimpleLoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -170,13 +172,6 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
                     </p>
                   </div>
                 )}
-                <button
-                  onClick={handleSignOut}
-                  className="px-2 sm:px-3 md:px-4 py-1 sm:py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-xs sm:text-sm font-semibold transition-all"
-                >
-                  <span className="hidden sm:inline">Wyloguj</span>
-                  <span className="sm:hidden">🚪</span>
-                </button>
 
                 {/* Profil użytkownika - po prawej */}
                 <div className="hidden sm:flex items-center gap-2 text-right">
@@ -323,6 +318,17 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
               </div>
               <p className="text-xs text-gray-500 text-center">© 2026 Stowarzyszenie Unicorns. Wszystkie prawa zastrzeżone.</p>
               <p className="text-xs text-gray-500 mt-1 text-center">Aplikacja stworzona z magią jednorożców 🦄🌈✨</p>
+
+              {/* Logout link - ukryty na dole stopki */}
+              <p className="text-xs text-gray-400 mt-4 text-center">
+                Nie identyfikujesz się już jako jednorożec?{' '}
+                <button
+                  onClick={handleSignOut}
+                  className="text-gray-400 hover:text-gray-600 underline transition-colors"
+                >
+                  Wyloguj się
+                </button>
+              </p>
             </div>
           </div>
         </footer>

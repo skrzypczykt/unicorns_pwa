@@ -151,6 +151,16 @@ const SimpleLoginPage = () => {
             >
               {loading ? 'Logowanie...' : 'Zaloguj się'}
             </button>
+
+            {/* Forgot Password Link */}
+            <div className="text-center">
+              <a
+                href="/forgot-password"
+                className="text-sm text-purple-600 hover:text-purple-700 hover:underline transition-colors"
+              >
+                Zapomniałeś hasła?
+              </a>
+            </div>
           </form>
 
           {/* Google OAuth - Coming Soon */}
