@@ -93,44 +93,6 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
             <strong>446 członków</strong> nie może się mylić! 🏳️‍🌈
           </p>
 
-          <div className="grid md:grid-cols-2 gap-4 mb-6 max-w-4xl mx-auto">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="text-3xl mb-2">🗓️</div>
-              <h4 className="font-bold mb-1">Pełny harmonogram zajęć</h4>
-              <p className="text-sm opacity-90">Zobacz wszystkie treningi i wydarzenia</p>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="text-3xl mb-2">📝</div>
-              <h4 className="font-bold mb-1">Zapisy bez przedpłaty</h4>
-              <p className="text-sm opacity-90">Zapisz się teraz, płać później (40 dni na uzupełnienie salda)</p>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="text-3xl mb-2">🔔</div>
-              <h4 className="font-bold mb-1">Powiadomienia push</h4>
-              <p className="text-sm opacity-90">Nie przegap nowych zajęć i wydarzeń</p>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="text-3xl mb-2">🏆</div>
-              <h4 className="font-bold mb-1">Wydarzenia specjalne</h4>
-              <p className="text-sm opacity-90">Zawody, spływy kajakowe, wyjazdy</p>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="text-3xl mb-2">💰</div>
-              <h4 className="font-bold mb-1">Przejrzyste rozliczenia</h4>
-              <p className="text-sm opacity-90">Zobacz historię uczestnictwa i płatności</p>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="text-3xl mb-2">📱</div>
-              <h4 className="font-bold mb-1">Aplikacja PWA</h4>
-              <p className="text-sm opacity-90">Zainstaluj na telefonie, używaj offline</p>
-            </div>
-          </div>
-
           <div className="flex gap-3 justify-center flex-wrap">
             <button
               onClick={() => navigate('/activities')}
@@ -160,10 +122,10 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
             <p className="text-sm text-white/80 mt-4 text-center">
               Nie masz konta?{' '}
               <a
-                href="/login"
+                href="/register"
                 className="underline font-semibold hover:text-white transition-colors"
               >
-                Zaloguj się aby założyć konto
+                Zarejestruj się
               </a>
             </p>
           )}

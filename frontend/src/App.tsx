@@ -17,6 +17,7 @@ import AdminReportsPage from './pages/AdminReportsPage'
 import AdminAttendancePage from './pages/AdminAttendancePage'
 import ActivityParticipantsPage from './pages/ActivityParticipantsPage'
 import InstallPWAPrompt from './components/InstallPWAPrompt'
+import ScrollToTop from './components/ScrollToTop'
 import MemberZonePage from './pages/MemberZonePage'
 import MemberNewsPage from './pages/MemberNewsPage'
 import MemberDocumentsPage from './pages/MemberDocumentsPage'
@@ -103,6 +104,7 @@ function App() {
   if (!user || !profile) {
     return (
       <BrowserRouter>
+        <ScrollToTop />
         <InstallPWAPrompt />
         <Routes>
           <Route path="/" element={<PublicAboutPage />} />
@@ -119,6 +121,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AppContent user={user} profile={profile} handleSignOut={handleSignOut} />
     </BrowserRouter>
   )

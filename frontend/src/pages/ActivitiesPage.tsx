@@ -3,6 +3,7 @@ import { supabase } from '../supabase/client'
 import { useNavigate } from 'react-router-dom'
 import { getActivityImage } from '../data/activityImages'
 import PaymentChoiceModal from '../components/PaymentChoiceModal'
+import { addToGoogleCalendar, calculateEndTime } from '../utils/calendarHelpers'
 
 interface Activity {
   id: string
@@ -36,7 +37,12 @@ const ActivitiesPage = () => {
   const [specialEvents, setSpecialEvents] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [registering, setRegistering] = useState<string | null>(null)
-  const [userRegistrations, setUserRegistrations] = useState<Set<string>>(new Set())
+  const [cancelling, setCancelling] = useState<string | null>(null)
+  const [userRegistrations, setUserRegistrations] = useState<Record<string, {
+    registrationId: string
+    canCancelUntil: string
+    paymentProcessed: boolean
+  }>>({})
   const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({})
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
@@ -47,6 +53,8 @@ const ActivitiesPage = () => {
     cancellationHours: number
     requiresImmediate: boolean
   } | null>(null)
+  const [showCalendarPrompt, setShowCalendarPrompt] = useState(false)
+  const [registeredActivity, setRegisteredActivity] = useState<Activity | null>(null)
 
   useEffect(() => {
     fetchActivities()
@@ -132,14 +140,27 @@ const ActivitiesPage = () => {
 
       const { data, error } = await supabase
         .from('registrations')
-        .select('activity_id')
+        .select('id, activity_id, can_cancel_until, payment_processed')
         .eq('user_id', user.id)
         .in('status', ['registered', 'attended'])  // Include attended status
 
       if (error) throw error
 
-      const registeredIds = new Set(data?.map(r => r.activity_id) || [])
-      setUserRegistrations(registeredIds)
+      const registrations: Record<string, {
+        registrationId: string
+        canCancelUntil: string
+        paymentProcessed: boolean
+      }> = {}
+
+      data?.forEach(r => {
+        registrations[r.activity_id] = {
+          registrationId: r.id,
+          canCancelUntil: r.can_cancel_until,
+          paymentProcessed: r.payment_processed
+        }
+      })
+
+      setUserRegistrations(registrations)
     } catch (error) {
       console.error('Error fetching user registrations:', error)
     }
@@ -310,6 +331,10 @@ const ActivitiesPage = () => {
       // Refresh registrations and participant counts
       await fetchUserRegistrations()
       await fetchParticipantCounts()
+
+      // Show calendar prompt
+      setRegisteredActivity(activity)
+      setShowCalendarPrompt(true)
     } catch (error) {
       console.error('Error registering:', error)
       alert('Wystąpił błąd podczas zapisu')
@@ -357,6 +382,51 @@ const ActivitiesPage = () => {
     setShowPaymentModal(false)
     setPendingRegistration(null)
     setRegistering(null)
+  }
+
+  const handleCancelRegistration = async (activityId: string) => {
+    const registration = userRegistrations[activityId]
+    if (!registration) return
+
+    // Check if cancellation is allowed
+    const now = new Date()
+    const deadline = new Date(registration.canCancelUntil)
+
+    if (now > deadline) {
+      alert('Termin anulowania upłynął!')
+      return
+    }
+
+    if (registration.paymentProcessed) {
+      alert('Nie możesz anulować - zajęcia zostały już opłacone (oznaczono obecność).')
+      return
+    }
+
+    if (!confirm('Czy na pewno chcesz anulować te zajęcia?')) {
+      return
+    }
+
+    setCancelling(activityId)
+    try {
+      const { error } = await supabase
+        .from('registrations')
+        .update({
+          status: 'cancelled',
+          cancelled_at: new Date().toISOString()
+        })
+        .eq('id', registration.registrationId)
+
+      if (error) throw error
+
+      alert('✅ Zajęcia zostały anulowane')
+      await fetchUserRegistrations()
+      await fetchParticipantCounts()
+    } catch (error) {
+      console.error('Error cancelling:', error)
+      alert('Wystąpił błąd podczas anulowania')
+    } finally {
+      setCancelling(null)
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -447,11 +517,9 @@ const ActivitiesPage = () => {
       {/* SEKCJA 1: Wydarzenia specjalne */}
       {specialEvents.length > 0 && (
         <div className="mb-12">
-          <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-2xl font-bold text-yellow-600">🏆 Nadchodzące wydarzenia specjalne</h2>
-            <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm rounded-full font-semibold">
-              Zawody • Spływy • Wyjazdy
-            </span>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-yellow-600 mb-2">🏆 Nadchodzące wydarzenia specjalne</h2>
+            <p className="text-sm text-gray-600">Zawody • Spływy • Wyjazdy</p>
           </div>
 
           <div className="mb-4 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg text-sm text-yellow-800">
@@ -460,8 +528,9 @@ const ActivitiesPage = () => {
 
           <div className="grid gap-6 md:grid-cols-2">
             {specialEvents.map((activity) => {
-              const isRegistered = userRegistrations.has(activity.id)
+              const isRegistered = !!userRegistrations[activity.id]
               const isProcessing = registering === activity.id
+              const isCancelling = cancelling === activity.id
               const { isOpen, isBeforeOpen, isAfterClose, opensAt } = checkRegistrationWindow(activity)
               const registered = participantCounts[activity.id] || 0
               const isFull = activity.max_participants !== null && registered >= activity.max_participants
@@ -580,9 +649,13 @@ const ActivitiesPage = () => {
                         )}
 
                         {isRegistered ? (
-                          <div className="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg text-center">
-                            ✓ Zapisany/a
-                          </div>
+                          <button
+                            onClick={() => handleCancelRegistration(activity.id)}
+                            disabled={isCancelling}
+                            className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isCancelling ? 'Anulowanie...' : 'Anuluj zapis'}
+                          </button>
                         ) : (
                           <button
                             onClick={() => handleRegister(activity.id, activity.cost, activity.cancellation_hours)}
@@ -644,8 +717,9 @@ const ActivitiesPage = () => {
         ) : (
           <div className="grid gap-6 md:grid-cols-2">
             {activities.map((activity) => {
-            const isRegistered = userRegistrations.has(activity.id)
+            const isRegistered = !!userRegistrations[activity.id]
             const isProcessing = registering === activity.id
+            const isCancelling = cancelling === activity.id
             const { isOpen, isBeforeOpen, isAfterClose, opensAt } = checkRegistrationWindow(activity)
             const registered = participantCounts[activity.id] || 0
             const isFull = activity.max_participants !== null && registered >= activity.max_participants
@@ -758,9 +832,13 @@ const ActivitiesPage = () => {
                     )}
 
                     {isRegistered ? (
-                      <div className="w-full bg-green-500 text-white font-semibold py-3 px-6 rounded-lg text-center">
-                        ✓ Zapisany/a
-                      </div>
+                      <button
+                        onClick={() => handleCancelRegistration(activity.id)}
+                        disabled={isCancelling}
+                        className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isCancelling ? 'Anulowanie...' : 'Anuluj zapis'}
+                      </button>
                     ) : (
                       <button
                         onClick={() => handleRegister(activity.id, activity.cost, activity.cancellation_hours)}
@@ -844,6 +922,54 @@ const ActivitiesPage = () => {
           onPayLater={handlePayLater}
           onCancel={handleCancelPayment}
         />
+      )}
+
+      {/* Google Calendar Prompt Modal */}
+      {showCalendarPrompt && registeredActivity && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8">
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">📅</div>
+              <h3 className="text-2xl font-bold text-purple-600 mb-2">Dodaj do kalendarza</h3>
+              <p className="text-gray-600">
+                Zapisz <strong>{registeredActivity.name}</strong> w swoim kalendarzu Google, aby nie zapomnieć!
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  const endDateTime = calculateEndTime(registeredActivity.date_time, registeredActivity.duration_minutes)
+                  addToGoogleCalendar({
+                    title: registeredActivity.name,
+                    description: registeredActivity.description,
+                    location: registeredActivity.location,
+                    startDateTime: registeredActivity.date_time,
+                    endDateTime: endDateTime
+                  })
+                  setShowCalendarPrompt(false)
+                  setRegisteredActivity(null)
+                }}
+                className="w-full px-6 py-3 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold rounded-lg hover:shadow-lg transition-all"
+              >
+                📅 Dodaj do Google Calendar
+              </button>
+              <button
+                onClick={() => {
+                  setShowCalendarPrompt(false)
+                  setRegisteredActivity(null)
+                }}
+                className="w-full px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all"
+              >
+                Nie, dziękuję
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 text-center mt-4">
+              💡 Otworzymy Google Calendar w nowej karcie
+            </p>
+          </div>
+        </div>
       )}
     </div>
   )
