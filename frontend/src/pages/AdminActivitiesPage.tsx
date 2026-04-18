@@ -90,7 +90,8 @@ const AdminActivitiesPage = () => {
       const { data: activitiesData, error: activitiesError } = await supabase
         .from('activities')
         .select('*')
-        .order('date_time', { ascending: false })
+        .order('is_special_event', { ascending: false })  // Wydarzenia specjalne najpierw
+        .order('date_time', { ascending: false })         // Potem po dacie
 
       if (activitiesError) throw activitiesError
 
