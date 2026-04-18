@@ -320,7 +320,7 @@ const AdminMemberPollsPage = () => {
             <p className="text-gray-600">Twórz głosowania i sprawdź wyniki</p>
           </div>
           <button
-            onClick={() => navigate('/admin')}
+            onClick={() => navigate('/')}
             className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
           >
             ← Panel Admin
