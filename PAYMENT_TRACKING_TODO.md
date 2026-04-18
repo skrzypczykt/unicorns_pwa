@@ -1,14 +1,44 @@
 # Payment Tracking - Plan Implementacji
 
-## ✅ GOTOWE
+## ✅ GOTOWE - WSZYSTKO ZAIMPLEMENTOWANE
 
-1. **Migracja 020** - `supabase/migrations/020_payment_tracking.sql`
+### 1. **Migracja 020** - `supabase/migrations/020_payment_tracking.sql`
    - Kolumny w `registrations`: payment_status, payment_due_date, paid_at
    - Kolumny w `activities`: requires_immediate_payment, payment_deadline_hours
    - Funkcje: calculate_payment_due_date(), get_registrations_needing_payment_reminders()
    - TypeScript types zaktualizowane
 
-## 🔨 DO ZROBIENIA
+### 2. **A) Admin UI - AdminActivitiesPage.tsx**
+   - Checkboxy płatności w formularzu
+   - "Wymagaj natychmiastowej płatności"
+   - "Termin płatności (godziny przed zajęciami)"
+
+### 3. **B) Modal płatności - PaymentChoiceModal.tsx**
+   - Komponent modalu z wyborem płatności
+   - Integracja w ActivitiesPage.tsx
+   - Logika: requires_immediate = tylko "Opłać teraz"
+   - Obliczanie payment_due_date przy "Opłać później"
+
+### 4. **C) Status płatności - MyClassesPage.tsx**
+   - Badgey: ✅ Opłacone / ⏳ Do zapłaty / ❗ Przeterminowane
+   - Sekcja z deadline i przyciskiem "💳 Opłać teraz"
+   - handlePayNow() (mock - czeka na BLIK)
+
+### 5. **D) Push Reminders - Edge Function + Cron**
+   - `supabase/functions/send-payment-reminders/index.ts`
+   - FCM v1 API (Service Account)
+   - Cron job: `payment-reminders-hourly` (co 1h)
+   - pg_cron + pg_net extensions enabled
+   - trigger_payment_reminders() SQL function
+
+### 6. **Firebase Configuration**
+   - Service Account utworzony
+   - FIREBASE_SERVICE_ACCOUNT secret w Supabase
+   - FCM Cloud Messaging API enabled
+
+---
+
+## 🔨 DO ZROBIENIA (OPCJONALNE)
 
 ### 1. Frontend - Modal płatności przy zapisie (ActivitiesPage.tsx)
 
@@ -187,16 +217,16 @@ serve(async (req) => {
 })
 ```
 
-## 📋 Kolejność implementacji (REKOMENDOWANE)
+## 📋 Kolejność implementacji (ZREALIZOWANE)
 
-1. **[NAJPIERW]** Wykonaj migrację 020 w Supabase Dashboard
-2. **[UI]** Dodaj checkboxy płatności w AdminActivitiesPage (requires_immediate_payment, payment_deadline_hours)
-3. **[UI]** Dodaj PaymentChoiceModal.tsx (Opłać teraz / później)
-4. **[UI]** Zmodyfikuj handleRegister w ActivitiesPage - użyj modalu
-5. **[UI]** Dodaj wyświetlanie payment_status w MyClassesPage (badge + przycisk "Opłać")
-6. **[Backend]** Utwórz Edge Function: send-payment-reminders
-7. **[Backend]** Skonfiguruj Cron w Supabase (co 1h)
-8. **[Backend]** Utwórz Edge Function: process-payment (opcjonalne - na razie BLIK jest disabled)
+1. ✅ **[NAJPIERW]** Wykonaj migrację 020 w Supabase Dashboard
+2. ✅ **[UI]** Dodaj checkboxy płatności w AdminActivitiesPage (requires_immediate_payment, payment_deadline_hours)
+3. ✅ **[UI]** Dodaj PaymentChoiceModal.tsx (Opłać teraz / później)
+4. ✅ **[UI]** Zmodyfikuj handleRegister w ActivitiesPage - użyj modalu
+5. ✅ **[UI]** Dodaj wyświetlanie payment_status w MyClassesPage (badge + przycisk "Opłać")
+6. ✅ **[Backend]** Utwórz Edge Function: send-payment-reminders (FCM v1 API)
+7. ✅ **[Backend]** Skonfiguruj Cron w Supabase (co 1h, pg_cron)
+8. ⏸️ **[Backend]** Utwórz Edge Function: process-payment (ODŁOŻONE - wymaga integracji BLIK)
 
 ## 🧪 Testowanie
 
