@@ -139,6 +139,12 @@ const AdminActivitiesPage = () => {
     e.preventDefault()
 
     try {
+      // Walidacja: zwykłe zajęcia (nie-special_event) muszą mieć trenera
+      if (!formData.is_special_event && !formData.trainer_id) {
+        alert('❌ Musisz wybrać trenera dla zwykłych zajęć. Jeśli to wydarzenie specjalne, zaznacz "Wydarzenie specjalne".')
+        return
+      }
+
       // Konwertuj puste stringi na null i datetime-local na ISO z timezone
       // Wykluczamy send_notification - to tylko parametr UI, nie kolumna w bazie
       const { send_notification, ...formDataWithoutNotification } = formData
