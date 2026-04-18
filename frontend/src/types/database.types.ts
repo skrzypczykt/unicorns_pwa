@@ -105,6 +105,8 @@ export interface Database {
           status: 'scheduled' | 'completed' | 'cancelled'
           is_special_event: boolean
           whatsapp_group_url: string | null
+          requires_immediate_payment: boolean
+          payment_deadline_hours: number
           created_at: string
           updated_at: string
         }
@@ -124,6 +126,8 @@ export interface Database {
           status?: 'scheduled' | 'completed' | 'cancelled'
           is_special_event?: boolean
           whatsapp_group_url?: string | null
+          requires_immediate_payment?: boolean
+          payment_deadline_hours?: number
           created_at?: string
           updated_at?: string
         }
@@ -143,6 +147,8 @@ export interface Database {
           status?: 'scheduled' | 'completed' | 'cancelled'
           is_special_event?: boolean
           whatsapp_group_url?: string | null
+          requires_immediate_payment?: boolean
+          payment_deadline_hours?: number
           created_at?: string
           updated_at?: string
         }
@@ -157,6 +163,10 @@ export interface Database {
           can_cancel_until: string
           cancelled_at: string | null
           payment_processed: boolean
+          payment_status: 'paid' | 'pending' | 'overdue'
+          payment_due_date: string | null
+          paid_at: string | null
+          last_payment_reminder_sent_at: string | null
           created_at: string
           updated_at: string
         }
@@ -169,6 +179,10 @@ export interface Database {
           can_cancel_until: string
           cancelled_at?: string | null
           payment_processed?: boolean
+          payment_status?: 'paid' | 'pending' | 'overdue'
+          payment_due_date?: string | null
+          paid_at?: string | null
+          last_payment_reminder_sent_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -181,6 +195,10 @@ export interface Database {
           can_cancel_until?: string
           cancelled_at?: string | null
           payment_processed?: boolean
+          payment_status?: 'paid' | 'pending' | 'overdue'
+          payment_due_date?: string | null
+          paid_at?: string | null
+          last_payment_reminder_sent_at?: string | null
           created_at?: string
           updated_at?: string
         }
