@@ -37,10 +37,16 @@ interface Trainer {
   email: string
 }
 
+interface ActivityType {
+  id: string
+  name: string
+}
+
 const AdminActivitiesPage = () => {
   const navigate = useNavigate()
   const [activities, setActivities] = useState<Activity[]>([])
   const [trainers, setTrainers] = useState<Trainer[]>([])
+  const [activityTypes, setActivityTypes] = useState<ActivityType[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -56,6 +62,7 @@ const AdminActivitiesPage = () => {
     cost: 30,
     location: '',
     trainer_id: '',
+    activity_type_id: '',
     cancellation_hours: 24,
     status: 'scheduled',
     registration_opens_at: '',
@@ -74,6 +81,7 @@ const AdminActivitiesPage = () => {
   useEffect(() => {
     fetchActivities()
     fetchTrainers()
+    fetchActivityTypes()
   }, [])
 
   const fetchActivities = async () => {
@@ -130,6 +138,21 @@ const AdminActivitiesPage = () => {
     }
   }
 
+  const fetchActivityTypes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('activity_types')
+        .select('id, name')
+        .order('name', { ascending: true })
+
+      if (error) throw error
+      console.log('Fetched activity types:', data)
+      setActivityTypes(data || [])
+    } catch (error) {
+      console.error('Error fetching activity types:', error)
+    }
+  }
+
   // Helper: konwertuj datetime-local (lokalny czas) na ISO string z timezone
   const toISOWithTimezone = (dateTimeLocal: string | null | undefined): string | null => {
     if (!dateTimeLocal) return null
@@ -143,6 +166,12 @@ const AdminActivitiesPage = () => {
     e.preventDefault()
 
     try {
+      // Walidacja: typ aktywności jest wymagany
+      if (!formData.activity_type_id) {
+        alert('❌ Musisz wybrać typ zajęć (np. Joga, Taniec, Fitness).')
+        return
+      }
+
       // Walidacja: zwykłe zajęcia (nie-special_event) muszą mieć trenera
       if (!formData.is_special_event && !formData.trainer_id) {
         alert('❌ Musisz wybrać trenera dla zwykłych zajęć. Jeśli to wydarzenie specjalne, zaznacz "Wydarzenie specjalne".')
@@ -306,6 +335,7 @@ const AdminActivitiesPage = () => {
       cost: activity.cost,
       location: activity.location,
       trainer_id: activity.trainer_id,
+      activity_type_id: activity.activity_type_id || '',
       cancellation_hours: activity.cancellation_hours,
       status: activity.status,
       registration_opens_at: toDateTimeLocal(activity.registration_opens_at),
@@ -355,6 +385,7 @@ const AdminActivitiesPage = () => {
       cost: 30,
       location: '',
       trainer_id: '',
+      activity_type_id: '',
       cancellation_hours: 24,
       status: 'scheduled',
       registration_opens_at: '',
@@ -484,6 +515,25 @@ const AdminActivitiesPage = () => {
                   required
                   className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Typ zajęć *
+                </label>
+                <select
+                  value={formData.activity_type_id}
+                  onChange={(e) => setFormData({ ...formData, activity_type_id: e.target.value })}
+                  required
+                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                >
+                  <option value="">Wybierz typ zajęć</option>
+                  {activityTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
