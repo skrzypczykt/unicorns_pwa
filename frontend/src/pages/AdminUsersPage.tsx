@@ -12,14 +12,24 @@ interface User {
   is_association_member: boolean
 }
 
+interface Transaction {
+  id: string
+  amount: number
+  balance_before: number
+  balance_after: number
+  type: string
+  description: string
+  created_at: string
+  reference_id: string | null
+}
+
 const AdminUsersPage = () => {
   const navigate = useNavigate()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  const [amount, setAmount] = useState('')
-  const [description, setDescription] = useState('')
-  const [updating, setUpdating] = useState(false)
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [loadingTransactions, setLoadingTransactions] = useState(false)
 
   useEffect(() => {
     fetchUsers()
@@ -41,74 +51,28 @@ const AdminUsersPage = () => {
     }
   }
 
-  const handleUpdateBalance = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedUser) return
-
-    const amountNum = parseFloat(amount)
-    if (isNaN(amountNum) || amountNum === 0) {
-      alert('Wprowadź prawidłową kwotę')
-      return
-    }
-
-    setUpdating(true)
+  const fetchUserTransactions = async (userId: string) => {
+    setLoadingTransactions(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      // Get current balance
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('balance')
-        .eq('id', selectedUser.id)
-        .single()
-
-      if (userError) throw userError
-
-      const balanceBefore = userData.balance
-      const balanceAfter = balanceBefore + amountNum
-
-      // Update balance
-      const { error: balanceError } = await supabase
-        .from('users')
-        .update({
-          balance: balanceAfter,
-          balance_updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedUser.id)
-
-      if (balanceError) throw balanceError
-
-      // Create transaction record
-      const { error: transactionError } = await supabase
+      const { data, error } = await supabase
         .from('balance_transactions')
-        .insert({
-          user_id: selectedUser.id,
-          amount: amountNum,
-          balance_before: balanceBefore,
-          balance_after: balanceAfter,
-          type: amountNum > 0 ? 'manual_credit' : 'manual_debit',
-          description: description || (amountNum > 0 ? 'Wpłata na konto' : 'Korekta salda'),
-          created_by: user.id
-        })
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(50)
 
-      if (transactionError) throw transactionError
-
-      alert(`✅ Saldo zaktualizowane!\nPoprzednie: ${balanceBefore.toFixed(2)} zł\nNowe: ${balanceAfter.toFixed(2)} zł`)
-
-      // Reset form
-      setAmount('')
-      setDescription('')
-      setSelectedUser(null)
-
-      // Refresh users
-      await fetchUsers()
+      if (error) throw error
+      setTransactions(data || [])
     } catch (error) {
-      console.error('Error updating balance:', error)
-      alert('Wystąpił błąd podczas aktualizacji salda')
+      console.error('Error fetching transactions:', error)
     } finally {
-      setUpdating(false)
+      setLoadingTransactions(false)
     }
+  }
+
+  const handleSelectUser = (user: User) => {
+    setSelectedUser(user)
+    fetchUserTransactions(user.id)
   }
 
   const handleUpdateRole = async (newRole: string) => {
@@ -177,6 +141,32 @@ const AdminUsersPage = () => {
     }
   }
 
+  const getTransactionTypeLabel = (type: string) => {
+    switch (type) {
+      case 'manual_credit': return 'Wpłata manualna'
+      case 'manual_debit': return 'Wypłata manualna'
+      case 'class_payment': return 'Płatność za zajęcia'
+      case 'cancellation_refund': return 'Zwrot - anulowanie'
+      case 'membership_fee': return 'Składka członkowska'
+      default: return type
+    }
+  }
+
+  const getTransactionColor = (amount: number) => {
+    return amount > 0 ? 'text-green-600' : 'text-red-600'
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('pl-PL', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center">
@@ -193,7 +183,7 @@ const AdminUsersPage = () => {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-purple-600 mb-2">👥 Zarządzanie Użytkownikami</h1>
-          <p className="text-gray-600">Przeglądaj użytkowników i aktualizuj salda</p>
+          <p className="text-gray-600">Przeglądaj użytkowników i ich historię transakcji</p>
         </div>
         <button
           onClick={() => navigate('/')}
@@ -216,7 +206,7 @@ const AdminUsersPage = () => {
                 className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 p-4 transition-all cursor-pointer hover:shadow-xl ${
                   selectedUser?.id === user.id ? 'border-purple-500' : 'border-purple-200'
                 }`}
-                onClick={() => setSelectedUser(user)}
+                onClick={() => handleSelectUser(user)}
               >
                 <div className="flex items-start justify-between">
                   <div>
@@ -333,79 +323,83 @@ const AdminUsersPage = () => {
                 </div>
               </div>
 
-              {/* Balance update form */}
+              {/* Transaction History */}
               <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6">
-                <h2 className="text-xl font-bold text-purple-600 mb-4">Zarządzaj saldem</h2>
-
-              <form onSubmit={handleUpdateBalance} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Kwota (zł)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                    placeholder="100.00"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Wpisz liczbę dodatnią (wpłata) lub ujemną (wypłata)
-                  </p>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-purple-600">
+                    Historia transakcji ({transactions.length})
+                  </h2>
+                  <button
+                    onClick={() => setSelectedUser(null)}
+                    className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm transition-all"
+                  >
+                    ← Wróć
+                  </button>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Opis (opcjonalny)
-                  </label>
-                  <input
-                    type="text"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                    placeholder="np. Wpłata za styczeń 2026"
-                  />
-                </div>
-
-                {amount && (
-                  <div className="p-3 bg-blue-50 rounded-lg text-sm">
-                    <p className="font-semibold text-blue-700">Podgląd:</p>
-                    <p>Obecne saldo: {selectedUser.balance.toFixed(2)} zł</p>
-                    <p className="font-bold text-blue-600">
-                      Nowe saldo: {(selectedUser.balance + parseFloat(amount || '0')).toFixed(2)} zł
-                    </p>
+                {loadingTransactions ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600">Ładowanie transakcji...</p>
+                  </div>
+                ) : transactions.length === 0 ? (
+                  <div className="text-center py-8">
+                    <span className="text-6xl mb-4 block">📊</span>
+                    <p className="text-gray-600">Brak transakcji</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b-2 border-purple-200">
+                          <th className="text-left py-3 px-2 text-sm font-semibold text-gray-600">Data</th>
+                          <th className="text-left py-3 px-2 text-sm font-semibold text-gray-600">Opis</th>
+                          <th className="text-left py-3 px-2 text-sm font-semibold text-gray-600">Typ</th>
+                          <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Kwota</th>
+                          <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Saldo przed</th>
+                          <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Saldo po</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transactions.map((transaction) => (
+                          <tr key={transaction.id} className="border-b border-gray-200 hover:bg-purple-50">
+                            <td className="py-3 px-2 text-sm text-gray-600">
+                              {formatDate(transaction.created_at)}
+                            </td>
+                            <td className="py-3 px-2 text-sm text-gray-800">
+                              {transaction.description}
+                            </td>
+                            <td className="py-3 px-2">
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                transaction.type === 'manual_credit' ? 'bg-green-100 text-green-700' :
+                                transaction.type === 'manual_debit' ? 'bg-red-100 text-red-700' :
+                                transaction.type === 'class_payment' ? 'bg-purple-100 text-purple-700' :
+                                transaction.type === 'membership_fee' ? 'bg-blue-100 text-blue-700' :
+                                'bg-gray-100 text-gray-700'
+                              }`}>
+                                {getTransactionTypeLabel(transaction.type)}
+                              </span>
+                            </td>
+                            <td className={`py-3 px-2 text-right font-bold ${getTransactionColor(transaction.amount)}`}>
+                              {transaction.amount > 0 ? '+' : ''}{transaction.amount.toFixed(2)} zł
+                            </td>
+                            <td className="py-3 px-2 text-right text-sm text-gray-600">
+                              {transaction.balance_before.toFixed(2)} zł
+                            </td>
+                            <td className="py-3 px-2 text-right text-sm font-semibold text-gray-800">
+                              {transaction.balance_after.toFixed(2)} zł
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
-
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    disabled={updating || !amount}
-                    className="flex-1 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {updating ? 'Zapisywanie...' : 'Zaktualizuj saldo'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedUser(null)
-                      setAmount('')
-                      setDescription('')
-                    }}
-                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
-                  >
-                    Anuluj
-                  </button>
-                </div>
-              </form>
               </div>
             </>
           ) : (
             <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 text-center">
               <span className="text-6xl mb-4 block">👈</span>
-              <p className="text-gray-600">Wybierz użytkownika z listy, aby zaktualizować saldo</p>
+              <p className="text-gray-600">Wybierz użytkownika z listy, aby zobaczyć historię transakcji</p>
             </div>
           )}
         </div>
