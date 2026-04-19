@@ -231,18 +231,6 @@ const AdminUsersPage = () => {
                       )}
                     </div>
                   </div>
-                  {user.role !== 'external_trainer' && (
-                    <div className="text-right">
-                      <p className="text-xs text-gray-500">Saldo</p>
-                      <p className={`text-xl font-bold ${
-                        user.balance > 100 ? 'text-green-600' :
-                        user.balance > 50 ? 'text-yellow-600' :
-                        'text-red-600'
-                      }`}>
-                        {user.balance.toFixed(2)} zł
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
@@ -260,9 +248,6 @@ const AdminUsersPage = () => {
                 <div className="mb-4 p-4 bg-purple-50 rounded-lg">
                   <p className="font-bold text-purple-600">{selectedUser.display_name}</p>
                   <p className="text-sm text-gray-600">{selectedUser.email}</p>
-                  <p className="text-sm mt-2">
-                    Obecne saldo: <span className="font-bold text-purple-600">{selectedUser.balance.toFixed(2)} zł</span>
-                  </p>
                 </div>
               </div>
 
@@ -355,8 +340,6 @@ const AdminUsersPage = () => {
                           <th className="text-left py-3 px-2 text-sm font-semibold text-gray-600">Opis</th>
                           <th className="text-left py-3 px-2 text-sm font-semibold text-gray-600">Typ</th>
                           <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Kwota</th>
-                          <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Saldo przed</th>
-                          <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Saldo po</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -381,12 +364,6 @@ const AdminUsersPage = () => {
                             </td>
                             <td className={`py-3 px-2 text-right font-bold ${getTransactionColor(transaction.amount)}`}>
                               {transaction.amount > 0 ? '+' : ''}{transaction.amount.toFixed(2)} zł
-                            </td>
-                            <td className="py-3 px-2 text-right text-sm text-gray-600">
-                              {transaction.balance_before.toFixed(2)} zł
-                            </td>
-                            <td className="py-3 px-2 text-right text-sm font-semibold text-gray-800">
-                              {transaction.balance_after.toFixed(2)} zł
                             </td>
                           </tr>
                         ))}

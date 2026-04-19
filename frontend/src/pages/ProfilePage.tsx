@@ -139,9 +139,9 @@ const ProfilePage = () => {
         </button>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
+      <div className="mb-8">
         {/* Profile Info */}
-        <div className="md:col-span-2 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6">
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6">
           <h2 className="text-xl font-bold text-purple-600 mb-4">Informacje o koncie</h2>
 
           <div className="space-y-4">
@@ -177,29 +177,6 @@ const ProfilePage = () => {
               <label className="block text-sm font-semibold text-gray-500 mb-1">Konto utworzone</label>
               <p className="text-gray-800">{formatDate(profile.created_at)}</p>
             </div>
-          </div>
-        </div>
-
-        {/* Balance Card */}
-        <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl shadow-lg p-6 text-white">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-3xl">💰</span>
-            <h2 className="text-xl font-bold">Twoje saldo</h2>
-          </div>
-          <p className="text-5xl font-bold mb-4">{profile.balance.toFixed(2)} zł</p>
-          {profile.balance_updated_at && new Date(profile.balance_updated_at).getFullYear() > 2000 && (
-            <p className="text-sm opacity-90">
-              Ostatnia aktualizacja:<br />
-              {formatDate(profile.balance_updated_at)}
-            </p>
-          )}
-
-          <div className="mt-6 pt-4 border-t border-white/30">
-            <p className="text-sm opacity-75">
-              {profile.balance > 100 ? '✅ Świetne saldo!' :
-               profile.balance > 50 ? '⚠️ Rozważ doładowanie' :
-               '❗ Niskie saldo - opłać zajęcia w historii transakcji'}
-            </p>
           </div>
         </div>
       </div>
@@ -341,9 +318,6 @@ const ProfilePage = () => {
                   <th className="text-left py-3 px-2 text-sm font-semibold text-gray-600">Opis</th>
                   <th className="text-left py-3 px-2 text-sm font-semibold text-gray-600">Typ</th>
                   <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Kwota</th>
-                  <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Saldo przed</th>
-                  <th className="text-right py-3 px-2 text-sm font-semibold text-gray-600">Saldo po</th>
-                  <th className="text-center py-3 px-2 text-sm font-semibold text-gray-600">Akcje</th>
                 </tr>
               </thead>
               <tbody>
@@ -373,22 +347,6 @@ const ProfilePage = () => {
                     </td>
                     <td className={`py-3 px-2 text-right font-bold ${getTransactionColor(transaction.amount)}`}>
                       {transaction.amount > 0 ? '+' : ''}{transaction.amount.toFixed(2)} zł
-                    </td>
-                    <td className="py-3 px-2 text-right text-sm text-gray-600">
-                      {transaction.balance_before.toFixed(2)} zł
-                    </td>
-                    <td className="py-3 px-2 text-right text-sm font-semibold text-gray-800">
-                      {transaction.balance_after.toFixed(2)} zł
-                    </td>
-                    <td className="py-3 px-2 text-center">
-                      {transaction.amount < 0 && (
-                        <button
-                          onClick={() => setShowBlikModal(true)}
-                          className="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
-                        >
-                          💳 Opłać
-                        </button>
-                      )}
                     </td>
                   </tr>
                 ))}
