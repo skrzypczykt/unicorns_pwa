@@ -193,17 +193,9 @@ const MyClassesPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-purple-600 mb-2">🎯 Moje zajęcia</h1>
-          <p className="text-gray-600">Zarządzaj swoimi rezerwacjami</p>
-        </div>
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
-        >
-          ← Strefa użytkownika
-        </button>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-purple-600 mb-2">🎯 Moje zajęcia</h1>
+        <p className="text-gray-600">Zarządzaj swoimi rezerwacjami</p>
       </div>
 
       {registrations.length === 0 ? (
@@ -241,7 +233,9 @@ const MyClassesPage = () => {
                 >
                   {/* FRONT SIDE */}
                   <div
-                    className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all backface-hidden"
+                    className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all backface-hidden ${
+                      reg.status === 'cancelled' ? 'opacity-50 grayscale' : ''
+                    }`}
                     style={{ backfaceVisibility: 'hidden' }}
                   >
                     <div className="flex items-start justify-between">

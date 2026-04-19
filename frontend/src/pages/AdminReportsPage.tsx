@@ -247,7 +247,7 @@ export default function AdminReportsPage() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-purple-900">📊 Raporty Księgowe</h1>
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/')}
             className="hidden md:flex px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all items-center gap-2"
           >
             ← Powrót do menu

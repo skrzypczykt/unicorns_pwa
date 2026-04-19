@@ -1,0 +1,128 @@
+# Changelog
+
+Wszystkie ważne zmiany w projekcie Unicorns PWA.
+
+Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
+
+## [0.1.25] - 2026-04-19
+
+### Dodano
+
+- **Zdjęcia w sekcji Aktualności**
+  - Każdy artykuł na stronie `/news` ma teraz przypisane zdjęcie
+  - Layout kafelków zmieniony na responsywny z obrazkiem po lewej stronie (desktop) lub na górze (mobile)
+  - 3 najnowsze aktualności na stronie głównej również z miniaturami zdjęć
+  - Zdjęcia z unicorns.org.pl oraz Unsplash dla artykułów ogólnych
+
+### Zmieniono
+
+- **Ikona użytkownika w headerze** - zmieniono z 👤 na 🤵 (mężczyzna w smokingu)
+- **Terminologia** - zamieniono "Członkowie" na "Użytkownicy" w opisie aplikacji PWA w Timeline
+  - "Członek" pozostaje dla członków stowarzyszenia (membership)
+  - "Użytkownik" dla wszystkich użytkowników aplikacji
+
+---
+
+## [0.1.24] - 2026-04-18
+
+### Dodano
+
+- **Strona "Aktualności"** (`/news`)
+  - Dostępna bez logowania
+  - Lista wszystkich najnowszych wpisów ze strony unicorns.org.pl
+  - Sekcja z 3 najnowszymi aktualnościami na stronie głównej
+  - Link w hamburger menu i stopce
+  - Pełne artykuły w aplikacji z obrazkami (np. `/news/turniej-badmintona-2025`)
+  - Pierwszy pełny artykuł: "Turniej badmintona za nami!" z 3 zdjęciami medalistów
+
+- **Zaktualizowana sekcja "Nasza Historia"**
+  - Timeline z prawdziwymi datami i wydarzeniami Stowarzyszenia
+  - Zdjęcia ze strony unicorns.org.pl (logo, urodziny, turnieje)
+  - 7 kluczowych momentów: od założenia (2023) do aplikacji PWA (2026)
+  - Wydarzenia: Bal Rogacza, BadCup, Mini Ligi, Championship 2025
+
+- **Rozbudowana strona "Wsparcie/Darowizny"**
+  - Pełne dane do przelewu bankowego (odbiorca, numer konta, SWIFT)
+  - Przycisk kopiowania numeru konta
+  - Szczegółowe informacje o odliczeniu podatkowym (do 6% dochodu)
+  - Różnica między darowizną a 1,5% podatku
+  - Informacja o przeznaczeniu środków
+  - Ochrona danych osobowych
+
+- **Welcome Modal z powiadomieniami**
+  - Wyskakujące okienko przy pierwszym uruchomieniu aplikacji
+  - Zachęta do włączenia powiadomień push
+  - Pokazuje się tylko raz (zapisywane w localStorage)
+  - Lista korzyści z włączenia powiadomień
+
+- **Nowa strona "Moje Konto"** (`/account`)
+  - Przegląd informacji o koncie
+  - Wyświetlanie salda i historii transakcji
+  - Doładowanie BLIK (placeholder - w przygotowaniu)
+  - Szybkie akcje: przejście do ustawień, edycji profilu
+
+- **Nowa strona "Ustawienia"** (`/settings`)
+  - Zaawansowane ustawienia powiadomień (push, email, SMS)
+  - Przypomnienia o zajęciach
+  - Alerty nowych aktywności i salda
+  - Aktualności stowarzyszenia
+  - Instalacja PWA
+  - Zmiana hasła
+  - Eksport danych (JSON)
+  - Usunięcie konta (placeholder - kontakt z admin)
+
+- **Wersjonowanie aplikacji**
+  - Numer wersji widoczny w stopce wszystkich stron
+  - Plik `frontend/src/version.ts` z aktualną wersją
+  - Dokumentacja wersjonowania w `VERSIONING.md`
+
+- **3D Flip Card Animation**
+  - Animacja obracania karty przy anulowaniu rezerwacji (Moje zajęcia)
+  - Animacja obracania karty przy zapisywaniu na zajęcia (Harmonogram)
+  - Ikony emoji: smutny jednorożec 🦄💔 (anulowanie), szczęśliwy 🦄✨ (zapis)
+
+- **Hamburger Menu**
+  - Kompletne menu nawigacyjne w prawym górnym rogu
+  - Sekcje: Strona główna, Harmonogram, Moje rezerwacje, Strefa Członka, Moje Konto, Ustawienia, Darowizny
+  - Panel trenera (dla trenerów i adminów)
+  - Panel admina (tylko dla adminów)
+  - Wylogowanie
+
+### Zmieniono
+
+- **Ciemny header (czarny gradient)** - lepiej komponuje się z logo na czarnym tle
+- **Usunięto wszystkie przyciski "Powrót"** - hamburger menu je zastępuje
+- **Ikonka użytkownika w headerze** - zamiast nazwy roli pokazuje się 👤 + imię i nazwisko
+- **Usunięto kafelek "Powiadomienia o nowych zajęciach"** - zastąpiony szczegółowymi ustawieniami w zakładce Ustawienia
+- **Przeprojektowano ustawienia powiadomień** - teraz jako lista toggle'i w Settings zamiast osobnego kafelka
+- **Usunięto stronę Dashboard** - wszystkie nawigacje `/dashboard` przekierowują na `/` (stronę główną)
+- **Usunięto "Profil (stary)"** z hamburger menu
+- **Ujednolicono header** - ten sam header dla zalogowanych użytkowników na wszystkich stronach
+- **Ukryto przyciski "Powrót"** - hamburger menu je zastępuje, nie są już potrzebne
+- **Anulowane zajęcia są wyszarzone** - w "Moje zajęcia" anulowane rezerwacje mają obniżoną przezroczystość i grayscale
+- **Zmieniono "Strefa użytkownika" na "Strona główna"** w hamburger menu
+
+### Naprawiono
+
+- **Strona Aktualności pokazuje header z hamburger menu** - dla zalogowanych użytkowników
+- **Data aktualizacji salda dla nowych użytkowników** - dla nowych kont nie wyświetla się data z 1970 roku
+- **Duplikaty badge "Opłacone"** - naprawiono logikę wyświetlania statusu płatności w liście rezerwacji
+- **Badge overflow** - poprawiono responsywność i zawijanie badge'ów na małych ekranach
+- **Polskie znaki w CSV** - eksporty raportów finansowych używają UTF-8 BOM i polskiego formatu (średnik, przecinek dziesiętny)
+- **Z-index hamburger menu** - menu zawsze jest na wierzchu (z-index 9999)
+
+---
+
+## [0.1.0] - 2026-04-01
+
+### Dodano
+
+- Podstawowa aplikacja PWA
+- System logowania i rejestracji
+- Harmonogram zajęć i wydarzeń
+- System rezerwacji
+- Panel administratora
+- Panel trenera
+- Strefa Członka Stowarzyszenia
+- System powiadomień push
+- Instalacja PWA na iOS i Android

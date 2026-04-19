@@ -8,38 +8,52 @@ interface TimelineEvent {
 
 const timelineEvents: TimelineEvent[] = [
   {
-    year: "2020",
-    title: "Powstanie Unicorns Łódź",
-    description: "Grupa pasjonatów sportu i aktywności towarzyskich zakłada stowarzyszenie Unicorns Łódź. Pierwszy trening badmintona gromadzi 12 osób, które dzielą wspólną wizję - tworzenie przestrzeni dla ludzi aktywnych, niezależnie od poziomu zaawansowania.",
-    imageUrl: "https://images.unsplash.com/photo-1533071115214-8b8ddfa44bf2?w=800&h=500&fit=crop",
-    position: "right"
-  },
-  {
-    year: "2021",
-    title: "Pierwszy Turniej Badmintona",
-    description: "Organizujemy nasz pierwszy oficjalny turniej badmintona! 50 uczestników, wielkie emocje, wspaniała atmosfera. To wydarzenie pokazało, jak bardzo potrzebne są takie inicjatywy w naszym mieście.",
-    imageUrl: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&h=500&fit=crop",
-    position: "left"
-  },
-  {
-    year: "2022",
-    title: "Rozszerzenie Działalności",
-    description: "Dodajemy nowe sekcje: siatkówkę, taniec i gry planszowe. Nasza społeczność rośnie do ponad 200 aktywnych członków. Rozpoczynamy regularną współpracę z halami sportowymi w Łodzi.",
-    imageUrl: "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=800&h=500&fit=crop",
-    position: "right"
-  },
-  {
     year: "2023",
-    title: "Pierwsze Wyjazdy Integracyjne",
-    description: "Organizujemy weekendowe wyjazdy na kajaki i rowery. Odkrywamy, że nasze stowarzyszenie to nie tylko sport - to przede wszystkim wspaniała społeczność ludzi, którzy lubią się wspólnie bawić.",
-    imageUrl: "https://images.unsplash.com/photo-1578972474928-34aafffea0e3?w=800&h=500&fit=crop",
+    title: "Założenie Stowarzyszenia 🦄",
+    description: "Październik 2023 - grupa pasjonatów sportu, kultury i rozrywki oficjalnie zakłada Stowarzyszenie UNICORNS w Łodzi. Rozpoczynamy działalność z misją tworzenia inkluzywnej przestrzeni dla wszystkich, niezależnie od poziomu zaawansowania sportowego.",
+    imageUrl: "https://www.unicorns.org.pl/logo1_final_rainbow_nl1.aa5735ec.png",
+    position: "right"
+  },
+  {
+    year: "2024",
+    title: "Pierwsze Urodziny - Bal Rogacza 🎉",
+    description: "Październik 2024 - obchodzimy pierwsze urodziny! Bal Rogacza to wielkie święto podsumowujące intensywny rok pełen wydarzeń sportowych i kulturalnych. Społeczność Unicorns rośnie w siłę!",
+    imageUrl: "https://www.unicorns.org.pl/unicorns_urodziny.815e15a7.jpg",
     position: "left"
   },
   {
     year: "2024",
-    title: "Era Cyfrowa - Aplikacja PWA",
-    description: "Wdrażamy nowoczesną aplikację webową do zarządzania zapisami na zajęcia. Teraz każdy może łatwo sprawdzić grafik, zapisać się na trening i otrzymać powiadomienia push o nowych wydarzeniach.",
-    imageUrl: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&h=500&fit=crop",
+    title: "Unicorns BadCup 2024 🏸",
+    description: "Organizujemy prestiżowy turniej badmintona - Unicorns BadCup. Ponad 40 uczestników w dwóch poziomach zaawansowania. Wydarzenie przyciąga graczy z całej Polski i umacnia pozycję Unicorns w środowisku badmintona.",
+    imageUrl: "https://www.unicorns.org.pl/06553c86-8884-432f-8b69-83aad2bcba30.a12e81cd.jpeg",
+    position: "right"
+  },
+  {
+    year: "2024",
+    title: "Mini Liga Badmintona 2024 🏆",
+    description: "Startuje nasza pierwsza Mini Liga Badmintona! Cykliczne rozgrywki, które pozwalają graczom regularnie rywalizować i rozwijać swoje umiejętności w przyjaznej, inkluzywnej atmosferze.",
+    imageUrl: "https://www.unicorns.org.pl/52670a15-0eb4-42b5-9540-bfb4f309316b.9ae74eb6.jpeg",
+    position: "left"
+  },
+  {
+    year: "2024",
+    title: "Mini Liga Siatkówki 2024 🏐",
+    description: "Rozszerzamy ofertę! Mini Liga Siatkówki przyciąga miłośników gry zespołowej. Zwycięzcy - UNHOLY TRINITY - zapisują się w historii pierwszych rozgrywek UNICORNS SMASH - TRIPLES COMPETITION.",
+    imageUrl: "https://www.unicorns.org.pl/90505925-5436-41a3-85f2-0cb53a7efe8f.7b2d2c97.jpeg",
+    position: "right"
+  },
+  {
+    year: "2025",
+    title: "UNICORNS BADMIN DOUBLES CHAMPIONSHIP 🏳️‍🌈",
+    description: "Listopad 2025 - organizujemy największy w historii tęczowy turniej badmintona w Polsce! 66 zawodników z 10+ miast, 73 mecze, 9 godzin intensywnych rozgrywek w 3 kategoriach. Jedyny taki turniej w kraju!",
+    imageUrl: "https://www.unicorns.org.pl/7cda174a-f0e8-4bbd-a8bb-163fe72f0f2a.a3ae51e1.jpeg",
+    position: "left"
+  },
+  {
+    year: "2026",
+    title: "Era Cyfrowa - Aplikacja PWA 📱",
+    description: "Wdrażamy nowoczesną aplikację webową (PWA) do zarządzania zapisami na zajęcia! Użytkownicy mogą teraz łatwo sprawdzić grafik, zapisać się na trening, otrzymać powiadomienia push i zarządzać swoim kontem - wszystko w jednym miejscu.",
+    imageUrl: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&h=500&fit=crop",
     position: "right"
   }
 ]

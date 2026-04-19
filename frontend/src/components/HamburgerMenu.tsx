@@ -65,13 +65,13 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
 
             {/* Menu Items */}
             <div className="py-2">
-              {/* Dashboard */}
+              {/* Home */}
               <button
-                onClick={() => handleNavigate('/dashboard')}
+                onClick={() => handleNavigate('/')}
                 className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
               >
                 <span>🏠</span>
-                <span className="text-sm">Strefa użytkownika</span>
+                <span className="text-sm">Strona główna</span>
               </button>
 
               {/* Activities */}
@@ -81,6 +81,15 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
               >
                 <span>📅</span>
                 <span className="text-sm">Harmonogram zajęć</span>
+              </button>
+
+              {/* News */}
+              <button
+                onClick={() => handleNavigate('/news')}
+                className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
+              >
+                <span>📰</span>
+                <span className="text-sm">Aktualności</span>
               </button>
 
               {/* My Classes */}
@@ -107,13 +116,21 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
 
               <div className="border-t border-gray-200 my-2"></div>
 
-              {/* Profile Settings */}
+              {/* Account & Settings */}
               <button
-                onClick={() => handleNavigate('/profile')}
+                onClick={() => handleNavigate('/account')}
+                className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
+              >
+                <span>💼</span>
+                <span className="text-sm">Moje Konto</span>
+              </button>
+
+              <button
+                onClick={() => handleNavigate('/settings')}
                 className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
               >
                 <span>⚙️</span>
-                <span className="text-sm">Ustawienia konta</span>
+                <span className="text-sm">Ustawienia</span>
               </button>
 
               {/* Donations - placeholder */}

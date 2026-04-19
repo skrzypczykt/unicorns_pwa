@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase/client'
 import { useNavigate } from 'react-router-dom'
-import { useInstallPWA } from '../hooks/useInstallPWA'
-import PWADebugPanel from '../components/PWADebugPanel'
 
 interface Transaction {
   id: string
@@ -23,15 +21,16 @@ interface UserProfile {
   balance: number
   balance_updated_at: string
   created_at: string
+  is_association_member?: boolean
+  association_member_since?: string
 }
 
-const ProfilePage = () => {
+const AccountPage = () => {
   const navigate = useNavigate()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [showBlikModal, setShowBlikModal] = useState(false)
-  const { isInstallable, isInstalled, promptInstall } = useInstallPWA()
 
   useEffect(() => {
     fetchProfile()
@@ -94,6 +93,7 @@ const ProfilePage = () => {
       case 'manual_debit': return 'Wypłata manualna'
       case 'class_payment': return 'Płatność za zajęcia'
       case 'cancellation_refund': return 'Zwrot - anulowanie'
+      case 'membership_fee': return 'Składka członkowska'
       default: return type
     }
   }
@@ -123,17 +123,9 @@ const ProfilePage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-purple-600 mb-2">👤 Mój Profil</h1>
-          <p className="text-gray-600">Zarządzaj swoim kontem i przeglądaj historię transakcji</p>
-        </div>
-        <button
-          onClick={() => navigate('/')}
-          className="hidden md:flex px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
-        >
-          ← Powrót
-        </button>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-purple-600 mb-2">💼 Moje Konto</h1>
+        <p className="text-gray-600">Zarządzaj swoim kontem, saldem i historią transakcji</p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -157,15 +149,53 @@ const ProfilePage = () => {
               <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
                 profile.role === 'admin' ? 'bg-red-100 text-red-700' :
                 profile.role === 'trainer' ? 'bg-blue-100 text-blue-700' :
+                profile.role === 'external_trainer' ? 'bg-purple-100 text-purple-700' :
                 'bg-gray-100 text-gray-700'
               }`}>
-                {profile.role === 'admin' ? 'Administrator' : profile.role === 'trainer' ? 'Trener' : 'Użytkownik'}
+                {profile.role === 'admin' ? 'Administrator' :
+                 profile.role === 'trainer' ? 'Trener' :
+                 profile.role === 'external_trainer' ? 'Trener zewnętrzny' : 'Użytkownik'}
               </span>
             </div>
+
+            {profile.is_association_member && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-500 mb-1">Status członkostwa</label>
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
+                    🏛️ Członek Stowarzyszenia
+                  </span>
+                  {profile.association_member_since && (
+                    <span className="text-xs text-gray-500">
+                      od {new Date(profile.association_member_since).toLocaleDateString('pl-PL', { year: 'numeric', month: 'long' })}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-semibold text-gray-500 mb-1">Konto utworzone</label>
               <p className="text-gray-800">{formatDate(profile.created_at)}</p>
+            </div>
+          </div>
+
+          {/* Quick actions */}
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-600 mb-3">Szybkie akcje</h3>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => navigate('/settings')}
+                className="px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-sm transition-all"
+              >
+                ⚙️ Ustawienia konta
+              </button>
+              <button
+                onClick={() => {/* TODO: Edycja profilu */}}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-all"
+              >
+                ✏️ Edytuj profil
+              </button>
             </div>
           </div>
         </div>
@@ -185,11 +215,18 @@ const ProfilePage = () => {
           )}
 
           <div className="mt-6 pt-4 border-t border-white/30">
-            <p className="text-sm opacity-75">
+            <p className="text-sm opacity-75 mb-3">
               {profile.balance > 100 ? '✅ Świetne saldo!' :
                profile.balance > 50 ? '⚠️ Rozważ doładowanie' :
-               '❗ Niskie saldo - opłać zajęcia w historii transakcji'}
+               profile.balance >= 0 ? '💳 Opłać zajęcia w historii transakcji' :
+               '❗ Ujemne saldo - opłać zajęcia'}
             </p>
+            <button
+              onClick={() => setShowBlikModal(true)}
+              className="w-full px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/40 rounded-lg text-sm font-semibold transition-all"
+            >
+              💳 Doładuj saldo
+            </button>
           </div>
         </div>
       </div>
@@ -258,64 +295,19 @@ const ProfilePage = () => {
         </div>
       )}
 
-      {/* Install PWA Button */}
-      {!isInstalled && (
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-xl shadow-lg p-6 text-white">
-            <div className="flex items-start gap-4">
-              <div className="text-4xl flex-shrink-0">📱</div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold mb-2">Zainstaluj aplikację</h3>
-                <p className="text-white/90 mb-4 text-sm">
-                  Dodaj Unicorns do ekranu głównego dla szybszego dostępu, powiadomień push i możliwości korzystania offline.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {isInstallable ? (
-                    <button
-                      onClick={async () => {
-                        const accepted = await promptInstall()
-                        if (accepted) {
-                          alert('✅ Aplikacja została zainstalowana!')
-                        }
-                      }}
-                      className="px-4 py-2 bg-white text-purple-600 hover:bg-gray-100 rounded-lg font-semibold transition-all shadow-lg"
-                    >
-                      Zainstaluj teraz
-                    </button>
-                  ) : (
-                    <div className="text-sm text-white/80">
-                      <p className="mb-2"><strong>Jak zainstalować na iOS:</strong></p>
-                      <ol className="list-decimal list-inside space-y-1 text-xs">
-                        <li>Kliknij przycisk "Udostępnij" <span className="inline-block">📤</span> w Safari</li>
-                        <li>Wybierz "Dodaj do ekranu początkowego"</li>
-                        <li>Kliknij "Dodaj"</li>
-                      </ol>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isInstalled && (
-        <div className="mb-8">
-          <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 flex items-center gap-3">
-            <span className="text-3xl">✅</span>
-            <div>
-              <p className="font-semibold text-green-800">Aplikacja zainstalowana!</p>
-              <p className="text-sm text-green-600">Korzystasz z pełnej wersji PWA Unicorns.</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Transaction History */}
       <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6">
-        <h2 className="text-xl font-bold text-purple-600 mb-4">
-          Historia transakcji ({transactions.length})
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-purple-600">
+            Historia transakcji ({transactions.length})
+          </h2>
+          <button
+            onClick={fetchTransactions}
+            className="px-3 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-sm transition-all"
+          >
+            🔄 Odśwież
+          </button>
+        </div>
 
         {transactions.length === 0 ? (
           <div className="text-center py-8">
@@ -356,6 +348,7 @@ const ProfilePage = () => {
                         transaction.type === 'manual_credit' ? 'bg-green-100 text-green-700' :
                         transaction.type === 'manual_debit' ? 'bg-red-100 text-red-700' :
                         transaction.type === 'class_payment' ? 'bg-purple-100 text-purple-700' :
+                        transaction.type === 'membership_fee' ? 'bg-blue-100 text-blue-700' :
                         'bg-gray-100 text-gray-700'
                       }`}>
                         {getTransactionTypeLabel(transaction.type)}
@@ -396,15 +389,8 @@ const ProfilePage = () => {
           przez administratora.
         </p>
       </div>
-
-      {/* PWA Debug Panel - tylko dla adminów */}
-      {profile?.role === 'admin' && (
-        <div className="mt-8">
-          <PWADebugPanel />
-        </div>
-      )}
     </div>
   )
 }
 
-export default ProfilePage
+export default AccountPage

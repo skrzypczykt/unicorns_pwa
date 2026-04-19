@@ -3,19 +3,16 @@ import { useNavigate } from 'react-router-dom'
 const DonationsPage = () => {
   const navigate = useNavigate()
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    alert('✅ Skopiowano do schowka!')
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-purple-600 mb-2">💝 Wsparcie Stowarzyszenia</h1>
-          <p className="text-gray-600">Pomóż rozwijać Unicorns Łódź</p>
-        </div>
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="hidden md:flex px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
-        >
-          ← Powrót
-        </button>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-purple-600 mb-2">💝 Wsparcie Stowarzyszenia</h1>
+        <p className="text-gray-600">Pomóż rozwijać Unicorns Łódź</p>
       </div>
 
       {/* Hero Section */}
@@ -38,17 +35,39 @@ const DonationsPage = () => {
             <span className="text-4xl">🏦</span>
             <h3 className="text-xl font-bold text-purple-600">Przelew bankowy</h3>
           </div>
-          <div className="space-y-2 text-sm">
-            <p className="font-semibold text-gray-800">Stowarzyszenie Unicorns</p>
-            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+          <div className="space-y-3 text-sm">
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Odbiorca:</p>
+              <p className="font-semibold text-gray-800">Stowarzyszenie UNICORNS</p>
+            </div>
+
+            <div className="bg-purple-50 p-3 rounded-lg border-2 border-purple-300">
               <p className="text-xs text-gray-500 mb-1">Numer konta:</p>
-              <p className="font-mono font-bold text-purple-600 break-all">
-                [NUMER KONTA - DO UZUPEŁNIENIA]
+              <p className="font-mono font-bold text-purple-600 text-sm sm:text-base break-all">
+                10 1870 1045 2078 1081 1636 0001
+              </p>
+              <button
+                onClick={() => copyToClipboard('10187010452078108116360001')}
+                className="mt-2 w-full px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white text-xs rounded transition-all"
+              >
+                📋 Kopiuj numer konta
+              </button>
+            </div>
+
+            <div>
+              <p className="text-xs text-gray-500 mb-1">SWIFT (dla przelewów zagranicznych):</p>
+              <p className="font-mono font-semibold text-gray-700">NESBPLPW</p>
+            </div>
+
+            <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-300">
+              <p className="text-xs text-yellow-800 font-semibold mb-1">⚠️ Ważne - Tytuł przelewu:</p>
+              <p className="font-semibold text-gray-800">
+                "Darowizna na cele pożytku publicznego"
+              </p>
+              <p className="text-xs text-gray-600 mt-1">
+                Ten tytuł jest wymagany do odliczenia podatkowego
               </p>
             </div>
-            <p className="text-xs text-gray-600 mt-3">
-              W tytule przelewu wpisz: "Darowizna na cele statutowe"
-            </p>
           </div>
         </div>
 
@@ -74,24 +93,48 @@ const DonationsPage = () => {
       </div>
 
       {/* Tax Deduction Info */}
-      <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-8">
+      <div className="bg-green-50 border-2 border-green-300 rounded-xl p-6 mb-8">
         <div className="flex items-start gap-3">
-          <span className="text-3xl">📋</span>
+          <span className="text-3xl">💰</span>
           <div>
-            <h3 className="text-lg font-bold text-blue-800 mb-2">
-              Odliczenie podatkowe
+            <h3 className="text-lg font-bold text-green-800 mb-3 flex items-center gap-2">
+              <span>📋</span> Odliczenie podatkowe
             </h3>
-            <p className="text-sm text-blue-700">
-              Darowizny na rzecz Stowarzyszenia Unicorns mogą być odliczone od podatku zgodnie z art. 26 ust. 1 pkt 9 ustawy o podatku dochodowym od osób fizycznych.
-              Po roku otrzymasz od nas potwierdzenie wpłaty, które możesz załączyć do zeznania podatkowego (PIT).
-            </p>
+            <div className="space-y-3 text-sm text-green-900">
+              <div className="bg-white/50 p-3 rounded-lg">
+                <p className="font-semibold mb-2">✅ Możesz odliczyć darowiznę od podstawy opodatkowania (dochodu)</p>
+                <ul className="list-disc list-inside space-y-1 text-green-800">
+                  <li>Maksymalna kwota odliczenia: <strong>do 6% Twojego dochodu</strong></li>
+                  <li>Dochód = przychód minus koszty jego uzyskania</li>
+                  <li>Zachowaj potwierdzenie przelewu bankowego</li>
+                  <li>Uwzględnij przy rocznym rozliczeniu PIT</li>
+                </ul>
+              </div>
+
+              <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <p className="text-xs text-blue-800 font-semibold mb-1">
+                  ℹ️ To nie to samo co 1,5% podatku
+                </p>
+                <p className="text-xs text-blue-700">
+                  Darowizna bezpośrednia to inny mechanizm wsparcia niż przekazanie 1,5% podatku w ramach rocznego rozliczenia podatkowego.
+                </p>
+              </div>
+
+              <p className="text-xs text-gray-600 italic">
+                💡 Na życzenie wystawimy potwierdzenie darowizny do rozliczenia podatkowego
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* What We Fund */}
-      <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6">
+      <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
         <h3 className="text-xl font-bold text-purple-600 mb-4">💰 Na co przeznaczamy darowizny?</h3>
+        <p className="text-sm text-gray-700 mb-4">
+          Środki z darowizn są przeznaczane na <strong>działalność pożytku publicznego</strong> - rozwój i doskonalenie aktywności dla członków oraz sympatyków.
+          <strong> Członkowie organizacji nie pobierają z tych środków żadnych korzyści osobistych.</strong>
+        </p>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="flex items-start gap-3">
             <span className="text-2xl">🏸</span>
@@ -122,6 +165,21 @@ const DonationsPage = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Privacy info */}
+      <div className="bg-gray-50 border border-gray-300 rounded-xl p-4 mb-6">
+        <p className="text-xs text-gray-700">
+          🔒 <strong>Ochrona danych osobowych:</strong> Przed dokonaniem darowizny zalecamy zapoznanie się z{' '}
+          <a
+            href="/polityka-prywatnosci.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-purple-600 underline hover:text-purple-800"
+          >
+            informacjami o ochronie danych osobowych
+          </a>.
+        </p>
       </div>
 
       {/* Thank You Note */}

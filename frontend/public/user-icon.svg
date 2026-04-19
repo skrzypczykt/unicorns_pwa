@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Głowa (skóra) -->
+  <circle cx="32" cy="16" r="11" fill="#D4A574"/>
+
+  <!-- Włosy -->
+  <path d="M 21 12 Q 21 6, 27 5 Q 32 4, 37 5 Q 43 6, 43 12 L 43 16 Q 43 10, 32 10 Q 21 10, 21 16 Z" fill="#2C1810"/>
+
+  <!-- Broda -->
+  <ellipse cx="32" cy="22" rx="6" ry="4.5" fill="#2C1810"/>
+  <ellipse cx="32" cy="24" rx="5" ry="3" fill="#2C1810"/>
+
+  <!-- Oczy -->
+  <circle cx="28" cy="14" r="1.5" fill="#2C1810"/>
+  <circle cx="36" cy="14" r="1.5" fill="#2C1810"/>
+  <circle cx="28.5" cy="13.5" r="0.5" fill="#FFFFFF"/>
+  <circle cx="36.5" cy="13.5" r="0.5" fill="#FFFFFF"/>
+
+  <!-- Uśmiech -->
+  <path d="M 26 17 Q 32 20, 38 17" stroke="#2C1810" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <path d="M 27 18 Q 32 19.5, 37 18" stroke="#FFFFFF" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Szyja (skóra) -->
+  <rect x="27" y="25" width="10" height="5" fill="#D4A574" rx="1"/>
+
+  <!-- Tanktop (fioletowy/niebieski gradient) -->
+  <defs>
+    <linearGradient id="tankGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#9333EA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7E22CE;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Tanktop - korpus -->
+  <path d="M 20 30
+           L 18 34
+           L 18 54
+           C 18 56, 20 58, 22 58
+           L 42 58
+           C 44 58, 46 56, 46 54
+           L 46 34
+           L 44 30
+           L 38 30
+           L 38 34
+           L 26 34
+           L 26 30
+           Z"
+           fill="url(#tankGrad)"/>
+
+  <!-- Ramię lewe (skóra) -->
+  <path d="M 18 32
+           C 16 32, 14 34, 13 36
+           L 10 44
+           C 9 46, 10 48, 12 48
+           L 16 48
+           C 17 48, 18 47, 18 46
+           L 18 34"
+           fill="#D4A574"/>
+
+  <!-- Ramię prawe (skóra) -->
+  <path d="M 46 32
+           C 48 32, 50 34, 51 36
+           L 54 44
+           C 55 46, 54 48, 52 48
+           L 48 48
+           C 47 48, 46 47, 46 46
+           L 46 34"
+           fill="#D4A574"/>
+
+  <!-- Definicja mięśni - ramiona (cienie) -->
+  <ellipse cx="14" cy="39" rx="2.5" ry="5" fill="#B8935F" opacity="0.5"/>
+  <ellipse cx="50" cy="39" rx="2.5" ry="5" fill="#B8935F" opacity="0.5"/>
+
+  <!-- Biceps definition -->
+  <ellipse cx="13" cy="36" rx="2" ry="3" fill="#B8935F" opacity="0.6"/>
+  <ellipse cx="51" cy="36" rx="2" ry="3" fill="#B8935F" opacity="0.6"/>
+</svg>

@@ -461,7 +461,7 @@ const TrainerClassesPage = () => {
             <p className="text-gray-600">Oznacz obecność na zajęciach</p>
           </div>
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/')}
             className="hidden md:flex px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all font-semibold"
           >
             ← Powrót

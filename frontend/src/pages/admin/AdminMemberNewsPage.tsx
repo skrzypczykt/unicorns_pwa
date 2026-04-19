@@ -188,7 +188,7 @@ const AdminMemberNewsPage = () => {
             <p className="text-gray-600">Twórz i edytuj aktualności dla członków</p>
           </div>
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/')}
             className="hidden md:flex px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
           >
             ← Panel Admin

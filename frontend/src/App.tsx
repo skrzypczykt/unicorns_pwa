@@ -1,17 +1,22 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { supabase } from './supabase/client'
+import { APP_VERSION } from './version'
 import SimpleLoginPage from './pages/SimpleLoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import RegisterPage from './pages/RegisterPage'
 import PublicAboutPage from './pages/PublicAboutPage'
+import AboutAppPage from './pages/AboutAppPage'
+import NewsPage from './pages/NewsPage'
+import NewsArticlePage from './pages/NewsArticlePage'
 import AuthCallbackPage from './pages/AuthCallbackPage'
-import DashboardPage from './pages/DashboardPage'
 import ActivitiesPage from './pages/ActivitiesPage'
 import MyClassesPage from './pages/MyClassesPage'
 import TrainerClassesPage from './pages/TrainerClassesPage'
 import AdminUsersPage from './pages/AdminUsersPage'
 import ProfilePage from './pages/ProfilePage'
+import AccountPage from './pages/AccountPage'
+import SettingsPage from './pages/SettingsPage'
 import AdminActivitiesPage from './pages/AdminActivitiesPage'
 import AdminReportsPage from './pages/AdminReportsPage'
 import AdminAttendancePage from './pages/AdminAttendancePage'
@@ -19,6 +24,7 @@ import ActivityParticipantsPage from './pages/ActivityParticipantsPage'
 import InstallPWAPrompt from './components/InstallPWAPrompt'
 import ScrollToTop from './components/ScrollToTop'
 import HamburgerMenu from './components/HamburgerMenu'
+import WelcomeNotificationModal from './components/WelcomeNotificationModal'
 import MemberZonePage from './pages/MemberZonePage'
 import MemberNewsPage from './pages/MemberNewsPage'
 import MemberDocumentsPage from './pages/MemberDocumentsPage'
@@ -110,6 +116,10 @@ function App() {
         <InstallPWAPrompt />
         <Routes>
           <Route path="/" element={<PublicAboutPage />} />
+          <Route path="/about-app" element={<AboutAppPage />} />
+          <Route path="/news" element={<NewsPage />} />
+          <Route path="/news/:articleId" element={<NewsArticlePage />} />
+          <Route path="/donations" element={<DonationsPage />} />
           <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/login" element={<SimpleLoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -135,10 +145,11 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
   return (
     <>
       <InstallPWAPrompt />
+      <WelcomeNotificationModal />
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200">
         {/* Header - Responsywny - zawsze widoczny dla zalogowanych */}
         {profile && (
-          <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b-4 border-purple-500 sticky top-0 z-50">
+          <header className="bg-gradient-to-r from-gray-900 via-black to-gray-900 backdrop-blur-sm shadow-lg border-b-4 border-purple-500 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
             <div className="flex items-center justify-between gap-2">
               {/* Logo + Tytuł - Responsywne */}
@@ -152,11 +163,11 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
                   className="h-10 sm:h-12 md:h-16 w-auto flex-shrink-0"
                 />
                 <div className="min-w-0">
-                  <h1 className="text-lg sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent truncate">
+                  <h1 className="text-lg sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent truncate">
                     Unicorns Łódź
                   </h1>
                   {/* Ukryj tagline na mobile */}
-                  <p className="hidden md:block text-xs text-gray-500 uppercase tracking-wide">
+                  <p className="hidden md:block text-xs text-gray-300 uppercase tracking-wide">
                     Sport | Kultura | Rozrywka
                   </p>
                 </div>
@@ -168,8 +179,8 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
                 {profile.role !== 'external_trainer' && profile.balance < 0 && (
                   <div className="text-right">
                     {/* Ukryj label "Twoje saldo" na mobile */}
-                    <p className="hidden sm:block text-xs text-gray-500">Do zapłaty</p>
-                    <p className="text-base sm:text-xl md:text-2xl font-bold text-red-600">
+                    <p className="hidden sm:block text-xs text-gray-300">Do zapłaty</p>
+                    <p className="text-base sm:text-xl md:text-2xl font-bold text-red-400">
                       {profile.balance.toFixed(0)}
                       <span className="hidden sm:inline"> zł</span>
                       <span className="ml-1">💳</span>
@@ -178,17 +189,11 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
                 )}
 
                 {/* Profil użytkownika - po prawej - tylko na większych ekranach */}
-                <div className="hidden md:flex items-center gap-2 text-right">
-                  <div>
-                    <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">
-                      {profile.display_name}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {profile.role === 'admin' ? 'Admin' :
-                       profile.role === 'trainer' ? 'Trener' :
-                       profile.role === 'external_trainer' ? 'Trener zewnętrzny' : 'User'}
-                    </p>
-                  </div>
+                <div className="hidden md:flex items-center gap-2">
+                  <span className="text-3xl">🤵</span>
+                  <p className="text-xs sm:text-sm font-semibold text-white truncate">
+                    {profile.display_name}
+                  </p>
                 </div>
 
                 {/* Hamburger Menu */}
@@ -202,10 +207,14 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
         {/* Routes */}
         <Routes>
           <Route path="/" element={<PublicAboutPage user={user} profile={profile} onSignOut={handleSignOut} />} />
-          <Route path="/dashboard" element={<DashboardPage profile={profile} />} />
+          <Route path="/about-app" element={<AboutAppPage user={user} profile={profile} />} />
+          <Route path="/news" element={<NewsPage user={user} profile={profile} onSignOut={handleSignOut} />} />
+          <Route path="/news/:articleId" element={<NewsArticlePage user={user} profile={profile} />} />
           <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/my-classes" element={<MyClassesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/account" element={<AccountPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/activities" element={<AdminActivitiesPage />} />
           <Route path="/admin/activities/:activityId/participants" element={<ActivityParticipantsPage />} />
@@ -297,6 +306,27 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
 
             <div className="border-t border-gray-200 pt-4">
               <div className="flex justify-center gap-4 text-xs text-gray-500 mb-3">
+                <button
+                  onClick={() => window.location.href = '/news'}
+                  className="hover:text-purple-600 transition-colors"
+                >
+                  Aktualności
+                </button>
+                <span>•</span>
+                <button
+                  onClick={() => window.location.href = '/about-app'}
+                  className="hover:text-purple-600 transition-colors"
+                >
+                  O aplikacji
+                </button>
+                <span>•</span>
+                <button
+                  onClick={() => window.location.href = '/donations'}
+                  className="hover:text-purple-600 transition-colors"
+                >
+                  Wsparcie
+                </button>
+                <span>•</span>
                 <a
                   href="/polityka-prywatnosci.html"
                   target="_blank"
@@ -317,6 +347,7 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
               </div>
               <p className="text-xs text-gray-500 text-center">© 2026 Stowarzyszenie Unicorns. Wszystkie prawa zastrzeżone.</p>
               <p className="text-xs text-gray-500 mt-1 text-center">Aplikacja stworzona z magią jednorożców 🦄🌈✨</p>
+              <p className="text-xs text-gray-400 mt-2 text-center">Wersja {APP_VERSION}</p>
 
               {/* Logout link - ukryty na dole stopki */}
               <p className="text-xs text-gray-400 mt-4 text-center">

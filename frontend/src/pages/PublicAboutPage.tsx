@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import Timeline from '../components/about/Timeline'
 import InstagramFeed from '../components/social/InstagramFeed'
 import { useMainWhatsAppChannel } from '../hooks/useMainWhatsAppChannel'
+import { APP_VERSION } from '../version'
 
 interface PublicAboutPageProps {
   user?: any
@@ -21,10 +22,10 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
   const isLoggedIn = !!user && !!profile
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200">
+    <div className={isLoggedIn ? '' : 'min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200'}>
       {/* Header tylko dla niezalogowanych - zalogowani używają headera z App.tsx */}
       {!isLoggedIn && (
-        <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b-4 border-purple-500">
+        <header className="bg-gradient-to-r from-gray-900 via-black to-gray-900 backdrop-blur-sm shadow-lg border-b-4 border-purple-500">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -34,10 +35,10 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
                   className="h-10 sm:h-12 md:h-16 w-auto flex-shrink-0"
                 />
                 <div className="min-w-0">
-                  <h1 className="text-lg sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent truncate">
+                  <h1 className="text-lg sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent truncate">
                     Unicorns Łódź
                   </h1>
-                  <p className="hidden sm:block text-xs text-gray-500 uppercase tracking-wide">Sport | Kultura | Rozrywka</p>
+                  <p className="hidden sm:block text-xs text-gray-300 uppercase tracking-wide">Sport | Kultura | Rozrywka</p>
                 </div>
               </div>
               <div className="flex gap-2 sm:gap-3 flex-shrink-0">
@@ -95,7 +96,7 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
             </button>
             {isLoggedIn ? (
               <button
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/')}
                 className="px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
               >
                 <span>🏠</span>
@@ -170,30 +171,93 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
           <Timeline />
         </div>
 
-        {/* Events */}
+        {/* Aktualności */}
         <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
-          <h3 className="text-2xl font-bold text-purple-600 mb-4">🏆 Nasze Wydarzenia</h3>
-          <div className="space-y-3">
-            <div className="p-3 border-l-4 border-purple-500 bg-purple-50">
-              <h4 className="font-bold text-purple-600">Turniej Badmintona 2025</h4>
-              <p className="text-sm text-gray-600">Coroczny turniej łączący graczy wszystkich poziomów</p>
-            </div>
-            <div className="p-3 border-l-4 border-blue-500 bg-blue-50">
-              <h4 className="font-bold text-blue-600">Mini Liga Siatkówki</h4>
-              <p className="text-sm text-gray-600">Rekreacyjna liga siatkówki dla miłośników gry zespołowej</p>
-            </div>
-            <div className="p-3 border-l-4 border-pink-500 bg-pink-50">
-              <h4 className="font-bold text-pink-600">Unicorns BadCup</h4>
-              <p className="text-sm text-gray-600">Prestiżowy puchar badmintona organizowany przez Unicorns</p>
-            </div>
-            <div className="p-3 border-l-4 border-yellow-500 bg-yellow-50">
-              <h4 className="font-bold text-yellow-600">🎄 Spotkania Integracyjne</h4>
-              <p className="text-sm text-gray-600">Świąteczne spotkania, grillowanie, i czas dla "wolnych elektronów" w fajnym gronie rówieśników</p>
-            </div>
-            <div className="p-3 border-l-4 border-green-500 bg-green-50">
-              <h4 className="font-bold text-green-600">🌍 Wyjazdy Zagraniczne</h4>
-              <p className="text-sm text-gray-600">Wspólne wyjazdy na międzynarodowe wydarzenia - od World Pride Amsterdam do sportowych wypraw!</p>
-            </div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-2xl font-bold text-purple-600">📰 Aktualności</h3>
+            <button
+              onClick={() => navigate('/news')}
+              className="text-sm text-purple-600 hover:text-purple-800 font-semibold flex items-center gap-1 hover:underline"
+            >
+              Zobacz wszystkie →
+            </button>
+          </div>
+          <div className="space-y-4">
+            <a
+              href="/news/turniej-badmintona-2025"
+              className="block overflow-hidden rounded-xl border-l-4 border-purple-500 bg-purple-50 hover:bg-purple-100 transition-all shadow-md hover:shadow-lg"
+            >
+              <div className="flex flex-col sm:flex-row">
+                <img
+                  src="https://www.unicorns.org.pl/7cda174a-f0e8-4bbd-a8bb-163fe72f0f2a.a3ae51e1.jpeg"
+                  alt="Turniej badmintona"
+                  className="w-full sm:w-32 h-32 object-cover flex-shrink-0"
+                  loading="lazy"
+                />
+                <div className="flex items-start gap-3 p-4 flex-1">
+                  <span className="text-3xl">🏸</span>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-purple-600 mb-1">Turniej badmintona za nami!</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      UNICORNS BADMIN DOUBLES CHAMPIONSHIP 2025 - 66 zawodników, 10 miast, 73 mecze!
+                    </p>
+                    <p className="text-xs text-gray-500">📅 19 stycznia 2026</p>
+                  </div>
+                </div>
+              </div>
+            </a>
+
+            <a
+              href="https://www.unicorns.org.pl/final-mini-ligi-siatkowki-za-nami/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block overflow-hidden rounded-xl border-l-4 border-blue-500 bg-blue-50 hover:bg-blue-100 transition-all shadow-md hover:shadow-lg"
+            >
+              <div className="flex flex-col sm:flex-row">
+                <img
+                  src="https://www.unicorns.org.pl/90505925-5436-41a3-85f2-0cb53a7efe8f.7b2d2c97.jpeg"
+                  alt="Mini Liga Siatkówki"
+                  className="w-full sm:w-32 h-32 object-cover flex-shrink-0"
+                  loading="lazy"
+                />
+                <div className="flex items-start gap-3 p-4 flex-1">
+                  <span className="text-3xl">🏐</span>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-blue-600 mb-1">Finał Mini Ligi Siatkówki za nami</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      UNICORNS SMASH - TRIPLES COMPETITION, zwycięzcy: UNHOLY TRINITY
+                    </p>
+                    <p className="text-xs text-gray-500">📅 15 grudnia 2024</p>
+                  </div>
+                </div>
+              </div>
+            </a>
+
+            <a
+              href="https://www.unicorns.org.pl/bal-rogacza-1-urodziny-unicorns/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block overflow-hidden rounded-xl border-l-4 border-pink-500 bg-pink-50 hover:bg-pink-100 transition-all shadow-md hover:shadow-lg"
+            >
+              <div className="flex flex-col sm:flex-row">
+                <img
+                  src="https://www.unicorns.org.pl/unicorns_urodziny.815e15a7.jpg"
+                  alt="Bal Rogacza"
+                  className="w-full sm:w-32 h-32 object-cover flex-shrink-0"
+                  loading="lazy"
+                />
+                <div className="flex items-start gap-3 p-4 flex-1">
+                  <span className="text-3xl">🎉</span>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-pink-600 mb-1">Pierwsze urodziny Stowarzyszenia!</h4>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Bal Rogacza z podsumowaniem pierwszego roku działalności Unicorns
+                    </p>
+                    <p className="text-xs text-gray-500">📅 14 października 2024</p>
+                  </div>
+                </div>
+              </div>
+            </a>
           </div>
         </div>
 
@@ -310,8 +374,49 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
       {/* Footer */}
       <footer className="mt-12 py-8 bg-white/80 backdrop-blur-sm border-t-2 border-purple-200">
         <div className="max-w-7xl mx-auto px-4 text-center">
+          <div className="flex justify-center gap-4 text-xs text-gray-500 mb-3">
+            <button
+              onClick={() => navigate('/news')}
+              className="hover:text-purple-600 transition-colors"
+            >
+              Aktualności
+            </button>
+            <span>•</span>
+            <button
+              onClick={() => navigate('/about-app')}
+              className="hover:text-purple-600 transition-colors"
+            >
+              O aplikacji
+            </button>
+            <span>•</span>
+            <button
+              onClick={() => navigate('/donations')}
+              className="hover:text-purple-600 transition-colors"
+            >
+              Wsparcie
+            </button>
+            <span>•</span>
+            <a
+              href="/polityka-prywatnosci.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-purple-600 transition-colors"
+            >
+              Polityka prywatności
+            </a>
+            <span>•</span>
+            <a
+              href="/regulamin-zajec.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-purple-600 transition-colors"
+            >
+              Regulamin zajęć
+            </a>
+          </div>
           <p className="text-xs text-gray-500">© 2026 Stowarzyszenie Unicorns. Wszystkie prawa zastrzeżone.</p>
           <p className="text-xs text-gray-500 mt-1">Aplikacja stworzona z magią jednorożców 🦄🌈✨</p>
+          <p className="text-xs text-gray-400 mt-2">Wersja {APP_VERSION}</p>
 
           {/* Przycisk instalacji PWA */}
           <button
