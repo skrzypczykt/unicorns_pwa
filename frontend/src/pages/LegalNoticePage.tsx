@@ -114,7 +114,7 @@ const LegalNoticePage = ({ user, profile }: LegalNoticePageProps) => {
             </a>
 
             <a
-              href="https://www.unicorns.org.pl/wp-content/uploads/2024/11/Polityka-ochrony-danych-osobowych-Stowarzyszenie-Unicorns.pdf"
+              href="https://www.unicorns.org.pl/assets/dgOOxpNu26wzBog9hmImn/RODO.pdf"
               target="_blank"
               rel="noopener noreferrer"
               className="block p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-all border-l-4 border-green-500"
@@ -129,7 +129,7 @@ const LegalNoticePage = ({ user, profile }: LegalNoticePageProps) => {
             </a>
 
             <a
-              href="https://www.unicorns.org.pl/wp-content/uploads/2024/11/Klauzula-dotyczaca-ochrony-danych-osobowych-dla-uczestnikow-wydarzen-Stowarzyszenie-Unicorns.pdf"
+              href="https://www.unicorns.org.pl/assets/LSnLYH4OPji600dfiOHBY/RODO-Z5.pdf"
               target="_blank"
               rel="noopener noreferrer"
               className="block p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-all border-l-4 border-green-500"
