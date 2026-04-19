@@ -4,6 +4,27 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.2.1] - 2026-04-19
+
+### Zmieniono
+
+- **Widok trenera** - wyświetlanie statusu płatności zamiast salda sekcji
+- **AdminUsersPage** - zamiana formularza zarządzania saldem na widok historii transakcji
+- **Formatowanie czasu trwania** - inteligentne wyświetlanie (>120 min → godziny, ≥24h → dni)
+- **Naprawiono** obliczanie liczby instancji dla wydarzeń cyklicznych (auto-ustawienie `recurrence_pattern`)
+- **Naprawiono** overflow przycisku "Zaloguj się" w menu publicznym
+- **Naprawiono** pozycjonowanie przycisków akcji w kartach wydarzeń (admin)
+
+### Usunięto
+
+- Wyświetlanie salda użytkownika w całej aplikacji (karty salda, kolumny "Saldo przed/po")
+- Przyciski "Opłać" z historii transakcji (nieużywane)
+- Nieużywane komponenty: Navigation.tsx, App.css, pusty katalog services/
+
+### Bezpieczeństwo
+
+- Blokada wielokrotnej płatności za to samo wydarzenie (status `payment_status === 'paid'`)
+
 ## [0.2.0] - 2026-04-19
 
 ### Dodano
