@@ -32,6 +32,7 @@ const MyClassesPage = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([])
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState<string | null>(null)
+  const [flippedCard, setFlippedCard] = useState<string | null>(null)
 
   // Helper: Pobierz link WhatsApp z fallback do activity_type
   const getWhatsAppLink = (activity: Registration['activity']): string | null => {
@@ -111,7 +112,7 @@ const MyClassesPage = () => {
     // 4. Odśwież listę rejestracji
   }
 
-  const handleCancel = async (registrationId: string, canCancelUntil: string, paymentProcessed: boolean) => {
+  const handleCancelClick = (registrationId: string, canCancelUntil: string, paymentProcessed: boolean) => {
     // Check if cancellation is allowed
     const now = new Date()
     const deadline = new Date(canCancelUntil)
@@ -126,10 +127,11 @@ const MyClassesPage = () => {
       return
     }
 
-    if (!confirm('Czy na pewno chcesz anulować te zajęcia?')) {
-      return
-    }
+    // Flip the card instead of showing confirm
+    setFlippedCard(registrationId)
+  }
 
+  const handleConfirmCancel = async (registrationId: string) => {
     setCancelling(registrationId)
     try {
       const { error } = await supabase
@@ -142,14 +144,20 @@ const MyClassesPage = () => {
 
       if (error) throw error
 
-      alert('✅ Zajęcia zostały anulowane')
+      // Show success and fade out
       await fetchMyRegistrations()
+      setFlippedCard(null)
+      alert('✅ Zajęcia zostały anulowane')
     } catch (error) {
       console.error('Error cancelling:', error)
       alert('Wystąpił błąd podczas anulowania')
     } finally {
       setCancelling(null)
     }
+  }
+
+  const handleCancelBack = () => {
+    setFlippedCard(null)
   }
 
   const formatDate = (dateString: string) => {
@@ -214,52 +222,75 @@ const MyClassesPage = () => {
           {registrations.map((reg) => {
             const isProcessing = cancelling === reg.id
             const canCancelNow = canCancel(reg.can_cancel_until, reg.status, reg.payment_processed)
+            const isFlipped = flippedCard === reg.id
 
             return (
               <div
                 key={reg.id}
-                className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all"
+                className="perspective-1000"
+                style={{ perspective: '1000px' }}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-bold text-purple-600">{reg.activity.name}</h3>
-                      {reg.status === 'registered' && (
-                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-                          Aktywna rezerwacja
-                        </span>
-                      )}
-                      {reg.status === 'attended' && (
-                        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
-                          Uczestniczyłeś/aś
-                        </span>
-                      )}
-                      {reg.status === 'cancelled' && (
-                        <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
-                          Anulowano
-                        </span>
-                      )}
-                      {reg.payment_processed && (
-                        <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">
-                          ✓ Opłacone
-                        </span>
-                      )}
-                      {reg.payment_status === 'paid' && (
-                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-                          ✅ Opłacone
-                        </span>
-                      )}
-                      {reg.payment_status === 'pending' && (
-                        <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">
-                          ⏳ Do zapłaty
-                        </span>
-                      )}
-                      {reg.payment_status === 'overdue' && (
-                        <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
-                          ❗ Przeterminowane
-                        </span>
-                      )}
-                    </div>
+                <div
+                  className={`relative transition-transform duration-700 transform-style-3d ${
+                    isFlipped ? 'rotate-y-180' : ''
+                  }`}
+                  style={{
+                    transformStyle: 'preserve-3d',
+                    transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                  }}
+                >
+                  {/* FRONT SIDE */}
+                  <div
+                    className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all backface-hidden"
+                    style={{ backfaceVisibility: 'hidden' }}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-start gap-3 mb-2">
+                          <h3 className="text-xl font-bold text-purple-600">{reg.activity.name}</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {/* Status rejestracji */}
+                            {reg.status === 'registered' && (
+                              <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold whitespace-nowrap">
+                                Aktywna rezerwacja
+                              </span>
+                            )}
+                            {reg.status === 'attended' && (
+                              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold whitespace-nowrap">
+                                Uczestniczyłeś
+                              </span>
+                            )}
+                            {reg.status === 'cancelled' && (
+                              <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold whitespace-nowrap">
+                                Anulowano
+                              </span>
+                            )}
+
+                            {/* Status płatności - tylko jeśli NIE jest payment_processed */}
+                            {!reg.payment_processed && reg.payment_status === 'paid' && (
+                              <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold whitespace-nowrap">
+                                ✅ Opłacone
+                              </span>
+                            )}
+                            {!reg.payment_processed && reg.payment_status === 'pending' && (
+                              <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold whitespace-nowrap">
+                                ⏳ Do zapłaty
+                              </span>
+                            )}
+                            {!reg.payment_processed && reg.payment_status === 'overdue' && (
+                              <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold whitespace-nowrap">
+                                ❗ Przeterminowane
+                              </span>
+                            )}
+
+                            {/* Payment processed badge - tylko jeśli attended */}
+                            {reg.payment_processed && reg.status === 'attended' && (
+                              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold whitespace-nowrap">
+                                ✓ Opłacone
+                              </span>
+                            )}
+                          </div>
+                        </div>
 
                     <p className="text-gray-600 mb-4 text-sm">{reg.activity.description}</p>
 
@@ -320,15 +351,75 @@ const MyClassesPage = () => {
                     })()}
                   </div>
 
-                  {canCancelNow && (
-                    <button
-                      onClick={() => handleCancel(reg.id, reg.can_cancel_until, reg.payment_processed)}
-                      disabled={isProcessing}
-                      className="ml-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isProcessing ? 'Anulowanie...' : 'Anuluj'}
-                    </button>
-                  )}
+                      {canCancelNow && (
+                        <button
+                          onClick={() => handleCancelClick(reg.id, reg.can_cancel_until, reg.payment_processed)}
+                          disabled={isProcessing}
+                          className="ml-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Anuluj rezerwację
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* BACK SIDE - Potwierdzenie anulowania */}
+                  <div
+                    className="absolute inset-0 bg-gradient-to-br from-red-50 to-orange-50 rounded-xl shadow-lg border-2 border-red-300 p-6 backface-hidden"
+                    style={{
+                      backfaceVisibility: 'hidden',
+                      transform: 'rotateY(180deg)'
+                    }}
+                  >
+                    <div className="h-full flex flex-col items-center justify-center text-center">
+                      {/* Smutny jednorożec SVG */}
+                      <div className="mb-4 animate-bounce">
+                        <svg className="w-24 h-24 text-purple-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          {/* Głowa */}
+                          <circle cx="50" cy="55" r="30" fill="currentColor" opacity="0.8"/>
+                          {/* Róg */}
+                          <path d="M50 25 L45 40 L50 38 L55 40 Z" fill="#FFD700" opacity="0.9"/>
+                          {/* Oczy - smutne */}
+                          <ellipse cx="42" cy="50" rx="3" ry="5" fill="#4A5568" transform="rotate(-20 42 50)"/>
+                          <ellipse cx="58" cy="50" rx="3" ry="5" fill="#4A5568" transform="rotate(20 58 50)"/>
+                          {/* Łzy */}
+                          <circle cx="42" cy="58" r="2" fill="#60A5FA" opacity="0.6"/>
+                          <circle cx="58" cy="58" r="2" fill="#60A5FA" opacity="0.6"/>
+                          {/* Smutny uśmiech */}
+                          <path d="M 40 65 Q 50 60 60 65" stroke="#4A5568" strokeWidth="2" fill="none"/>
+                          {/* Grzywa */}
+                          <path d="M 35 35 Q 30 40 32 45" stroke="#E879F9" strokeWidth="3" fill="none"/>
+                          <path d="M 40 30 Q 35 35 37 40" stroke="#C084FC" strokeWidth="3" fill="none"/>
+                          <path d="M 45 28 Q 40 33 42 38" stroke="#A855F7" strokeWidth="3" fill="none"/>
+                        </svg>
+                      </div>
+
+                      <h3 className="text-2xl font-bold text-red-600 mb-3">
+                        Ojej! 😢
+                      </h3>
+                      <p className="text-gray-700 mb-6 max-w-sm">
+                        Na pewno chcesz anulować rezerwację<br/>
+                        <strong className="text-purple-600">{reg.activity.name}</strong>?
+                      </p>
+
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleConfirmCancel(reg.id)}
+                          disabled={isProcessing}
+                          className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                        >
+                          {isProcessing ? '⏳ Anulowanie...' : 'Tak, anuluj'}
+                        </button>
+                        <button
+                          onClick={handleCancelBack}
+                          disabled={isProcessing}
+                          className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-all shadow-lg"
+                        >
+                          Nie, powrót
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )
