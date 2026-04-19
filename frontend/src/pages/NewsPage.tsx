@@ -1,4 +1,5 @@
 import { APP_VERSION } from '../version'
+import PublicHamburgerMenu from '../components/PublicHamburgerMenu'
 
 interface NewsItem {
   title: string
@@ -132,6 +133,9 @@ const NewsPage = ({ user, profile }: NewsPageProps) => {
                 <p className="hidden sm:block text-xs text-gray-300 uppercase tracking-wide">Sport | Kultura | Rozrywka</p>
               </div>
             </div>
+            <div className="flex gap-2 sm:gap-3 flex-shrink-0">
+              <PublicHamburgerMenu />
+            </div>
           </div>
         </div>
       </header>
@@ -179,13 +183,11 @@ const NewsPage = ({ user, profile }: NewsPageProps) => {
                       {item.emoji}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4 mb-2">
-                        <h3 className="text-xl font-bold text-purple-600 hover:text-purple-700">
-                          {item.title}
-                        </h3>
-                        <span className="text-xs text-gray-500 whitespace-nowrap flex-shrink-0">
-                          📅 {formatDate(item.date)}
-                        </span>
+                      <h3 className="text-lg sm:text-xl font-bold text-purple-600 hover:text-purple-700 mb-2">
+                        {item.title}
+                      </h3>
+                      <div className="text-xs text-gray-500 mb-2">
+                        📅 {formatDate(item.date)}
                       </div>
                       <p className="text-gray-700 mb-3">
                         {item.description}

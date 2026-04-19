@@ -3,6 +3,7 @@ import Timeline from '../components/about/Timeline'
 import InstagramFeed from '../components/social/InstagramFeed'
 import { useMainWhatsAppChannel } from '../hooks/useMainWhatsAppChannel'
 import { APP_VERSION } from '../version'
+import PublicHamburgerMenu from '../components/PublicHamburgerMenu'
 
 interface PublicAboutPageProps {
   user?: any
@@ -42,13 +43,7 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
                 </div>
               </div>
               <div className="flex gap-2 sm:gap-3 flex-shrink-0">
-                <button
-                  onClick={() => navigate('/login')}
-                  className="px-3 sm:px-6 py-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white rounded-lg text-xs sm:text-sm font-semibold transition-all hover:shadow-lg"
-                >
-                  <span className="hidden sm:inline">Zaloguj się</span>
-                  <span className="sm:hidden">Login</span>
-                </button>
+                <PublicHamburgerMenu />
               </div>
             </div>
           </div>

@@ -45,8 +45,31 @@ const MyClassesPage = () => {
     return null
   }
 
+  // Odświeżaj dane przy montowaniu komponentu
   useEffect(() => {
     fetchMyRegistrations()
+  }, [])
+
+  // Odświeżaj dane gdy użytkownik wraca na stronę (zmiana zakładki)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchMyRegistrations()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
+
+  // Odświeżaj dane gdy użytkownik wraca do okna (focus)
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchMyRegistrations()
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
   }, [])
 
   const fetchMyRegistrations = async () => {
@@ -233,16 +256,16 @@ const MyClassesPage = () => {
                 >
                   {/* FRONT SIDE */}
                   <div
-                    className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all backface-hidden ${
+                    className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 hover:shadow-xl transition-all backface-hidden flex flex-col ${
                       reg.status === 'cancelled' ? 'opacity-50 grayscale' : ''
                     }`}
                     style={{ backfaceVisibility: 'hidden' }}
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-start gap-3 mb-2">
-                          <h3 className="text-xl font-bold text-purple-600">{reg.activity.name}</h3>
-                          <div className="flex flex-wrap gap-2">
+                    {/* Główna treść */}
+                    <div className="p-6 flex-1">
+                      <div className="flex items-start gap-3 mb-2">
+                        <h3 className="text-xl font-bold text-purple-600 flex-1">{reg.activity.name}</h3>
+                        <div className="flex flex-wrap gap-2 justify-end">
                             {/* Status rejestracji */}
                             {reg.status === 'registered' && (
                               <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold whitespace-nowrap">
@@ -283,10 +306,10 @@ const MyClassesPage = () => {
                                 ✓ Opłacone
                               </span>
                             )}
-                          </div>
                         </div>
+                      </div>
 
-                    <p className="text-gray-600 mb-4 text-sm">{reg.activity.description}</p>
+                      <p className="text-gray-600 mb-4 text-sm">{reg.activity.description}</p>
 
                     <div className="grid md:grid-cols-2 gap-2 text-sm">
                       <div className="flex items-center gap-2">
@@ -307,54 +330,63 @@ const MyClassesPage = () => {
                       </div>
                     </div>
 
-                    {reg.status === 'registered' && !reg.payment_processed && (
-                      <div className="mt-3 text-xs text-gray-500">
-                        <span>⚠️ Możesz anulować do: {formatDate(reg.can_cancel_until)}</span>
-                      </div>
-                    )}
-
-                    {/* Payment Section */}
-                    {reg.status === 'registered' && reg.payment_status !== 'paid' && reg.payment_due_date && (
-                      <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                        <p className="text-sm text-orange-800 mb-2">
-                          ⏰ Termin płatności: {formatDate(reg.payment_due_date)}
-                        </p>
-                        <button
-                          onClick={() => handlePayNow(reg.id, reg.activity.cost)}
-                          className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
-                        >
-                          💳 Opłać teraz
-                        </button>
-                      </div>
-                    )}
-
-                    {/* WhatsApp Group Link z fallbackiem */}
-                    {(() => {
-                      const whatsappLink = getWhatsAppLink(reg.activity)
-                      return reg.status === 'registered' && whatsappLink ? (
-                        <a
-                          href={whatsappLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition-all"
-                        >
-                          <img src="/whatsapp-icon.svg" alt="" className="h-4 w-4" />
-                          Dołącz do grupy WhatsApp
-                        </a>
-                      ) : null
-                    })()}
-                  </div>
-
-                      {canCancelNow && (
-                        <button
-                          onClick={() => handleCancelClick(reg.id, reg.can_cancel_until, reg.payment_processed)}
-                          disabled={isProcessing}
-                          className="ml-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Anuluj rezerwację
-                        </button>
+                      {reg.status === 'registered' && !reg.payment_processed && (
+                        <div className="mt-3 text-xs text-gray-500">
+                          <span>⚠️ Możesz anulować do: {formatDate(reg.can_cancel_until)}</span>
+                        </div>
                       )}
+
+                      {/* WhatsApp Group Link z fallbackiem */}
+                      {(() => {
+                        const whatsappLink = getWhatsAppLink(reg.activity)
+                        return reg.status === 'registered' && whatsappLink ? (
+                          <a
+                            href={whatsappLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition-all"
+                          >
+                            <img src="/whatsapp-icon.svg" alt="" className="h-4 w-4" />
+                            Dołącz do grupy WhatsApp
+                          </a>
+                        ) : null
+                      })()}
                     </div>
+
+                    {/* Przyciski na dole - Payment i Cancel */}
+                    {(reg.status === 'registered' && (reg.payment_status !== 'paid' && reg.payment_due_date || canCancelNow)) && (
+                      <div className="border-t-2 border-purple-100 p-4 bg-purple-50/50">
+                        <div className="flex flex-wrap gap-2">
+                          {/* Payment button */}
+                          {reg.payment_status !== 'paid' && reg.payment_due_date && (
+                            <button
+                              onClick={() => handlePayNow(reg.id, reg.activity.cost)}
+                              className="flex-1 min-w-[150px] px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all text-sm"
+                            >
+                              💳 Opłać teraz ({reg.activity.cost.toFixed(2)} zł)
+                            </button>
+                          )}
+
+                          {/* Cancel button */}
+                          {canCancelNow && (
+                            <button
+                              onClick={() => handleCancelClick(reg.id, reg.can_cancel_until, reg.payment_processed)}
+                              disabled={isProcessing}
+                              className="flex-1 min-w-[150px] px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                            >
+                              ❌ Anuluj rezerwację
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Payment deadline info */}
+                        {reg.payment_status !== 'paid' && reg.payment_due_date && (
+                          <p className="text-xs text-orange-700 mt-2">
+                            ⏰ Termin płatności: {formatDate(reg.payment_due_date)}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* BACK SIDE - Potwierdzenie anulowania */}

@@ -14,6 +14,8 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -170,16 +172,26 @@ const RegisterPage = () => {
               <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                 Hasło *
               </label>
-              <input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
-                minLength={6}
-                className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none transition-all"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  required
+                  minLength={6}
+                  className="w-full px-4 py-3 pr-12 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none transition-all"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
               <p className="text-xs text-gray-500 mt-1">Minimum 6 znaków</p>
             </div>
 
@@ -187,16 +199,26 @@ const RegisterPage = () => {
               <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
                 Potwierdź hasło *
               </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                required
-                minLength={6}
-                className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none transition-all"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  required
+                  minLength={6}
+                  className="w-full px-4 py-3 pr-12 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none transition-all"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  aria-label={showConfirmPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
+                >
+                  {showConfirmPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
 
             {/* GDPR Consent Checkbox */}

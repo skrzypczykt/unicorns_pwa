@@ -58,11 +58,16 @@ const ActivitiesPage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [flippedCard, setFlippedCard] = useState<string | null>(null)
 
-  useEffect(() => {
+  // Funkcja pomocnicza do odświeżania wszystkich danych
+  const refreshAllData = () => {
     fetchActivities()
     fetchSpecialEvents()
     fetchUserRegistrations()
     fetchParticipantCounts()
+  }
+
+  useEffect(() => {
+    refreshAllData()
   }, [])
 
   useEffect(() => {
@@ -71,6 +76,28 @@ const ActivitiesPage = () => {
       setIsLoggedIn(!!user)
     }
     checkAuth()
+  }, [])
+
+  // Odświeżaj dane gdy użytkownik wraca na stronę
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        refreshAllData()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
+
+  // Odświeżaj dane gdy użytkownik wraca do okna
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshAllData()
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
   }, [])
 
   // Helper: Pobierz link WhatsApp z fallback do activity_type
