@@ -51,6 +51,7 @@ const AdminActivitiesPage = () => {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState<string[]>(['scheduled']) // Domyślnie aktywne
 
   // Form state
   const [formData, setFormData] = useState({
@@ -85,7 +86,7 @@ const AdminActivitiesPage = () => {
     fetchActivities()
     fetchTrainers()
     fetchActivityTypes()
-  }, [])
+  }, [statusFilter]) // Odśwież gdy zmieni się filtr
 
   const fetchActivities = async () => {
     try {
@@ -93,6 +94,7 @@ const AdminActivitiesPage = () => {
       const { data: activitiesData, error: activitiesError } = await supabase
         .from('activities')
         .select('*')
+        .in('status', statusFilter) // Filtruj po statusie
         .order('is_special_event', { ascending: false })  // Wydarzenia specjalne najpierw
         .order('date_time', { ascending: false })         // Potem po dacie
 
@@ -505,6 +507,53 @@ const AdminActivitiesPage = () => {
           </button>
         </div>
       </div>
+
+      {!showForm && (
+        <div className="mb-6 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-4">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setStatusFilter(['scheduled'])}
+              className={`px-4 py-2 rounded-lg transition-all ${
+                statusFilter.includes('scheduled') && statusFilter.length === 1
+                  ? 'bg-green-500 text-white font-semibold'
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              }`}
+            >
+              ✅ Aktywne
+            </button>
+            <button
+              onClick={() => setStatusFilter(['completed'])}
+              className={`px-4 py-2 rounded-lg transition-all ${
+                statusFilter.includes('completed') && statusFilter.length === 1
+                  ? 'bg-blue-500 text-white font-semibold'
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              }`}
+            >
+              🏁 Minione
+            </button>
+            <button
+              onClick={() => setStatusFilter(['cancelled'])}
+              className={`px-4 py-2 rounded-lg transition-all ${
+                statusFilter.includes('cancelled') && statusFilter.length === 1
+                  ? 'bg-red-500 text-white font-semibold'
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              }`}
+            >
+              ❌ Anulowane
+            </button>
+            <button
+              onClick={() => setStatusFilter(['scheduled', 'completed', 'cancelled'])}
+              className={`px-4 py-2 rounded-lg transition-all ${
+                statusFilter.length === 3
+                  ? 'bg-purple-500 text-white font-semibold'
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              }`}
+            >
+              🔍 Wszystkie
+            </button>
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
@@ -1077,7 +1126,13 @@ const AdminActivitiesPage = () => {
       {/* Activities List */}
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-purple-600">
-          Wszystkie zajęcia ({activities.length})
+          {(() => {
+            if (statusFilter.length === 3) return `Wszystkie zajęcia (${activities.length})`
+            if (statusFilter.includes('scheduled') && statusFilter.length === 1) return `Aktywne zajęcia (${activities.length})`
+            if (statusFilter.includes('completed') && statusFilter.length === 1) return `Minione zajęcia (${activities.length})`
+            if (statusFilter.includes('cancelled') && statusFilter.length === 1) return `Anulowane zajęcia (${activities.length})`
+            return `Zajęcia (${activities.length})`
+          })()}
         </h2>
 
         {activities.length === 0 ? (
@@ -1091,73 +1146,70 @@ const AdminActivitiesPage = () => {
               key={activity.id}
               className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-xl font-bold text-purple-600">{activity.name}</h3>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      activity.status === 'scheduled' ? 'bg-green-100 text-green-700' :
-                      activity.status === 'completed' ? 'bg-blue-100 text-blue-700' :
-                      'bg-red-100 text-red-700'
-                    }`}>
-                      {activity.status === 'scheduled' ? 'Zaplanowane' :
-                       activity.status === 'completed' ? 'Zakończone' :
-                       'Anulowane'}
-                    </span>
-                  </div>
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-xl font-bold text-purple-600">{activity.name}</h3>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  activity.status === 'scheduled' ? 'bg-green-100 text-green-700' :
+                  activity.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                  'bg-red-100 text-red-700'
+                }`}>
+                  {activity.status === 'scheduled' ? 'Zaplanowane' :
+                   activity.status === 'completed' ? 'Zakończone' :
+                   'Anulowane'}
+                </span>
+              </div>
 
-                  <p className="text-gray-600 mb-4 text-sm">{activity.description}</p>
+              <p className="text-gray-600 mb-4 text-sm">{activity.description}</p>
 
-                  <div className="grid md:grid-cols-3 gap-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span>📅</span>
-                      <span>{formatDate(activity.date_time)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span>⏱️</span>
-                      <span>{activity.duration_minutes} min</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span>👥</span>
-                      <span>Max {activity.max_participants} osób</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span>📍</span>
-                      <span>{activity.location}</span>
-                    </div>
-                    <div className="flex items-center gap-2 font-bold text-purple-600">
-                      <span>💰</span>
-                      <span>{activity.cost.toFixed(2)} zł</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-500">
-                      <span>⚠️</span>
-                      <span>Anulowanie: {activity.cancellation_hours}h</span>
-                    </div>
-                  </div>
+              <div className="grid md:grid-cols-3 gap-2 text-sm mb-4">
+                <div className="flex items-center gap-2">
+                  <span>📅</span>
+                  <span>{formatDate(activity.date_time)}</span>
                 </div>
-
-                <div className="flex flex-col gap-2 ml-4">
-                  <button
-                    onClick={() => navigate(`/admin/activities/${activity.id}/participants`)}
-                    className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all text-sm whitespace-nowrap"
-                  >
-                    👥 Lista ({activity.registered_count || 0})
-                  </button>
-                  <button
-                    onClick={() => handleEdit(activity)}
-                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all text-sm"
-                  >
-                    ✏️ Edytuj
-                  </button>
-                  {activity.status === 'scheduled' && (
-                    <button
-                      onClick={() => handleCancel(activity.id)}
-                      className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all text-sm"
-                    >
-                      ✗ Anuluj
-                    </button>
-                  )}
+                <div className="flex items-center gap-2">
+                  <span>⏱️</span>
+                  <span>{activity.duration_minutes} min</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  <span>👥</span>
+                  <span>Max {activity.max_participants} osób</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>📍</span>
+                  <span>{activity.location}</span>
+                </div>
+                <div className="flex items-center gap-2 font-bold text-purple-600">
+                  <span>💰</span>
+                  <span>{activity.cost.toFixed(2)} zł</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-500">
+                  <span>⚠️</span>
+                  <span>Anulowanie: {activity.cancellation_hours}h</span>
+                </div>
+              </div>
+
+              {/* Przyciski na dole */}
+              <div className="border-t-2 border-purple-100 pt-4 flex flex-wrap gap-2">
+                <button
+                  onClick={() => navigate(`/admin/activities/${activity.id}/participants`)}
+                  className="flex-1 min-w-[140px] px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all text-sm font-semibold"
+                >
+                  👥 Lista ({activity.registered_count || 0})
+                </button>
+                <button
+                  onClick={() => handleEdit(activity)}
+                  className="flex-1 min-w-[140px] px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all text-sm font-semibold"
+                >
+                  ✏️ Edytuj
+                </button>
+                {activity.status === 'scheduled' && (
+                  <button
+                    onClick={() => handleCancel(activity.id)}
+                    className="flex-1 min-w-[140px] px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all text-sm font-semibold"
+                  >
+                    ✗ Anuluj
+                  </button>
+                )}
               </div>
             </div>
           ))

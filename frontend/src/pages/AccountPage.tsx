@@ -23,6 +23,9 @@ interface UserProfile {
   created_at: string
   is_association_member?: boolean
   association_member_since?: string
+  phone?: string | null
+  first_name?: string | null
+  last_name?: string | null
 }
 
 const AccountPage = () => {
@@ -144,6 +147,13 @@ const AccountPage = () => {
               <p className="text-lg text-gray-800">{profile.email}</p>
             </div>
 
+            {profile.phone && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-500 mb-1">Telefon</label>
+                <p className="text-lg text-gray-800">{profile.phone}</p>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-semibold text-gray-500 mb-1">Rola</label>
               <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
@@ -191,7 +201,7 @@ const AccountPage = () => {
                 ⚙️ Ustawienia konta
               </button>
               <button
-                onClick={() => {/* TODO: Edycja profilu */}}
+                onClick={() => navigate('/edit-profile')}
                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-all"
               >
                 ✏️ Edytuj profil

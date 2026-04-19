@@ -1,0 +1,20 @@
+name: Generate Recurring Activities
+
+on:
+  schedule:
+    # Codziennie o 2:00 UTC (3:00/4:00 w Polsce w zależności od czasu letniego/zimowego)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Pozwala na ręczne uruchomienie z UI
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Supabase Edge Function
+        run: |
+          curl -X POST \
+            "${{ secrets.SUPABASE_URL }}/functions/v1/generate-recurring-activities-cron" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{}'

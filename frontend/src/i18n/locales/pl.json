@@ -19,7 +19,7 @@
   "nav": {
     "dashboard": "Panel główny",
     "activities": "Zajęcia",
-    "myClasses": "Moje zajęcia",
+    "myClasses": "Moje Rezerwacje",
     "profile": "Profil",
     "admin": "Administracja",
     "trainer": "Panel trenera",
@@ -92,7 +92,7 @@
     "noPaymentAtRegistration": "Płatność zostanie pobrana po oznaczeniu obecności przez trenera"
   },
   "myClasses": {
-    "title": "Moje zajęcia",
+    "title": "Moje Rezerwacje",
     "registered": "Zapisane",
     "attended": "Uczestniczyłem/am",
     "noClasses": "Nie masz zapisanych zajęć",

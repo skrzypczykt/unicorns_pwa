@@ -16,12 +16,15 @@ import TrainerClassesPage from './pages/TrainerClassesPage'
 import AdminUsersPage from './pages/AdminUsersPage'
 import ProfilePage from './pages/ProfilePage'
 import AccountPage from './pages/AccountPage'
+import EditProfilePage from './pages/EditProfilePage'
+import NotificationsPage from './pages/NotificationsPage'
 import SettingsPage from './pages/SettingsPage'
 import AdminActivitiesPage from './pages/AdminActivitiesPage'
 import AdminReportsPage from './pages/AdminReportsPage'
 import AdminAttendancePage from './pages/AdminAttendancePage'
 import ActivityParticipantsPage from './pages/ActivityParticipantsPage'
 import InstallPWAPrompt from './components/InstallPWAPrompt'
+import BackButton from './components/BackButton'
 import ScrollToTop from './components/ScrollToTop'
 import HamburgerMenu from './components/HamburgerMenu'
 import WelcomeNotificationModal from './components/WelcomeNotificationModal'
@@ -146,6 +149,7 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
 
   return (
     <>
+      <BackButton />
       <InstallPWAPrompt />
       <WelcomeNotificationModal />
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 overflow-x-hidden">
@@ -217,6 +221,8 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
           <Route path="/my-classes" element={<MyClassesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/edit-profile" element={<EditProfilePage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/activities" element={<AdminActivitiesPage />} />

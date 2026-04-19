@@ -126,6 +126,14 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
               </button>
 
               <button
+                onClick={() => handleNavigate('/notifications')}
+                className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
+              >
+                <span>🔔</span>
+                <span className="text-sm">Powiadomienia</span>
+              </button>
+
+              <button
                 onClick={() => handleNavigate('/settings')}
                 className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
               >

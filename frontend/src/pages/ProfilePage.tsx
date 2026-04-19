@@ -23,6 +23,9 @@ interface UserProfile {
   balance: number
   balance_updated_at: string
   created_at: string
+  phone?: string | null
+  first_name?: string | null
+  last_name?: string | null
 }
 
 const ProfilePage = () => {
@@ -151,6 +154,13 @@ const ProfilePage = () => {
               <label className="block text-sm font-semibold text-gray-500 mb-1">Email</label>
               <p className="text-lg text-gray-800">{profile.email}</p>
             </div>
+
+            {profile.phone && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-500 mb-1">Telefon</label>
+                <p className="text-lg text-gray-800">{profile.phone}</p>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-semibold text-gray-500 mb-1">Rola</label>

@@ -89,15 +89,7 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
               <span>🗓️</span>
               Zobacz harmonogram zajęć i wydarzeń
             </button>
-            {isLoggedIn ? (
-              <button
-                onClick={() => navigate('/')}
-                className="px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
-              >
-                <span>🏠</span>
-                Strefa użytkownika
-              </button>
-            ) : (
+            {!isLoggedIn && (
               <button
                 onClick={() => navigate('/login')}
                 className="px-6 py-3 bg-white text-purple-600 font-semibold rounded-lg hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:scale-105"

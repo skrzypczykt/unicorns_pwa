@@ -258,6 +258,7 @@ serve(async (req) => {
             activity_id: activityId,
             title: notification.title,
             body: notification.body,
+            type: isSpecialEvent ? 'special_event' : 'new_activity',
             status: 'sent'
           })
 
@@ -278,6 +279,7 @@ serve(async (req) => {
             activity_id: activityId,
             title: notification.title,
             body: notification.body,
+            type: isSpecialEvent ? 'special_event' : 'new_activity',
             status: 'failed',
             error_message: error.message
           })

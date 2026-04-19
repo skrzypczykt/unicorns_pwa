@@ -41,9 +41,17 @@ serve(async (req) => {
     const instances = []
     const startDate = new Date(template.date_time)
     const endDate = new Date(template.recurrence_end_date)
+
+    // LIMIT: Generuj max 8 tygodni do przodu od teraz
+    const maxFutureDate = new Date()
+    maxFutureDate.setDate(maxFutureDate.getDate() + 56) // 8 tygodni = 56 dni
+
+    // Użyj wcześniejszej daty: końcowa data serii LUB 8 tygodni od teraz
+    const effectiveEndDate = endDate < maxFutureDate ? endDate : maxFutureDate
+
     let currentDate = new Date(startDate)
     let count = 0
-    const MAX_INSTANCES = 52 // Limit: max 52 instancje (1 rok tygodniowo)
+    const MAX_INSTANCES = 52 // Limit bezpieczeństwa: max 52 instancje
 
     // Pomiń pierwszą datę (szablon już istnieje jako parent)
     if (template.recurrence_pattern === 'weekly') {
@@ -52,8 +60,8 @@ serve(async (req) => {
       currentDate.setMonth(currentDate.getMonth() + 1)
     }
 
-    // Generuj instancje
-    while (currentDate <= endDate && count < MAX_INSTANCES) {
+    // Generuj instancje do effectiveEndDate (max 8 tygodni)
+    while (currentDate <= effectiveEndDate && count < MAX_INSTANCES) {
       instances.push({
         name: template.name,
         description: template.description,

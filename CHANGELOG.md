@@ -4,6 +4,63 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.2.0] - 2026-04-19
+
+### Dodano
+
+- **Edycja profilu użytkownika**
+  - Nowa strona `/edit-profile` z formularzem edycji
+  - Pola: imię, nazwisko, telefon, wyświetlana nazwa
+  - Migracja bazy: dodano kolumny `first_name`, `last_name`, `phone`
+  - Auto-generowanie `display_name` z imienia i nazwiska
+
+- **Panel powiadomień**
+  - Nowa strona `/notifications` z historią powiadomień
+  - Typy powiadomień: przypomnienie o płatności, nowe zajęcia, wydarzenie specjalne
+  - Oznaczanie jako przeczytane, badge "Nowe"
+  - Link w hamburger menu
+  - Migracja bazy: kolumny `type`, `read_at` w `push_notifications_log`
+
+- **Przycisk Wstecz dla iOS**
+  - Dedykowany przycisk "← Wstecz" dla urządzeń iOS
+  - Warunkowe renderowanie (tylko iOS)
+  - Detekcja przez user agent
+
+- **Filtry w panelu admina**
+  - Zakładki: Aktywne, Minione, Anulowane, Wszystkie
+  - Dynamiczny nagłówek z licznikiem
+  - Filtrowanie po statusie wydarzenia
+
+- **Filtry w "Moje Rezerwacje"**
+  - Zakładki: Aktywne, Anulowane, Wszystkie
+  - Domyślnie pokazuje aktywne rezerwacje
+  - Dynamiczny nagłówek z licznikiem
+
+- **Automatyzacja wydarzeń cyklicznych**
+  - GitHub Actions workflow (codziennie o 2:00 UTC)
+  - Edge Function `generate-recurring-activities-cron`
+  - Limit generowania: 8 tygodni do przodu
+
+### Zmieniono
+
+- **Unifikacja nazewnictwa** - "Moje zajęcia" → "Moje Rezerwacje" w całej aplikacji
+- **Komunikaty rezerwacji**
+  - "Klamka zapadła! Szykuj się na świetny czas. 💪" dla spóźnionych anulowań (nie-płatne)
+  - Komunikat kontaktowy dla opłaconych rezerwacji (tylko płatne zajęcia > 0 zł)
+  - Ukrycie przycisku "Anuluj" tylko dla płatnych opłaconych rezerwacji
+
+### Usunięto
+
+- **Przycisk "Strefa użytkownika"** z PublicAboutPage (duplikat funkcjonalności)
+
+### Naprawiono
+
+- **Przycisk "Zaloguj się"** w PublicHamburgerMenu - teraz mieści się w menu
+- **Komunikat opłaconej rezerwacji** - nie pokazuje się dla darmowych zajęć (0.00 zł)
+- **Limit rezerwacji** - dodano limit 100 dla bezpieczeństwa
+
+---
+
 ## [0.1.25] - 2026-04-19
 
 ### Dodano

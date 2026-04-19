@@ -33,6 +33,7 @@ const MyClassesPage = () => {
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState<string | null>(null)
   const [flippedCard, setFlippedCard] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState<string[]>(['registered', 'attended']) // Domyślnie aktywne i uczestniczone
 
   // Helper: Pobierz link WhatsApp z fallback do activity_type
   const getWhatsAppLink = (activity: Registration['activity']): string | null => {
@@ -45,10 +46,10 @@ const MyClassesPage = () => {
     return null
   }
 
-  // Odświeżaj dane przy montowaniu komponentu
+  // Odświeżaj dane przy montowaniu komponentu lub zmianie filtra
   useEffect(() => {
     fetchMyRegistrations()
-  }, [])
+  }, [statusFilter])
 
   // Odświeżaj dane gdy użytkownik wraca na stronę (zmiana zakładki)
   useEffect(() => {
@@ -104,8 +105,9 @@ const MyClassesPage = () => {
           )
         `)
         .eq('user_id', user.id)
-        .in('status', ['registered', 'attended', 'cancelled'])
+        .in('status', statusFilter) // Użyj aktywnego filtra
         .order('registered_at', { ascending: false })
+        .limit(100) // Bezpieczeństwo - max 100 rezerwacji
 
       if (error) throw error
 
@@ -217,14 +219,60 @@ const MyClassesPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-purple-600 mb-2">🎯 Moje zajęcia</h1>
+        <h1 className="text-3xl font-bold text-purple-600 mb-2">🎯 Moje Rezerwacje</h1>
         <p className="text-gray-600">Zarządzaj swoimi rezerwacjami</p>
       </div>
 
+      {/* Filtry statusów */}
+      <div className="mb-6 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-4">
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setStatusFilter(['registered', 'attended'])}
+            className={`px-4 py-2 rounded-lg transition-all ${
+              statusFilter.includes('registered') && statusFilter.includes('attended') && statusFilter.length === 2
+                ? 'bg-green-500 text-white font-semibold'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+            }`}
+          >
+            ✅ Aktywne
+          </button>
+          <button
+            onClick={() => setStatusFilter(['cancelled'])}
+            className={`px-4 py-2 rounded-lg transition-all ${
+              statusFilter.includes('cancelled') && statusFilter.length === 1
+                ? 'bg-red-500 text-white font-semibold'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+            }`}
+          >
+            ❌ Anulowane
+          </button>
+          <button
+            onClick={() => setStatusFilter(['registered', 'attended', 'cancelled'])}
+            className={`px-4 py-2 rounded-lg transition-all ${
+              statusFilter.length === 3
+                ? 'bg-purple-500 text-white font-semibold'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+            }`}
+          >
+            🔍 Wszystkie
+          </button>
+        </div>
+      </div>
+
+      {/* Nagłówek z licznikiem */}
+      <h2 className="text-xl font-bold text-purple-600 mb-4">
+        {(() => {
+          if (statusFilter.length === 3) return `Wszystkie rezerwacje (${registrations.length})`
+          if (statusFilter.includes('registered') && statusFilter.includes('attended') && statusFilter.length === 2) return `Aktywne rezerwacje (${registrations.length})`
+          if (statusFilter.includes('cancelled') && statusFilter.length === 1) return `Anulowane rezerwacje (${registrations.length})`
+          return `Rezerwacje (${registrations.length})`
+        })()}
+      </h2>
+
       {registrations.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="text-center py-12 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200">
           <span className="text-6xl mb-4 block">🦄</span>
-          <p className="text-xl text-gray-600 mb-4">Nie masz jeszcze żadnych rezerwacji</p>
+          <p className="text-xl text-gray-600 mb-4">Brak rezerwacji w tym filtrze</p>
           <button
             onClick={() => navigate('/activities')}
             className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
@@ -336,6 +384,24 @@ const MyClassesPage = () => {
                         </div>
                       )}
 
+                      {/* Komunikat dla opłaconych rezerwacji (tylko dla płatnych zajęć) */}
+                      {reg.status === 'registered' && reg.payment_status === 'paid' && reg.activity.cost > 0 && (
+                        <div className="mt-3 p-4 bg-orange-50 border-2 border-orange-300 rounded-lg">
+                          <p className="text-sm text-orange-900 font-semibold">
+                            💳 Rezerwacja opłacona z góry
+                          </p>
+                          <p className="text-xs text-orange-800 mt-1">
+                            Aby anulować, skontaktuj się z obsługą:
+                            <a
+                              href="mailto:unicorns.lodz@gmail.com"
+                              className="underline ml-1 hover:text-orange-600"
+                            >
+                              unicorns.lodz@gmail.com
+                            </a>
+                          </p>
+                        </div>
+                      )}
+
                       {/* WhatsApp Group Link z fallbackiem */}
                       {(() => {
                         const whatsappLink = getWhatsAppLink(reg.activity)
@@ -354,7 +420,14 @@ const MyClassesPage = () => {
                     </div>
 
                     {/* Przyciski na dole - Payment i Cancel */}
-                    {(reg.status === 'registered' && (reg.payment_status !== 'paid' && reg.payment_due_date || canCancelNow)) && (
+                    {(reg.status === 'registered' && (reg.payment_status !== 'paid' && reg.payment_due_date || canCancelNow || (() => {
+                      // Sprawdź czy spóźnione anulowanie
+                      if (reg.status !== 'registered') return false
+                      if (reg.payment_status === 'paid') return false
+                      const now = new Date()
+                      const deadline = new Date(reg.can_cancel_until)
+                      return now >= deadline
+                    })())) && (
                       <div className="border-t-2 border-purple-100 p-4 bg-purple-50/50">
                         <div className="flex flex-wrap gap-2">
                           {/* Payment button */}
@@ -367,16 +440,39 @@ const MyClassesPage = () => {
                             </button>
                           )}
 
-                          {/* Cancel button */}
-                          {canCancelNow && (
-                            <button
-                              onClick={() => handleCancelClick(reg.id, reg.can_cancel_until, reg.payment_processed)}
-                              disabled={isProcessing}
-                              className="flex-1 min-w-[150px] px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                            >
-                              ❌ Anuluj rezerwację
-                            </button>
-                          )}
+                          {/* Cancel button LUB komunikat "Klamka zapadła" */}
+                          {(() => {
+                            // Sprawdź czy spóźnione anulowanie (po deadline, nie-opłacone)
+                            const isTooLateToCancel = (() => {
+                              if (reg.status !== 'registered') return false
+                              if (reg.payment_status === 'paid' && reg.activity.cost > 0) return false // Tylko płatne zajęcia blokują anulowanie
+                              const now = new Date()
+                              const deadline = new Date(reg.can_cancel_until)
+                              return now >= deadline
+                            })()
+
+                            // Przycisk anulowania - ukryj tylko dla PŁATNYCH opłaconych rezerwacji
+                            const canShowCancelButton = canCancelNow && !(reg.payment_status === 'paid' && reg.activity.cost > 0)
+
+                            if (canShowCancelButton) {
+                              return (
+                                <button
+                                  onClick={() => handleCancelClick(reg.id, reg.can_cancel_until, reg.payment_processed)}
+                                  disabled={isProcessing}
+                                  className="flex-1 min-w-[150px] px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                                >
+                                  ❌ Anuluj rezerwację
+                                </button>
+                              )
+                            } else if (isTooLateToCancel) {
+                              return (
+                                <div className="flex-1 min-w-[150px] px-4 py-3 bg-gradient-to-r from-orange-400 to-red-400 text-white font-bold rounded-lg text-center cursor-not-allowed shadow-md">
+                                  🔥 Klamka zapadła! Szykuj się na świetny czas. 💪
+                                </div>
+                              )
+                            }
+                            return null
+                          })()}
                         </div>
 
                         {/* Payment deadline info */}

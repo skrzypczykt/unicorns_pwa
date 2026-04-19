@@ -112,12 +112,14 @@ const PublicHamburgerMenu = () => {
               <div className="my-2 border-t border-gray-200"></div>
 
               {/* Login Button */}
-              <button
-                onClick={() => handleNavigate('/login')}
-                className="w-full mx-2 my-2 px-4 py-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all text-sm"
-              >
-                Zaloguj się
-              </button>
+              <div className="px-4 py-2">
+                <button
+                  onClick={() => handleNavigate('/login')}
+                  className="w-full px-4 py-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all text-sm"
+                >
+                  Zaloguj się
+                </button>
+              </div>
             </div>
           </div>
         </>

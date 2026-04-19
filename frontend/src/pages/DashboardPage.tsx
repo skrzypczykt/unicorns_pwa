@@ -43,7 +43,7 @@ const DashboardPage = ({ profile }: DashboardPageProps) => {
               onClick={() => navigate('/my-classes')}
               className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
             >
-              Moje zajęcia
+              Moje Rezerwacje
             </button>
           </div>
 
