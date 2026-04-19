@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase/client'
 import { useNavigate } from 'react-router-dom'
+import { formatDuration } from '../utils/formatDuration'
 import { ACTIVITY_TYPE_IMAGES } from '../data/activityImages'
 
 interface Activity {
@@ -1172,7 +1173,7 @@ const AdminActivitiesPage = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <span>⏱️</span>
-                  <span>{activity.duration_minutes} min</span>
+                  <span>{formatDuration(activity.duration_minutes)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span>👥</span>

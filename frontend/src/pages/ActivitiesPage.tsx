@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase/client'
 import { useNavigate } from 'react-router-dom'
+import { formatDuration } from '../utils/formatDuration'
 import { getActivityImage } from '../data/activityImages'
 import PaymentChoiceModal from '../components/PaymentChoiceModal'
 import { addToGoogleCalendar, calculateEndTime } from '../utils/calendarHelpers'
@@ -528,29 +529,6 @@ const ActivitiesPage = () => {
     if (days > 0) return `${days}d ${hours}h`
     if (hours > 0) return `${hours}h ${minutes}m`
     return `${minutes}m`
-  }
-
-  const formatDuration = (minutes: number) => {
-    if (minutes >= 1440) {
-      // >= 24h = pokaż dni
-      const days = Math.floor(minutes / 1440)
-      const remainingHours = Math.floor((minutes % 1440) / 60)
-      if (remainingHours > 0) {
-        return `${days} ${days === 1 ? 'dzień' : 'dni'} ${remainingHours}h`
-      }
-      return `${days} ${days === 1 ? 'dzień' : 'dni'}`
-    } else if (minutes >= 60) {
-      // >= 1h = pokaż godziny
-      const hours = Math.floor(minutes / 60)
-      const remainingMinutes = minutes % 60
-      if (remainingMinutes > 0) {
-        return `${hours}h ${remainingMinutes}min`
-      }
-      return `${hours}h`
-    } else {
-      // < 1h = pokaż minuty
-      return `${minutes} min`
-    }
   }
 
   const checkRegistrationWindow = (activity: Activity) => {

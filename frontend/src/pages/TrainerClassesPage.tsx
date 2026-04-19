@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase/client'
 import { useNavigate } from 'react-router-dom'
+import { formatDuration } from '../utils/formatDuration'
 
 interface Activity {
   id: string
@@ -566,7 +567,7 @@ const TrainerClassesPage = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <span>⏱️</span>
-                  <span>{selectedActivity.duration_minutes} minut</span>
+                  <span>{formatDuration(selectedActivity.duration_minutes)}</span>
                 </div>
               </div>
             </div>
