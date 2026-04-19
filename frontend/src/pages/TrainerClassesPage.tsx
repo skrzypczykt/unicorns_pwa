@@ -462,7 +462,7 @@ const TrainerClassesPage = () => {
           </div>
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all font-semibold"
+            className="hidden md:flex px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all font-semibold"
           >
             ← Powrót
           </button>
