@@ -18,6 +18,7 @@ import AdminAttendancePage from './pages/AdminAttendancePage'
 import ActivityParticipantsPage from './pages/ActivityParticipantsPage'
 import InstallPWAPrompt from './components/InstallPWAPrompt'
 import ScrollToTop from './components/ScrollToTop'
+import HamburgerMenu from './components/HamburgerMenu'
 import MemberZonePage from './pages/MemberZonePage'
 import MemberNewsPage from './pages/MemberNewsPage'
 import MemberDocumentsPage from './pages/MemberDocumentsPage'
@@ -27,6 +28,7 @@ import AdminMemberNewsPage from './pages/admin/AdminMemberNewsPage'
 import AdminMemberDocumentsPage from './pages/admin/AdminMemberDocumentsPage'
 import AdminMemberPollsPage from './pages/admin/AdminMemberPollsPage'
 import AdminMemberFeesPage from './pages/admin/AdminMemberFeesPage'
+import DonationsPage from './pages/DonationsPage'
 
 interface UserProfile {
   id: string
@@ -176,8 +178,8 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
                   </div>
                 )}
 
-                {/* Profil użytkownika - po prawej */}
-                <div className="hidden sm:flex items-center gap-2 text-right">
+                {/* Profil użytkownika - po prawej - tylko na większych ekranach */}
+                <div className="hidden md:flex items-center gap-2 text-right">
                   <div>
                     <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">
                       {profile.display_name}
@@ -190,14 +192,8 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
                   </div>
                 </div>
 
-                {/* Przycisk ustawień - kółko zębate */}
-                <button
-                  onClick={() => window.location.href = '/profile'}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-all"
-                  title="Ustawienia profilu"
-                >
-                  <span className="text-2xl">⚙️</span>
-                </button>
+                {/* Hamburger Menu */}
+                <HamburgerMenu profile={profile} onSignOut={handleSignOut} />
               </div>
             </div>
           </div>
@@ -225,6 +221,7 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
           <Route path="/member-zone/documents" element={<MemberDocumentsPage />} />
           <Route path="/member-zone/polls" element={<MemberPollsPage />} />
           <Route path="/member-zone/fees" element={<MemberBalancePage />} />
+          <Route path="/donations" element={<DonationsPage />} />
           <Route path="/admin/*" element={
             <div className="p-8 text-center max-w-2xl mx-auto">
               <div className="text-6xl mb-4">⚙️</div>
