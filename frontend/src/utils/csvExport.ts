@@ -26,36 +26,48 @@ export function generateAccountingCSV(data: AccountingReportRow[]): string {
     'Zadłużenie'
   ]
 
+  // Use semicolon as delimiter for better Excel compatibility in Polish locale
+  const delimiter = ';'
+
   const rows = data.map(row => [
-    escapeCSVField(row.user_name),
-    escapeCSVField(row.email),
-    escapeCSVField(row.section_name),
-    row.opening_balance.toFixed(2),
-    row.total_credits.toFixed(2),
-    row.total_debits.toFixed(2),
-    row.closing_balance.toFixed(2),
-    row.debt.toFixed(2)
+    escapeCSVField(row.user_name, delimiter),
+    escapeCSVField(row.email, delimiter),
+    escapeCSVField(row.section_name, delimiter),
+    row.opening_balance.toFixed(2).replace('.', ','), // Polish decimal separator
+    row.total_credits.toFixed(2).replace('.', ','),
+    row.total_debits.toFixed(2).replace('.', ','),
+    row.closing_balance.toFixed(2).replace('.', ','),
+    row.debt.toFixed(2).replace('.', ',')
   ])
 
   return [
-    headers.join(','),
-    ...rows.map(row => row.join(','))
+    headers.join(delimiter),
+    ...rows.map(row => row.join(delimiter))
   ].join('\n')
 }
 
-function escapeCSVField(field: string): string {
-  if (field.includes(',') || field.includes('"') || field.includes('\n')) {
+function escapeCSVField(field: string, delimiter: string = ','): string {
+  if (field.includes(delimiter) || field.includes('"') || field.includes('\n')) {
     return `"${field.replace(/"/g, '""')}"`
   }
   return field
 }
 
 export function downloadCSV(content: string, filename: string): void {
-  // Add BOM for proper UTF-8 encoding in Excel
-  const blob = new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8;' })
+  // Add UTF-8 BOM (Byte Order Mark) for proper encoding in Excel
+  // BOM: EF BB BF in hex = \uFEFF in Unicode
+  const BOM = '\uFEFF'
+  const blob = new Blob([BOM + content], {
+    type: 'text/csv;charset=utf-8;'
+  })
+
   const link = document.createElement('a')
-  link.href = URL.createObjectURL(blob)
-  link.download = filename
+  const url = URL.createObjectURL(blob)
+  link.setAttribute('href', url)
+  link.setAttribute('download', filename)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
   link.click()
-  URL.revokeObjectURL(link.href)
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 }
