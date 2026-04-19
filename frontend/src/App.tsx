@@ -146,7 +146,7 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
     <>
       <InstallPWAPrompt />
       <WelcomeNotificationModal />
-      <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200">
+      <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 overflow-x-hidden">
         {/* Header - Responsywny - zawsze widoczny dla zalogowanych */}
         {profile && (
           <header className="bg-gradient-to-r from-gray-900 via-black to-gray-900 backdrop-blur-sm shadow-lg border-b-4 border-purple-500 sticky top-0 z-50">
@@ -244,9 +244,9 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 
-        <footer className="mt-12 py-8 bg-white/80 backdrop-blur-sm border-t-2 border-purple-200">
+        <footer className="mt-12 py-8 bg-white/80 backdrop-blur-sm border-t-2 border-purple-200 overflow-hidden">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="grid md:grid-cols-3 gap-8 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 mb-6">
               {/* Organization Info */}
               <div>
                 <h3 className="text-lg font-bold text-purple-600 mb-2">🦄 Unicorns Łódź</h3>
@@ -270,7 +270,7 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
               {/* Social Media */}
               <div>
                 <h3 className="text-sm font-bold text-gray-700 mb-2">Media społecznościowe</h3>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-2 sm:gap-3">
                   <a
                     href="https://www.facebook.com/groups/604562728465563"
                     target="_blank"

@@ -258,6 +258,26 @@ const ActivitiesPage = () => {
       const activity = allActivities.find(a => a.id === activityId)
       if (!activity) return
 
+      // Sprawdź czy termin anulowania już minął
+      const activityDate = new Date(activity.date_time)
+      const cancellationDeadline = new Date(activityDate.getTime() - (cancellationHours * 60 * 60 * 1000))
+      const now = new Date()
+
+      // Jeśli zajęcia są płatne i termin anulowania już minął - ostrzeżenie
+      if (cost > 0 && now > cancellationDeadline) {
+        const confirmed = confirm(
+          `⚠️ UWAGA!\n\n` +
+          `Termin bezpłatnego anulowania już minął (${cancellationDeadline.toLocaleString('pl-PL')}).\n\n` +
+          `Jeśli się zapiszesz i nie przyjdziesz, koszt ${cost.toFixed(2)} zł zostanie pobrany z Twojego salda.\n\n` +
+          `Czy na pewno chcesz się zapisać?`
+        )
+
+        if (!confirmed) {
+          setRegistering(null)
+          return
+        }
+      }
+
       // Jeśli zajęcia wymagają płatności (cost > 0), pokaż modal wyboru
       if (cost > 0) {
         setPendingRegistration({

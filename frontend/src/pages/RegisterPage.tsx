@@ -259,7 +259,7 @@ const RegisterPage = () => {
             <p className="text-sm text-gray-600">
               Masz już konto?{' '}
               <Link
-                to="/"
+                to="/login"
                 className="text-purple-600 font-semibold hover:text-purple-700 transition-colors"
               >
                 Zaloguj się
