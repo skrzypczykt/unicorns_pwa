@@ -35,6 +35,7 @@ import AdminMemberDocumentsPage from './pages/admin/AdminMemberDocumentsPage'
 import AdminMemberPollsPage from './pages/admin/AdminMemberPollsPage'
 import AdminMemberFeesPage from './pages/admin/AdminMemberFeesPage'
 import DonationsPage from './pages/DonationsPage'
+import LegalNoticePage from './pages/LegalNoticePage'
 
 interface UserProfile {
   id: string
@@ -120,6 +121,7 @@ function App() {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/news/:articleId" element={<NewsArticlePage />} />
           <Route path="/donations" element={<DonationsPage />} />
+          <Route path="/legal" element={<LegalNoticePage />} />
           <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/login" element={<SimpleLoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -210,6 +212,7 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
           <Route path="/about-app" element={<AboutAppPage user={user} profile={profile} />} />
           <Route path="/news" element={<NewsPage user={user} profile={profile} onSignOut={handleSignOut} />} />
           <Route path="/news/:articleId" element={<NewsArticlePage user={user} profile={profile} />} />
+          <Route path="/legal" element={<LegalNoticePage user={user} profile={profile} />} />
           <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/my-classes" element={<MyClassesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
@@ -327,23 +330,12 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
                   Wsparcie
                 </button>
                 <span className="hidden sm:inline">•</span>
-                <a
-                  href="/polityka-prywatnosci.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => window.location.href = '/legal'}
                   className="hover:text-purple-600 transition-colors whitespace-nowrap"
                 >
-                  Polityka prywatności
-                </a>
-                <span className="hidden sm:inline">•</span>
-                <a
-                  href="/regulamin-zajec.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-purple-600 transition-colors whitespace-nowrap"
-                >
-                  Regulamin zajęć
-                </a>
+                  Nota prawna
+                </button>
               </div>
               <p className="text-xs text-gray-500 text-center">© 2026 Stowarzyszenie Unicorns. Wszystkie prawa zastrzeżone.</p>
               <p className="text-xs text-gray-500 mt-1 text-center">Aplikacja stworzona z magią jednorożców 🦄🌈✨</p>

@@ -142,6 +142,15 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                 <span className="text-sm">Wsparcie / Darowizny</span>
               </button>
 
+              {/* Legal Notice */}
+              <button
+                onClick={() => handleNavigate('/legal')}
+                className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
+              >
+                <span>⚖️</span>
+                <span className="text-sm">Nota prawna</span>
+              </button>
+
               <div className="border-t border-gray-200 my-2"></div>
 
               {/* Admin/Trainer Sections */}
