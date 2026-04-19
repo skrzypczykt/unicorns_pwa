@@ -4,6 +4,23 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.2.2] - 2026-04-19
+
+### Zmieniono
+
+- **Model płatności POST-PAID** - oznaczenie obecności przez trenera nie tworzy już transakcji księgowych
+- Trener tylko rejestruje fakt obecności (status `attended`), płatność to osobny proces
+- Cofnięcie obecności nie zmienia salda użytkownika (tylko status)
+
+### Naprawiono
+
+- Usunięto błędną logikę pobierania środków z `user_section_balances` przy oznaczaniu obecności
+- Usunięto mylące alerty o pobraniu/zwrocie środków
+
+### Dodano
+
+- Plik `CLAUDE.md` z instrukcjami dla AI (workflow git, zasady wersjonowania)
+
 ## [0.2.1] - 2026-04-19
 
 ### Zmieniono
