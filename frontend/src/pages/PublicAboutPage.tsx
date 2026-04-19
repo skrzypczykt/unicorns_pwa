@@ -26,7 +26,7 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
     <div className={isLoggedIn ? '' : 'min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200'}>
       {/* Header tylko dla niezalogowanych - zalogowani używają headera z App.tsx */}
       {!isLoggedIn && (
-        <header className="bg-gradient-to-r from-gray-900 via-black to-gray-900 backdrop-blur-sm shadow-lg border-b-4 border-purple-500">
+        <header className="bg-gradient-to-r from-gray-900 via-black to-gray-900 backdrop-blur-sm shadow-lg border-b-4 border-purple-500 relative z-[10000]">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -371,13 +371,6 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
         <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="flex justify-center gap-4 text-xs text-gray-500 mb-3">
             <button
-              onClick={() => navigate('/news')}
-              className="hover:text-purple-600 transition-colors"
-            >
-              Aktualności
-            </button>
-            <span>•</span>
-            <button
               onClick={() => navigate('/about-app')}
               className="hover:text-purple-600 transition-colors"
             >
@@ -385,10 +378,10 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
             </button>
             <span>•</span>
             <button
-              onClick={() => navigate('/donations')}
+              onClick={() => navigate('/legal')}
               className="hover:text-purple-600 transition-colors"
             >
-              Wsparcie
+              Nota prawna
             </button>
             <span>•</span>
             <a

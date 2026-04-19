@@ -45,12 +45,12 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-[9998]"
+            className="fixed inset-0 z-[10001]"
             onClick={() => setIsOpen(false)}
           ></div>
 
           {/* Menu Panel */}
-          <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border-2 border-purple-200 z-[9999] overflow-hidden">
+          <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border-2 border-purple-200 z-[10002] overflow-hidden">
             {/* User Info */}
             <div className="px-4 py-3 bg-gradient-to-r from-purple-100 to-pink-100 border-b border-purple-200">
               <p className="text-sm font-semibold text-gray-800 truncate">

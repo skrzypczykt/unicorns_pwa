@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { APP_VERSION } from '../version'
+import PublicHamburgerMenu from '../components/PublicHamburgerMenu'
 
 interface AboutAppPageProps {
   user?: any
@@ -14,7 +15,7 @@ const AboutAppPage = ({ user, profile }: AboutAppPageProps) => {
     <div className={isLoggedIn ? '' : 'min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200'}>
       {/* Header tylko dla niezalogowanych - zalogowani używają headera z App.tsx */}
       {!isLoggedIn && (
-        <header className="bg-gradient-to-r from-gray-900 via-black to-gray-900 backdrop-blur-sm shadow-lg border-b-4 border-purple-500">
+        <header className="bg-gradient-to-r from-gray-900 via-black to-gray-900 backdrop-blur-sm shadow-lg border-b-4 border-purple-500 relative z-[10000]">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -29,6 +30,9 @@ const AboutAppPage = ({ user, profile }: AboutAppPageProps) => {
                 </h1>
                 <p className="hidden sm:block text-xs text-gray-300 uppercase tracking-wide">Sport | Kultura | Rozrywka</p>
               </div>
+            </div>
+            <div className="flex gap-2 sm:gap-3 flex-shrink-0">
+              <PublicHamburgerMenu />
             </div>
           </div>
         </div>

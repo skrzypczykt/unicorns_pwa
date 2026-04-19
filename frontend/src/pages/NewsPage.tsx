@@ -117,7 +117,7 @@ const NewsPage = ({ user, profile }: NewsPageProps) => {
     <div className={isLoggedIn ? '' : 'min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200'}>
       {/* Header tylko dla niezalogowanych - zalogowani używają headera z App.tsx */}
       {!isLoggedIn && (
-        <header className="bg-gradient-to-r from-gray-900 via-black to-gray-900 backdrop-blur-sm shadow-lg border-b-4 border-purple-500">
+        <header className="bg-gradient-to-r from-gray-900 via-black to-gray-900 backdrop-blur-sm shadow-lg border-b-4 border-purple-500 relative z-[10000]">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">

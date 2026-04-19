@@ -85,7 +85,21 @@ const SettingsPage = () => {
   }
 
   const handleToggleNotification = (key: keyof NotificationSettings) => {
-    const newSettings = { ...notificationSettings, [key]: !notificationSettings[key] }
+    const newValue = !notificationSettings[key]
+    let newSettings = { ...notificationSettings, [key]: newValue }
+
+    // Jeśli włączamy/wyłączamy główne powiadomienia (push/email/sms),
+    // automatycznie włącz/wyłącz wszystkie powiązane powiadomienia
+    if (key === 'push_enabled' || key === 'email_enabled' || key === 'sms_enabled') {
+      newSettings = {
+        ...newSettings,
+        activity_reminders: newValue,
+        new_activities: newValue,
+        balance_alerts: newValue,
+        member_news: newValue
+      }
+    }
+
     saveNotificationSettings(newSettings)
   }
 
@@ -198,8 +212,28 @@ const SettingsPage = () => {
                 onClick={async () => {
                   if (isSubscribed) {
                     await unsubscribeFromPush()
+                    // Wyłącz wszystkie powiązane powiadomienia
+                    const newSettings = {
+                      ...notificationSettings,
+                      push_enabled: false,
+                      activity_reminders: false,
+                      new_activities: false,
+                      balance_alerts: false,
+                      member_news: false
+                    }
+                    saveNotificationSettings(newSettings)
                   } else {
                     await subscribeToPush()
+                    // Włącz wszystkie powiązane powiadomienia
+                    const newSettings = {
+                      ...notificationSettings,
+                      push_enabled: true,
+                      activity_reminders: true,
+                      new_activities: true,
+                      balance_alerts: true,
+                      member_news: true
+                    }
+                    saveNotificationSettings(newSettings)
                   }
                 }}
                 className={`relative w-14 h-8 rounded-full transition-colors ${
@@ -212,38 +246,6 @@ const SettingsPage = () => {
               </button>
             </div>
           )}
-
-          {/* Email notifications */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-200">
-            <div>
-              <p className="font-semibold text-gray-800">📧 Powiadomienia email</p>
-              <p className="text-xs text-gray-500">Otrzymuj ważne informacje na email</p>
-            </div>
-            <button
-              onClick={() => handleToggleNotification('email_enabled')}
-              className={`relative w-14 h-8 rounded-full transition-colors ${
-                notificationSettings.email_enabled ? 'bg-purple-500' : 'bg-gray-300'
-              }`}
-            >
-              <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                notificationSettings.email_enabled ? 'translate-x-6' : ''
-              }`}></div>
-            </button>
-          </div>
-
-          {/* SMS notifications */}
-          <div className="flex items-center justify-between py-3 border-b border-gray-200">
-            <div>
-              <p className="font-semibold text-gray-800">📱 Powiadomienia SMS</p>
-              <p className="text-xs text-gray-500">Wiadomości SMS o ważnych wydarzeniach (wkrótce)</p>
-            </div>
-            <button
-              disabled
-              className="relative w-14 h-8 rounded-full bg-gray-200 cursor-not-allowed"
-            >
-              <div className="absolute top-1 left-1 w-6 h-6 bg-gray-400 rounded-full"></div>
-            </button>
-          </div>
 
           {/* Activity reminders */}
           <div className="flex items-center justify-between py-3 border-b border-gray-200">
@@ -300,7 +302,7 @@ const SettingsPage = () => {
           </div>
 
           {/* Member news */}
-          <div className="flex items-center justify-between py-3">
+          <div className="flex items-center justify-between py-3 border-b border-gray-200">
             <div>
               <p className="font-semibold text-gray-800">📰 Aktualności Stowarzyszenia</p>
               <p className="text-xs text-gray-500">Nowości i ogłoszenia dla członków</p>
@@ -314,6 +316,38 @@ const SettingsPage = () => {
               <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
                 notificationSettings.member_news ? 'translate-x-6' : ''
               }`}></div>
+            </button>
+          </div>
+
+          {/* Email notifications */}
+          <div className="flex items-center justify-between py-3 border-b border-gray-200 bg-blue-50 -mx-6 px-6">
+            <div>
+              <p className="font-semibold text-blue-800">📧 Powiadomienia email</p>
+              <p className="text-xs text-blue-600">Otrzymuj ważne informacje na email</p>
+            </div>
+            <button
+              onClick={() => handleToggleNotification('email_enabled')}
+              className={`relative w-14 h-8 rounded-full transition-colors ${
+                notificationSettings.email_enabled ? 'bg-blue-500' : 'bg-gray-300'
+              }`}
+            >
+              <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
+                notificationSettings.email_enabled ? 'translate-x-6' : ''
+              }`}></div>
+            </button>
+          </div>
+
+          {/* SMS notifications */}
+          <div className="flex items-center justify-between py-3 bg-gray-50 -mx-6 px-6">
+            <div>
+              <p className="font-semibold text-gray-800">📱 Powiadomienia SMS</p>
+              <p className="text-xs text-gray-500">Wiadomości SMS o ważnych wydarzeniach (wkrótce)</p>
+            </div>
+            <button
+              disabled
+              className="relative w-14 h-8 rounded-full bg-gray-200 cursor-not-allowed"
+            >
+              <div className="absolute top-1 left-1 w-6 h-6 bg-gray-400 rounded-full"></div>
             </button>
           </div>
         </div>

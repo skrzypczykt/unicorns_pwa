@@ -120,8 +120,8 @@ function App() {
           <Route path="/about-app" element={<AboutAppPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/news/:articleId" element={<NewsArticlePage />} />
-          <Route path="/donations" element={<DonationsPage />} />
-          <Route path="/legal" element={<LegalNoticePage />} />
+          <Route path="/donations" element={<DonationsPage user={undefined} profile={undefined} />} />
+          <Route path="/legal" element={<LegalNoticePage user={undefined} profile={undefined} />} />
           <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/login" element={<SimpleLoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -232,7 +232,7 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
           <Route path="/member-zone/documents" element={<MemberDocumentsPage />} />
           <Route path="/member-zone/polls" element={<MemberPollsPage />} />
           <Route path="/member-zone/fees" element={<MemberBalancePage />} />
-          <Route path="/donations" element={<DonationsPage />} />
+          <Route path="/donations" element={<DonationsPage user={user} profile={profile} />} />
           <Route path="/admin/*" element={
             <div className="p-8 text-center max-w-2xl mx-auto">
               <div className="text-6xl mb-4">⚙️</div>

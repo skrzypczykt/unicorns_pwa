@@ -1,7 +1,14 @@
 import { useNavigate } from 'react-router-dom'
+import PublicHamburgerMenu from '../components/PublicHamburgerMenu'
 
-const DonationsPage = () => {
+interface DonationsPageProps {
+  user?: any
+  profile?: any
+}
+
+const DonationsPage = ({ user, profile }: DonationsPageProps) => {
   const navigate = useNavigate()
+  const isLoggedIn = !!user && !!profile
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -9,7 +16,37 @@ const DonationsPage = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className={isLoggedIn ? '' : 'min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200'}>
+      {/* Header tylko dla niezalogowanych */}
+      {!isLoggedIn && (
+        <header className="bg-gradient-to-r from-gray-900 via-black to-gray-900 backdrop-blur-sm shadow-lg border-b-4 border-purple-500 relative z-[10000]">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
+            <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={() => navigate('/')}
+                className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity"
+              >
+                <img
+                  src="/unicorns-logo.png"
+                  alt="Unicorns Łódź"
+                  className="h-10 sm:h-12 md:h-16 w-auto flex-shrink-0"
+                />
+                <div className="min-w-0">
+                  <h1 className="text-lg sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent truncate">
+                    Unicorns Łódź
+                  </h1>
+                  <p className="hidden sm:block text-xs text-gray-300 uppercase tracking-wide">Sport | Kultura | Rozrywka</p>
+                </div>
+              </button>
+              <div className="flex gap-2 sm:gap-3 flex-shrink-0">
+                <PublicHamburgerMenu />
+              </div>
+            </div>
+          </div>
+        </header>
+      )}
+
+      <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-purple-600 mb-2">💝 Wsparcie Stowarzyszenia</h1>
         <p className="text-gray-600">Pomóż rozwijać Unicorns Łódź</p>
@@ -190,6 +227,7 @@ const DonationsPage = () => {
         <p className="text-sm text-gray-600">
           Dzięki Waszemu wsparciu możemy tworzyć coraz więcej niesamowitych wydarzeń dla całej społeczności. 🦄💜
         </p>
+      </div>
       </div>
     </div>
   )
