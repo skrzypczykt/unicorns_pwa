@@ -22,6 +22,7 @@ interface Registration {
   user_id: string
   status: string
   payment_processed: boolean
+  payment_status: string
   users: {
     display_name: string
     email: string
@@ -101,6 +102,7 @@ const TrainerClassesPage = () => {
           user_id,
           status,
           payment_processed,
+          payment_status,
           users!registrations_user_id_fkey (
             display_name,
             email
@@ -193,6 +195,7 @@ const TrainerClassesPage = () => {
 
     // Prevent unnecessary action
     if (currentStatus === newStatus) {
+      alert('ℹ️ Ten status jest już ustawiony')
       return
     }
 
@@ -622,19 +625,22 @@ const TrainerClassesPage = () => {
                           {isNoShow && <span className="text-red-600 text-sm">✗ Nieobecny</span>}
                         </div>
                         <p className="text-sm text-gray-600">{reg.users?.email || 'Brak emaila'}</p>
-                        <p className="text-sm mt-1">
-                          <span className="text-gray-500">Saldo {selectedActivity.activity_types?.name || 'sekcji'}:</span>{' '}
-                          <span className={hasEnough ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-                            {balance.toFixed(2)} zł
-                          </span>
-                          {!hasEnough && isPending && (
-                            <span className="ml-2 text-xs text-red-600 bg-red-100 px-2 py-1 rounded">
-                              ⚠️ Niewystarczające saldo
-                            </span>
-                          )}
-                        </p>
-                        {reg.payment_processed && (
-                          <p className="text-xs text-green-600 mt-1">✓ Płatność przetworzona</p>
+                        {selectedActivity.cost > 0 && (
+                          <div className="text-sm mt-1">
+                            <span className="text-gray-500">Status płatności:</span>{' '}
+                            {reg.payment_status === 'paid' ? (
+                              <span className="text-green-600 font-semibold">✓ Opłacone</span>
+                            ) : reg.payment_status === 'pending' ? (
+                              <span className="text-yellow-600 font-semibold">⏳ Oczekuje</span>
+                            ) : (
+                              <span className="text-red-600 font-semibold">✗ Nieopłacone</span>
+                            )}
+                            {reg.payment_processed && (
+                              <span className="ml-2 text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                                Przetworzone
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
 
