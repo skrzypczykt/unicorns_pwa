@@ -372,26 +372,9 @@ const MyClassesPage = () => {
                     }}
                   >
                     <div className="h-full flex flex-col items-center justify-center text-center">
-                      {/* Smutny jednorożec SVG */}
-                      <div className="mb-4 animate-bounce">
-                        <svg className="w-24 h-24 text-purple-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          {/* Głowa */}
-                          <circle cx="50" cy="55" r="30" fill="currentColor" opacity="0.8"/>
-                          {/* Róg */}
-                          <path d="M50 25 L45 40 L50 38 L55 40 Z" fill="#FFD700" opacity="0.9"/>
-                          {/* Oczy - smutne */}
-                          <ellipse cx="42" cy="50" rx="3" ry="5" fill="#4A5568" transform="rotate(-20 42 50)"/>
-                          <ellipse cx="58" cy="50" rx="3" ry="5" fill="#4A5568" transform="rotate(20 58 50)"/>
-                          {/* Łzy */}
-                          <circle cx="42" cy="58" r="2" fill="#60A5FA" opacity="0.6"/>
-                          <circle cx="58" cy="58" r="2" fill="#60A5FA" opacity="0.6"/>
-                          {/* Smutny uśmiech */}
-                          <path d="M 40 65 Q 50 60 60 65" stroke="#4A5568" strokeWidth="2" fill="none"/>
-                          {/* Grzywa */}
-                          <path d="M 35 35 Q 30 40 32 45" stroke="#E879F9" strokeWidth="3" fill="none"/>
-                          <path d="M 40 30 Q 35 35 37 40" stroke="#C084FC" strokeWidth="3" fill="none"/>
-                          <path d="M 45 28 Q 40 33 42 38" stroke="#A855F7" strokeWidth="3" fill="none"/>
-                        </svg>
+                      {/* Smutny jednorożec emoji/icon */}
+                      <div className="mb-4 text-8xl animate-bounce">
+                        🦄💔
                       </div>
 
                       <h3 className="text-2xl font-bold text-red-600 mb-3">

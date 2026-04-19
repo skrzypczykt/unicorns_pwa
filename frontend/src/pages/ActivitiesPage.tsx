@@ -56,6 +56,7 @@ const ActivitiesPage = () => {
   const [showCalendarPrompt, setShowCalendarPrompt] = useState(false)
   const [registeredActivity, setRegisteredActivity] = useState<Activity | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [flippedCard, setFlippedCard] = useState<string | null>(null)
 
   useEffect(() => {
     fetchActivities()
@@ -194,6 +195,25 @@ const ActivitiesPage = () => {
     } catch (error) {
       console.error('Error fetching participant counts:', error)
     }
+  }
+
+  const handleRegisterClick = async (activityId: string) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      setShowLoginModal(true)
+      return
+    }
+    // Show flip card
+    setFlippedCard(activityId)
+  }
+
+  const handleConfirmRegister = async (activityId: string, cost: number, cancellationHours: number) => {
+    setFlippedCard(null)
+    await handleRegister(activityId, cost, cancellationHours)
+  }
+
+  const handleCancelRegister = () => {
+    setFlippedCard(null)
   }
 
   const handleRegister = async (activityId: string, cost: number, cancellationHours: number) => {
@@ -540,6 +560,7 @@ const ActivitiesPage = () => {
               const isRegistered = !!userRegistrations[activity.id]
               const isProcessing = registering === activity.id
               const isCancelling = cancelling === activity.id
+              const isFlipped = flippedCard === activity.id
               const { isOpen, isBeforeOpen, isAfterClose, opensAt } = checkRegistrationWindow(activity)
               const registered = participantCounts[activity.id] || 0
               const isFull = activity.max_participants !== null && registered >= activity.max_participants
@@ -548,8 +569,23 @@ const ActivitiesPage = () => {
               return (
                 <div
                   key={activity.id}
-                  className={`bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl shadow-xl border-4 border-yellow-400 overflow-hidden hover:shadow-2xl transition-all ${!isOpen && !isRegistered ? 'opacity-60' : ''}`}
+                  className="perspective-1000"
+                  style={{ perspective: '1000px' }}
                 >
+                  <div
+                    className={`relative transition-transform duration-700 transform-style-3d ${
+                      isFlipped ? 'rotate-y-180' : ''
+                    }`}
+                    style={{
+                      transformStyle: 'preserve-3d',
+                      transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                    }}
+                  >
+                    {/* FRONT SIDE */}
+                    <div
+                      className={`bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl shadow-xl border-4 border-yellow-400 overflow-hidden hover:shadow-2xl transition-all backface-hidden ${!isOpen && !isRegistered ? 'opacity-60' : ''}`}
+                      style={{ backfaceVisibility: 'hidden' }}
+                    >
                   {/* Obrazek nagłówkowy */}
                   <div className="relative h-40 sm:h-48 lg:h-56 w-full overflow-hidden">
                     <img
@@ -667,7 +703,7 @@ const ActivitiesPage = () => {
                           </button>
                         ) : (
                           <button
-                            onClick={() => handleRegister(activity.id, activity.cost, activity.cancellation_hours)}
+                            onClick={() => handleRegisterClick(activity.id)}
                             disabled={isProcessing || !isOpen || isFull}
                             className="w-full bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
@@ -698,6 +734,49 @@ const ActivitiesPage = () => {
                     })()}
                   </div>
                 </div>
+
+                {/* BACK SIDE - Potwierdzenie zapisu */}
+                <div
+                  className="absolute inset-0 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-xl border-4 border-purple-400 p-6 backface-hidden"
+                  style={{
+                    backfaceVisibility: 'hidden',
+                    transform: 'rotateY(180deg)'
+                  }}
+                >
+                  <div className="h-full flex flex-col items-center justify-center text-center">
+                    {/* Szczęśliwy jednorożec */}
+                    <div className="mb-4 text-8xl animate-bounce">
+                      🦄✨
+                    </div>
+
+                    <h3 className="text-2xl font-bold text-purple-600 mb-3">
+                      Wspaniale! 🎉
+                    </h3>
+                    <p className="text-gray-700 mb-6 max-w-sm">
+                      Czy na pewno chcesz zapisać się na<br/>
+                      <strong className="text-purple-600">{activity.name}</strong>?
+                    </p>
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleConfirmRegister(activity.id, activity.cost, activity.cancellation_hours)}
+                        disabled={isProcessing}
+                        className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                      >
+                        {isProcessing ? '⏳ Zapisuję...' : 'Tak, zapisz mnie!'}
+                      </button>
+                      <button
+                        onClick={handleCancelRegister}
+                        disabled={isProcessing}
+                        className="px-6 py-3 bg-gray-400 hover:bg-gray-500 text-white font-semibold rounded-lg transition-all shadow-lg"
+                      >
+                        Nie, powrót
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
               )
             })}
           </div>
@@ -729,6 +808,7 @@ const ActivitiesPage = () => {
             const isRegistered = !!userRegistrations[activity.id]
             const isProcessing = registering === activity.id
             const isCancelling = cancelling === activity.id
+            const isFlipped = flippedCard === activity.id
             const { isOpen, isBeforeOpen, isAfterClose, opensAt } = checkRegistrationWindow(activity)
             const registered = participantCounts[activity.id] || 0
             const isFull = activity.max_participants !== null && registered >= activity.max_participants
@@ -737,8 +817,23 @@ const ActivitiesPage = () => {
             return (
               <div
                 key={activity.id}
-                className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 overflow-hidden hover:shadow-xl transition-all ${!isOpen && !isRegistered ? 'opacity-60' : ''}`}
+                className="perspective-1000"
+                style={{ perspective: '1000px' }}
               >
+                <div
+                  className={`relative transition-transform duration-700 transform-style-3d ${
+                    isFlipped ? 'rotate-y-180' : ''
+                  }`}
+                  style={{
+                    transformStyle: 'preserve-3d',
+                    transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                  }}
+                >
+                  {/* FRONT SIDE */}
+                  <div
+                    className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 overflow-hidden hover:shadow-xl transition-all backface-hidden ${!isOpen && !isRegistered ? 'opacity-60' : ''}`}
+                    style={{ backfaceVisibility: 'hidden' }}
+                  >
                 {/* Obrazek nagłówkowy */}
                 <div className="relative h-40 sm:h-48 lg:h-56 w-full overflow-hidden">
                   <img
@@ -850,7 +945,7 @@ const ActivitiesPage = () => {
                       </button>
                     ) : (
                       <button
-                        onClick={() => handleRegister(activity.id, activity.cost, activity.cancellation_hours)}
+                        onClick={() => handleRegisterClick(activity.id)}
                         disabled={isProcessing || !isOpen || isFull}
                         className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -881,6 +976,49 @@ const ActivitiesPage = () => {
                   })()}
                 </div>
               </div>
+
+              {/* BACK SIDE - Potwierdzenie zapisu */}
+              <div
+                className="absolute inset-0 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-lg border-2 border-purple-400 p-6 backface-hidden"
+                style={{
+                  backfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)'
+                }}
+              >
+                <div className="h-full flex flex-col items-center justify-center text-center">
+                  {/* Szczęśliwy jednorożec */}
+                  <div className="mb-4 text-8xl animate-bounce">
+                    🦄✨
+                  </div>
+
+                  <h3 className="text-2xl font-bold text-purple-600 mb-3">
+                    Wspaniale! 🎉
+                  </h3>
+                  <p className="text-gray-700 mb-6 max-w-sm">
+                    Czy na pewno chcesz zapisać się na<br/>
+                    <strong className="text-purple-600">{activity.name}</strong>?
+                  </p>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => handleConfirmRegister(activity.id, activity.cost, activity.cancellation_hours)}
+                      disabled={isProcessing}
+                      className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                    >
+                      {isProcessing ? '⏳ Zapisuję...' : 'Tak, zapisz mnie!'}
+                    </button>
+                    <button
+                      onClick={handleCancelRegister}
+                      disabled={isProcessing}
+                      className="px-6 py-3 bg-gray-400 hover:bg-gray-500 text-white font-semibold rounded-lg transition-all shadow-lg"
+                    >
+                      Nie, powrót
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
             )
           })}
           </div>
