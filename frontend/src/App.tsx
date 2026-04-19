@@ -131,15 +131,14 @@ function App() {
 
 const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any, handleSignOut: () => void }) => {
   const location = useLocation()
-  const isHomePage = location.pathname === '/'
 
   return (
     <>
       <InstallPWAPrompt />
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200">
-        {/* Header - Responsywny - ukryj na stronie głównej (PublicAboutPage ma własny) */}
-        {!isHomePage && profile && (
-          <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b-4 border-purple-500">
+        {/* Header - Responsywny - zawsze widoczny dla zalogowanych */}
+        {profile && (
+          <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b-4 border-purple-500 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
             <div className="flex items-center justify-between gap-2">
               {/* Logo + Tytuł - Responsywne */}

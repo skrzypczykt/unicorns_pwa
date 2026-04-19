@@ -22,33 +22,25 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200">
-      {/* Publiczny header - dla wszystkich (zalogowanych i niezalogowanych) */}
-      <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b-4 border-purple-500">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <img
-                src="/unicorns-logo.png"
-                alt="Unicorns Łódź"
-                className="h-10 sm:h-12 md:h-16 w-auto flex-shrink-0"
-              />
-              <div className="min-w-0">
-                <h1 className="text-lg sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent truncate">
-                  Unicorns Łódź
-                </h1>
-                <p className="hidden sm:block text-xs text-gray-500 uppercase tracking-wide">Sport | Kultura | Rozrywka</p>
+      {/* Header tylko dla niezalogowanych - zalogowani używają headera z App.tsx */}
+      {!isLoggedIn && (
+        <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b-4 border-purple-500">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <img
+                  src="/unicorns-logo.png"
+                  alt="Unicorns Łódź"
+                  className="h-10 sm:h-12 md:h-16 w-auto flex-shrink-0"
+                />
+                <div className="min-w-0">
+                  <h1 className="text-lg sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent truncate">
+                    Unicorns Łódź
+                  </h1>
+                  <p className="hidden sm:block text-xs text-gray-500 uppercase tracking-wide">Sport | Kultura | Rozrywka</p>
+                </div>
               </div>
-            </div>
-            <div className="flex gap-2 sm:gap-3 flex-shrink-0">
-              {isLoggedIn ? (
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="px-3 sm:px-6 py-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white rounded-lg text-xs sm:text-sm font-semibold transition-all hover:shadow-lg"
-                >
-                  <span className="hidden sm:inline">🏠 Strefa użytkownika</span>
-                  <span className="sm:hidden">🏠</span>
-                </button>
-              ) : (
+              <div className="flex gap-2 sm:gap-3 flex-shrink-0">
                 <button
                   onClick={() => navigate('/login')}
                   className="px-3 sm:px-6 py-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white rounded-lg text-xs sm:text-sm font-semibold transition-all hover:shadow-lg"
@@ -56,11 +48,11 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
                   <span className="hidden sm:inline">Zaloguj się</span>
                   <span className="sm:hidden">Login</span>
                 </button>
-              )}
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Zawartość strony O Nas */}
       <div className="max-w-4xl mx-auto px-4 py-8">
