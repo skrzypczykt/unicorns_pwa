@@ -161,6 +161,34 @@ serve(async (req) => {
       )
     }
 
+    // Filtruj nieważne endpointy przed wysyłką
+    const validSubscriptions = subscriptions.filter((sub) => {
+      // Sprawdź czy endpoint nie zawiera placeholder "permanently-removed.invalid"
+      if (sub.endpoint.includes('permanently-removed.invalid')) {
+        console.log(`Skipping invalid endpoint for user ${sub.user_id}`)
+        // Oznacz do usunięcia
+        supabase.from('push_subscriptions').delete().eq('id', sub.id).then(() => {
+          console.log(`Deleted invalid subscription ${sub.id}`)
+        })
+        return false
+      }
+      return true
+    })
+
+    console.log(`Valid subscriptions: ${validSubscriptions.length} / ${subscriptions.length}`)
+
+    if (validSubscriptions.length === 0) {
+      return new Response(
+        JSON.stringify({ message: 'No valid push subscriptions found', sent: 0 }),
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        }
+      )
+    }
+
     // Pobierz szczegóły aktywności (w tym is_special_event i link WhatsApp)
     const { data: activity } = await supabase
       .from('activities')
@@ -209,7 +237,7 @@ serve(async (req) => {
 
     // Wyślij powiadomienia używając web-push library
     const sendResults = await Promise.allSettled(
-      subscriptions.map(async (sub) => {
+      validSubscriptions.map(async (sub) => {
         try {
           const pushSubscription = {
             endpoint: sub.endpoint,
@@ -237,6 +265,12 @@ serve(async (req) => {
           return { success: true, userId: sub.user_id }
         } catch (error: any) {
           console.error(`Failed to send push to user ${sub.user_id}:`, error)
+
+          // Jeśli błąd 410 Gone (token wygasł) - usuń subskrypcję
+          if (error.statusCode === 410 || error.message.includes('410')) {
+            console.log(`Token expired for user ${sub.user_id}, deleting subscription`)
+            await supabase.from('push_subscriptions').delete().eq('id', sub.id)
+          }
 
           // Loguj błąd
           await supabase.from('push_notifications_log').insert({
