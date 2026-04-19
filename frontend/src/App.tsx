@@ -310,13 +310,6 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
             <div className="border-t border-gray-200 pt-4">
               <div className="flex flex-wrap justify-center gap-2 sm:gap-4 text-xs text-gray-500 mb-3">
                 <button
-                  onClick={() => window.location.href = '/news'}
-                  className="hover:text-purple-600 transition-colors whitespace-nowrap"
-                >
-                  Aktualności
-                </button>
-                <span className="hidden sm:inline">•</span>
-                <button
                   onClick={() => window.location.href = '/about-app'}
                   className="hover:text-purple-600 transition-colors whitespace-nowrap"
                 >
