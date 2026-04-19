@@ -1034,7 +1034,11 @@ const AdminActivitiesPage = () => {
                     type="checkbox"
                     id="is_recurring"
                     checked={formData.is_recurring || false}
-                    onChange={(e) => setFormData({ ...formData, is_recurring: e.target.checked })}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      is_recurring: e.target.checked,
+                      recurrence_pattern: e.target.checked ? 'weekly' : 'none'
+                    })}
                     className="h-5 w-5 text-purple-600 rounded"
                     disabled={formData.is_special_event}
                   />
