@@ -200,12 +200,8 @@ const TrainerClassesPage = () => {
       return
     }
 
-    // Confirm if creating debt
-    if (newStatus === 'attended' && currentStatus !== 'attended' && userBalance < activityCost) {
-      if (!confirm(`Użytkownik ma niewystarczające saldo w tej sekcji (${userBalance.toFixed(2)} zł < ${activityCost.toFixed(2)} zł).\n\nCzy chcesz oznaczyć obecność i utworzyć zadłużenie?`)) {
-        return
-      }
-    }
+    // Informacja o modelu post-paid (bez potwierdzenia)
+    // W modelu post-paid użytkownik płaci PO zajęciach, nie przed
 
     // Confirm if reversing attended status (refund)
     if (currentStatus === 'attended' && newStatus !== 'attended') {
@@ -231,8 +227,8 @@ const TrainerClassesPage = () => {
 
       // Handle different status transitions
       if (newStatus === 'attended' && currentStatus !== 'attended') {
-        // CASE 1: Marking as attended (from registered or no_show)
-        // Process payment
+        // CASE 1: Marking as attended (POST-PAID model)
+        // Tworzy transakcję do opłacenia, nie pobiera od razu
 
         // 1. Create/update attendance record
         const { error: attendanceError } = await supabase
@@ -250,40 +246,28 @@ const TrainerClassesPage = () => {
 
         if (attendanceError) throw attendanceError
 
-        // 2. Get current section balance
-        const { data: balanceData, error: balanceError } = await supabase
-          .from('user_section_balances')
+        // 2. Get current balance (tylko do wyświetlenia)
+        const { data: balanceData } = await supabase
+          .from('users')
           .select('balance')
-          .eq('user_id', userId)
-          .eq('activity_type_id', selectedActivity!.activity_type_id)
-          .maybeSingle()  // Use maybeSingle() instead of single() to handle no records
-
-        // If balanceError is real error (not just "no records"), throw it
-        if (balanceError && balanceError.code !== 'PGRST116') {
-          console.error('Error fetching balance:', balanceError)
-          throw balanceError
-        }
+          .eq('id', userId)
+          .single()
 
         const balanceBefore = balanceData?.balance || 0
         const balanceAfter = balanceBefore - activityCost
 
-        console.log(`Balance update: ${balanceBefore} -> ${balanceAfter} (cost: ${activityCost})`)
-
-        // 3. Update section balance (or create if doesn't exist)
-        const { error: updateBalanceError } = await supabase
-          .from('user_section_balances')
-          .upsert({
-            user_id: userId,
-            activity_type_id: selectedActivity!.activity_type_id,
+        // 3. Update user balance (utwórz dług)
+        const { error: balanceUpdateError } = await supabase
+          .from('users')
+          .update({
             balance: balanceAfter,
-            updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'user_id,activity_type_id'
+            balance_updated_at: new Date().toISOString()
           })
+          .eq('id', userId)
 
-        if (updateBalanceError) throw updateBalanceError
+        if (balanceUpdateError) throw balanceUpdateError
 
-        // 4. Create transaction record
+        // 4. Create transaction record (dług do opłacenia)
         const { error: transactionError } = await supabase
           .from('balance_transactions')
           .insert({
@@ -293,27 +277,27 @@ const TrainerClassesPage = () => {
             balance_after: balanceAfter,
             type: 'class_payment',
             reference_id: selectedActivity!.id,
-            activity_type_id: selectedActivity!.activity_type_id,
             description: `Płatność za zajęcia: ${selectedActivity!.name}`,
             created_by: user.id
           })
 
         if (transactionError) throw transactionError
 
-        // 5. Update registration
+        // 5. Update registration (payment_status = pending, bo post-paid)
         const { error: regError } = await supabase
           .from('registrations')
           .update({
             status: 'attended',
-            payment_processed: true
+            payment_status: 'pending',
+            payment_due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 dni na płatność
           })
           .eq('id', registrationId)
 
         if (regError) throw regError
 
-        alert(`✅ Obecność oznaczona!\n\nPobrano ${activityCost.toFixed(2)} zł z konta sekcji: ${selectedActivity!.activity_types?.name || 'Brak sekcji'}\nNowe saldo: ${balanceAfter.toFixed(2)} zł`)
+        alert(`✅ Obecność oznaczona!\n\nUtworzona płatność do opłacenia: ${activityCost.toFixed(2)} zł\nTermin płatności: 7 dni`)
       } else if (currentStatus === 'attended' && newStatus !== 'attended') {
-        // CASE 2: Reversing attended status (refund payment)
+        // CASE 2: Reversing attended status (anulowanie długu/refund)
 
         // 1. Delete attendance record
         const { error: attendanceDeleteError } = await supabase
@@ -327,37 +311,26 @@ const TrainerClassesPage = () => {
           // Continue anyway - attendance might not exist
         }
 
-        // 2. Get current section balance
-        const { data: balanceData, error: balanceError } = await supabase
-          .from('user_section_balances')
+        // 2. Get current balance
+        const { data: balanceData } = await supabase
+          .from('users')
           .select('balance')
-          .eq('user_id', userId)
-          .eq('activity_type_id', selectedActivity!.activity_type_id)
-          .maybeSingle()
-
-        if (balanceError && balanceError.code !== 'PGRST116') {
-          console.error('Error fetching balance:', balanceError)
-          throw balanceError
-        }
+          .eq('id', userId)
+          .single()
 
         const balanceBefore = balanceData?.balance || 0
-        const balanceAfter = balanceBefore + activityCost  // REFUND - add money back
+        const balanceAfter = balanceBefore + activityCost  // REFUND - zwróć kwotę
 
-        console.log(`Balance refund: ${balanceBefore} -> ${balanceAfter} (refund: ${activityCost})`)
-
-        // 3. Update section balance (refund)
-        const { error: updateBalanceError } = await supabase
-          .from('user_section_balances')
-          .upsert({
-            user_id: userId,
-            activity_type_id: selectedActivity!.activity_type_id,
+        // 3. Update user balance (anuluj dług)
+        const { error: balanceUpdateError } = await supabase
+          .from('users')
+          .update({
             balance: balanceAfter,
-            updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'user_id,activity_type_id'
+            balance_updated_at: new Date().toISOString()
           })
+          .eq('id', userId)
 
-        if (updateBalanceError) throw updateBalanceError
+        if (balanceUpdateError) throw balanceUpdateError
 
         // 4. Create refund transaction record
         const { error: transactionError } = await supabase
@@ -367,9 +340,8 @@ const TrainerClassesPage = () => {
             amount: activityCost,  // Positive amount = refund
             balance_before: balanceBefore,
             balance_after: balanceAfter,
-            type: 'manual_credit',  // Refund
+            type: 'cancellation_refund',
             reference_id: selectedActivity!.id,
-            activity_type_id: selectedActivity!.activity_type_id,
             description: `Zwrot za zajęcia (korekta): ${selectedActivity!.name}`,
             created_by: user.id
           })
@@ -381,13 +353,14 @@ const TrainerClassesPage = () => {
           .from('registrations')
           .update({
             status: newStatus,
-            payment_processed: false  // Payment was refunded
+            payment_status: 'unpaid',
+            payment_due_date: null
           })
           .eq('id', registrationId)
 
         if (regError) throw regError
 
-        alert(`✅ Status zmieniony!\n\nZwrócono ${activityCost.toFixed(2)} zł na konto sekcji: ${selectedActivity!.activity_types?.name || 'Brak sekcji'}\nNowe saldo: ${balanceAfter.toFixed(2)} zł`)
+        alert(`✅ Status zmieniony!\n\nAnulowano płatność: zwrócono ${activityCost.toFixed(2)} zł`)
       } else if (newStatus === 'no_show' || newStatus === 'registered') {
         // CASE 3: Mark as absent or reset - no payment
         const { error: attendanceError } = await supabase
@@ -646,38 +619,32 @@ const TrainerClassesPage = () => {
                       </div>
 
                       <div className="flex gap-2 flex-shrink-0">
-                        {/* Always show both buttons - allow editing */}
-                        <button
-                          onClick={() => markAttendance(reg.id, reg.user_id, 'attended', selectedActivity.cost, balance)}
-                          disabled={marking === reg.id || isAttended}
-                          className={`px-4 py-2 rounded-lg transition-all font-semibold ${
-                            isAttended
-                              ? 'bg-green-100 text-green-700 cursor-default'
-                              : 'bg-green-500 hover:bg-green-600 text-white disabled:opacity-50 disabled:cursor-not-allowed'
-                          }`}
-                        >
-                          {marking === reg.id ? '⏳ Zapisuję...' : isAttended ? '✓ Obecny' : 'Obecny'}
-                        </button>
-                        <button
-                          onClick={() => markAttendance(reg.id, reg.user_id, 'no_show', selectedActivity.cost, balance)}
-                          disabled={marking === reg.id || isNoShow}
-                          className={`px-4 py-2 rounded-lg transition-all font-semibold ${
-                            isNoShow
-                              ? 'bg-red-100 text-red-700 cursor-default'
-                              : 'bg-red-500 hover:bg-red-600 text-white disabled:opacity-50 disabled:cursor-not-allowed'
-                          }`}
-                        >
-                          {marking === reg.id ? '⏳ Zapisuję...' : isNoShow ? '✗ Nieobecny' : 'Nieobecny'}
-                        </button>
-                        {/* Add reset button for already marked attendance */}
-                        {!isPending && (
+                        {/* Show buttons only if status is pending */}
+                        {isPending ? (
+                          <>
+                            <button
+                              onClick={() => markAttendance(reg.id, reg.user_id, 'attended', selectedActivity.cost, balance)}
+                              disabled={marking === reg.id}
+                              className="px-4 py-2 rounded-lg transition-all font-semibold bg-green-500 hover:bg-green-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {marking === reg.id ? '⏳ Zapisuję...' : 'Obecny'}
+                            </button>
+                            <button
+                              onClick={() => markAttendance(reg.id, reg.user_id, 'no_show', selectedActivity.cost, balance)}
+                              disabled={marking === reg.id}
+                              className="px-4 py-2 rounded-lg transition-all font-semibold bg-red-500 hover:bg-red-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {marking === reg.id ? '⏳ Zapisuję...' : 'Nieobecny'}
+                            </button>
+                          </>
+                        ) : (
                           <button
                             onClick={() => markAttendance(reg.id, reg.user_id, 'registered', selectedActivity.cost, balance)}
                             disabled={marking === reg.id}
                             className="px-3 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                             title="Cofnij oznaczenie"
                           >
-                            ↺
+                            ↺ Cofnij
                           </button>
                         )}
                       </div>
