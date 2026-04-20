@@ -164,24 +164,47 @@ export default function AdminReportsPage() {
     const monthStart = new Date(selectedMonth)
     const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0, 23, 59, 59)
 
-    let query = supabase
-      .from('registrations')
-      .select(`
-        user:users(display_name),
-        activity:activities(
-          activity_type:activity_types(name),
-          date_time
-        ),
-        status
-      `)
-      .gte('activity.date_time', monthStart.toISOString())
-      .lte('activity.date_time', monthEnd.toISOString())
+    // Najpierw pobierz activities z tego miesiąca
+    let activitiesQuery = supabase
+      .from('activities')
+      .select('id')
+      .gte('date_time', monthStart.toISOString())
+      .lte('date_time', monthEnd.toISOString())
 
     if (selectedSection) {
-      query = query.eq('activity.activity_type_id', selectedSection)
+      activitiesQuery = activitiesQuery.eq('activity_type_id', selectedSection)
     }
 
-    const { data, error } = await query
+    const { data: activities, error: activitiesError } = await activitiesQuery
+
+    if (activitiesError) throw activitiesError
+
+    if (!activities || activities.length === 0) {
+      setReportData([])
+      return
+    }
+
+    const activityIds = activities.map(a => a.id)
+
+    // Teraz pobierz registrations dla tych activities
+    const { data, error } = await supabase
+      .from('registrations')
+      .select(`
+        user_id,
+        activity_id,
+        status,
+        users!registrations_user_id_fkey (
+          display_name
+        ),
+        activities!registrations_activity_id_fkey (
+          activity_type_id,
+          activity_types (
+            name
+          )
+        )
+      `)
+      .in('activity_id', activityIds)
+      .in('status', ['attended', 'no_show', 'registered'])
 
     if (error) throw error
 
@@ -190,15 +213,21 @@ export default function AdminReportsPage() {
 
     data?.forEach((reg: any) => {
       // Skip records with missing data
-      if (!reg.user || !reg.activity || !reg.activity.activity_type) {
+      const user = Array.isArray(reg.users) ? reg.users[0] : reg.users
+      const activity = Array.isArray(reg.activities) ? reg.activities[0] : reg.activities
+      const activityType = activity?.activity_types
+      const activityTypeName = Array.isArray(activityType) ? activityType[0]?.name : activityType?.name
+
+      if (!user || !activity || !activityTypeName) {
+        console.warn('Skipping registration with missing data:', reg)
         return
       }
 
-      const key = `${reg.user.display_name}-${reg.activity.activity_type.name}`
+      const key = `${user.display_name}-${activityTypeName}`
       if (!aggregated[key]) {
         aggregated[key] = {
-          user_name: reg.user.display_name,
-          section_name: reg.activity.activity_type.name,
+          user_name: user.display_name,
+          section_name: activityTypeName,
           attended: 0,
           no_show: 0,
           total_registrations: 0,
