@@ -4,6 +4,36 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.2.6] - 2026-04-20
+
+### Dodano
+
+- **Przesuwająca się galeria na stronie głównej**
+  - Nowy komponent: HeroCarousel
+  - Automatyczne przełączanie co 5 sekund
+  - Slajd 1: Kafelek "Nadchodzące zajęcia" z przyciskiem
+  - Slajd 2: Zdjęcie promocyjne Unicorns Łódź
+  - Wskaźniki slajdów (dots) i strzałki nawigacji
+  - Płynne przejścia fade między slajdami
+
+### Zmieniono
+
+- **Formatowanie czasu anulowania** - bardziej czytelne
+  - "168h przed zajęciami" → "do 7 dni przed wydarzeniem"
+  - "24h przed zajęciami" → "do 24h przed wydarzeniem"
+  - "0h" → "Do ostatniej chwili"
+  - Użycie słowa "do" i "wydarzeniem" zamiast "zajęciami"
+
+- **Ujednolicenie pisowni w menu** - styl hybrydowy
+  - "Moje Konto" → "Moje konto"
+  - "Wsparcie / Darowizny" → "Wsparcie / darowizny"
+  - "Zarządzaj Sekcjami" → "Zarządzaj sekcjami"
+  - "Strefa Członka" pozostaje z wielkiej (nazwa własna)
+
+- **Powiadomienia w ustawieniach**
+  - "💰 Alerty salda" → "💳 Przypomnienie o płatności"
+  - Opis: "Powiadomienie o upływającym terminie płatności"
+
 ## [0.2.5] - 2026-04-20
 
 ### Dodano
