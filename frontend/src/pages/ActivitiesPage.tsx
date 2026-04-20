@@ -6,6 +6,7 @@ import { getActivityImage } from '../data/activityImages'
 import PaymentChoiceModal from '../components/PaymentChoiceModal'
 import { addToGoogleCalendar, calculateEndTime } from '../utils/calendarHelpers'
 import PublicHamburgerMenu from '../components/PublicHamburgerMenu'
+import WeeklyCalendarView from '../components/WeeklyCalendarView'
 
 interface Activity {
   id: string
@@ -59,6 +60,7 @@ const ActivitiesPage = () => {
   const [registeredActivity, setRegisteredActivity] = useState<Activity | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [flippedCard, setFlippedCard] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'calendar' | 'grid'>('calendar')
 
   // Funkcja pomocnicza do odświeżania wszystkich danych
   const refreshAllData = () => {
@@ -132,6 +134,8 @@ const ActivitiesPage = () => {
         `)
         .eq('status', 'scheduled')
         .eq('is_special_event', false)
+        .eq('is_recurring', false)
+        .is('parent_activity_id', null)
         .gte('date_time', now.toISOString())
         .lte('date_time', sevenDaysLater.toISOString())
         .order('date_time', { ascending: true })
@@ -161,6 +165,8 @@ const ActivitiesPage = () => {
         `)
         .eq('status', 'scheduled')
         .eq('is_special_event', true)
+        .eq('is_recurring', false)
+        .is('parent_activity_id', null)
         .gte('date_time', now.toISOString())
         .lte('date_time', sixtyDaysLater.toISOString())
         .order('date_time', { ascending: true })
@@ -839,6 +845,30 @@ const ActivitiesPage = () => {
 
       {/* SEKCJA 2: Regularne zajęcia */}
       <div>
+        {/* Przełącznik widoków */}
+        <div className="mb-4 flex justify-center gap-2">
+          <button
+            onClick={() => setViewMode('calendar')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+              viewMode === 'calendar'
+                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                : 'bg-white text-gray-700 border-2 border-purple-200 hover:border-purple-400'
+            }`}
+          >
+            📅 Kalendarz
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+              viewMode === 'grid'
+                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                : 'bg-white text-gray-700 border-2 border-purple-200 hover:border-purple-400'
+            }`}
+          >
+            🔲 Kafelki
+          </button>
+        </div>
+
         <div className="flex items-center gap-3 mb-6">
           <h2 className="text-2xl font-bold text-purple-600">📅 Nadchodzące zajęcia</h2>
           <span className="px-3 py-1 bg-purple-100 text-purple-800 text-sm rounded-full font-semibold">
@@ -856,6 +886,14 @@ const ActivitiesPage = () => {
             <span className="text-6xl mb-4 block">🦄</span>
             <p className="text-xl text-gray-600">Brak nadchodzących zajęć w najbliższych 7 dniach</p>
           </div>
+        ) : viewMode === 'calendar' ? (
+          <WeeklyCalendarView
+            activities={activities}
+            userRegistrations={userRegistrations}
+            participantCounts={participantCounts}
+            onViewDetails={(activityId) => navigate(`/activities/${activityId}`)}
+            isLoggedIn={isLoggedIn}
+          />
         ) : (
           <div className="grid gap-6 md:grid-cols-2">
             {activities.map((activity) => {

@@ -4,6 +4,28 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.2.5] - 2026-04-20
+
+### Dodano
+
+- **Widok tygodniowy kalendarzowy** (domyślny)
+  - Siatka czasowa: godziny (6:00-23:00) × dni tygodnia (7 dni)
+  - Zajęcia wyświetlane jako bloki w odpowiednich slotach
+  - Przypomina Google Calendar - kompaktowy i przejrzysty
+  - Nowy komponent: WeeklyCalendarView
+  
+- **Przełącznik widoków** w sekcji "Nadchodzące zajęcia"
+  - Dwa tryby: 📅 Kalendarz (domyślny) | 🔲 Kafelki
+  - Przyciski nad nagłówkiem sekcji
+  - Aktywny widok podświetlony gradientem purple-pink
+
+### Zmieniono
+
+- **Harmonogram zajęć** - nie wyświetla już wydarzeń cyklicznych
+  - Filtr: `is_recurring = false` i `parent_activity_id IS NULL`
+  - Dotyczy zarówno regularnych zajęć jak i wydarzeń specjalnych
+  - Tylko zajęcia jednostkowe są widoczne w harmonogramie
+
 ## [0.2.4] - 2026-04-20
 
 ### Dodano
