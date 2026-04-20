@@ -4,7 +4,7 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
-## [0.2.7] - 2026-04-20
+## [0.2.8] - 2026-04-20
 
 ### Dodano
 
