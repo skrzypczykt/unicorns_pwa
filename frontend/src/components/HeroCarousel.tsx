@@ -39,7 +39,7 @@ const HeroCarousel = () => {
     // Slajd 2: Zdjęcie z Google Drive
     {
       type: 'image' as const,
-      imageUrl: 'https://drive.google.com/uc?export=download&id=1WG71CNLfc4M0XTDo81GsUW6BvkXIbWVj',
+      imageUrl: 'https://lh3.googleusercontent.com/d/1WG71CNLfc4M0XTDo81GsUW6BvkXIbWVj',
       alt: 'Unicorns Łódź - Zajęcia sportowe'
     }
   ]
