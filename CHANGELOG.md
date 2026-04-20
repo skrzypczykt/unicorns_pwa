@@ -25,6 +25,12 @@ Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
   - Tylko dla wydarzeń na żywo (is_online = false)
   - Informacja o nazwie wydarzenia, godzinie rozpoczęcia i lokalizacji
 
+### Zmieniono
+
+- **Sortowanie w "Moje Rezerwacje"**
+  - Rezerwacje uporządkowane chronologicznie według daty wydarzenia (od najbliższych do najdalszych)
+  - Wcześniej sortowane po dacie rejestracji
+
 ## [0.2.6] - 2026-04-20
 
 ### Dodano

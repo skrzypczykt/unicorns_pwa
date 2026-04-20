@@ -107,7 +107,6 @@ const MyClassesPage = () => {
         `)
         .eq('user_id', user.id)
         .in('status', statusFilter) // Użyj aktywnego filtra
-        .order('registered_at', { ascending: false })
         .limit(100) // Bezpieczeństwo - max 100 rezerwacji
 
       if (error) throw error
@@ -118,7 +117,14 @@ const MyClassesPage = () => {
         activity: Array.isArray(reg.activities) ? reg.activities[0] : reg.activities
       })) || []
 
-      setRegistrations(transformed as any)
+      // Sortuj chronologicznie po dacie wydarzenia (od najbliższych do najdalszych)
+      const sorted = transformed.sort((a, b) => {
+        const dateA = new Date(a.activity.date_time).getTime()
+        const dateB = new Date(b.activity.date_time).getTime()
+        return dateA - dateB
+      })
+
+      setRegistrations(sorted as any)
     } catch (error) {
       console.error('Error fetching registrations:', error)
     } finally {
