@@ -4,6 +4,18 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.2.9] - 2026-04-20
+
+### Zmieniono
+
+- **Nowa struktura menu hamburger**
+  - Podział na wyraźne sekcje: Nawigacja, Strefa Członka, Moje konto, Panel trenera, Administracja, Informacje
+  - Nagłówki sekcji z ikonami i stylizacją uppercase
+  - Logiczne grupowanie funkcjonalności
+  - Krótsze nazwy w sekcji Administracja (bez "Zarządzaj")
+  - Hierarchia od ogólnych do specjalistycznych funkcji
+  - Lepsza wizualna separacja między sekcjami
+
 ## [0.2.8] - 2026-04-20
 
 ### Dodano

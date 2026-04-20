@@ -65,7 +65,11 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
 
             {/* Menu Items */}
             <div className="py-2">
-              {/* Home */}
+              {/* SEKCJA: NAWIGACJA */}
+              <div className="px-4 py-1">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">📱 Nawigacja</p>
+              </div>
+
               <button
                 onClick={() => handleNavigate('/')}
                 className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
@@ -74,7 +78,6 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                 <span className="text-sm">Strona główna</span>
               </button>
 
-              {/* Activities */}
               <button
                 onClick={() => handleNavigate('/activities')}
                 className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
@@ -83,16 +86,6 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                 <span className="text-sm">Harmonogram zajęć</span>
               </button>
 
-              {/* News */}
-              <button
-                onClick={() => handleNavigate('/news')}
-                className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
-              >
-                <span>📰</span>
-                <span className="text-sm">Aktualności</span>
-              </button>
-
-              {/* My Classes */}
               {profile.role !== 'external_trainer' && (
                 <button
                   onClick={() => handleNavigate('/my-classes')}
@@ -103,31 +96,38 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                 </button>
               )}
 
-              {/* Member Zone */}
+              <button
+                onClick={() => handleNavigate('/news')}
+                className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
+              >
+                <span>📰</span>
+                <span className="text-sm">Aktualności</span>
+              </button>
+
+              {/* SEKCJA: STREFA CZŁONKA */}
               {profile.is_association_member && (
-                <button
-                  onClick={() => handleNavigate('/member-zone')}
-                  className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
-                >
-                  <span>🏛️</span>
-                  <span className="text-sm">Strefa Członka</span>
-                </button>
+                <>
+                  <div className="border-t border-gray-200 my-2"></div>
+                  <div className="px-4 py-1">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">🏛️ Strefa Członka</p>
+                  </div>
+
+                  <button
+                    onClick={() => handleNavigate('/member-zone')}
+                    className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
+                  >
+                    <span>🏛️</span>
+                    <span className="text-sm">Strefa Członka</span>
+                  </button>
+                </>
               )}
 
-              {/* Admin: Member Zone Management - zawsze dostępne dla admina */}
-              {profile.role === 'admin' && (
-                <button
-                  onClick={() => handleNavigate('/admin/member-zone-management')}
-                  className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
-                >
-                  <span>🏛️</span>
-                  <span className="text-sm">Zarządzanie strefą członka</span>
-                </button>
-              )}
-
+              {/* SEKCJA: MOJE KONTO */}
               <div className="border-t border-gray-200 my-2"></div>
+              <div className="px-4 py-1">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">👤 Moje konto</p>
+              </div>
 
-              {/* Account & Settings */}
               <button
                 onClick={() => handleNavigate('/account')}
                 className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
@@ -152,62 +152,64 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                 <span className="text-sm">Ustawienia</span>
               </button>
 
-              {/* Donations - placeholder */}
-              <button
-                onClick={() => handleNavigate('/donations')}
-                className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
-              >
-                <span>💝</span>
-                <span className="text-sm">Wsparcie / darowizny</span>
-              </button>
-
-              {/* Legal Notice */}
-              <button
-                onClick={() => handleNavigate('/legal')}
-                className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
-              >
-                <span>⚖️</span>
-                <span className="text-sm">Nota prawna</span>
-              </button>
-
-              <div className="border-t border-gray-200 my-2"></div>
-
-              {/* Admin/Trainer Sections */}
+              {/* SEKCJA: PANEL TRENERA */}
               {(profile.role === 'trainer' || profile.role === 'external_trainer' || profile.role === 'admin') && (
-                <button
-                  onClick={() => handleNavigate('/trainer/classes')}
-                  className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
-                >
-                  <span>✅</span>
-                  <span className="text-sm">Panel trenera</span>
-                </button>
+                <>
+                  <div className="border-t border-gray-200 my-2"></div>
+                  <div className="px-4 py-1">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">✅ Panel trenera</p>
+                  </div>
+
+                  <button
+                    onClick={() => handleNavigate('/trainer/classes')}
+                    className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
+                  >
+                    <span>✅</span>
+                    <span className="text-sm">Panel trenera</span>
+                  </button>
+                </>
               )}
 
+              {/* SEKCJA: ADMINISTRACJA */}
               {profile.role === 'admin' && (
                 <>
+                  <div className="border-t border-gray-200 my-2"></div>
+                  <div className="px-4 py-1">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">🔧 Administracja</p>
+                  </div>
+
                   <button
                     onClick={() => handleNavigate('/admin/activities')}
                     className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
                   >
                     <span>📋</span>
-                    <span className="text-sm">Zarządzaj zajęciami</span>
+                    <span className="text-sm">Zajęcia</span>
                   </button>
+
                   <button
                     onClick={() => handleNavigate('/admin/sections')}
                     className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
                   >
                     <span>🏷️</span>
-                    <span className="text-sm">Zarządzaj sekcjami</span>
+                    <span className="text-sm">Sekcje</span>
                   </button>
-                  {profile.role === 'admin' && (
-                    <button
-                      onClick={() => handleNavigate('/admin/users')}
-                      className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
-                    >
-                      <span>👥</span>
-                      <span className="text-sm">Zarządzaj użytkownikami</span>
-                    </button>
-                  )}
+
+                  <button
+                    onClick={() => handleNavigate('/admin/users')}
+                    className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
+                  >
+                    <span>👥</span>
+                    <span className="text-sm">Użytkownicy</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleNavigate('/admin/member-zone-management')}
+                    className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
+                  >
+                    <span>🏛️</span>
+                    <span className="text-sm">Strefa członka</span>
+                  </button>
+
                   <button
                     onClick={() => handleNavigate('/admin/reports')}
                     className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
@@ -217,6 +219,28 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                   </button>
                 </>
               )}
+
+              {/* SEKCJA: INFORMACJE */}
+              <div className="border-t border-gray-200 my-2"></div>
+              <div className="px-4 py-1">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">ℹ️ Informacje</p>
+              </div>
+
+              <button
+                onClick={() => handleNavigate('/donations')}
+                className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
+              >
+                <span>💝</span>
+                <span className="text-sm">Wsparcie / darowizny</span>
+              </button>
+
+              <button
+                onClick={() => handleNavigate('/legal')}
+                className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
+              >
+                <span>⚖️</span>
+                <span className="text-sm">Nota prawna</span>
+              </button>
 
               <div className="border-t border-gray-200 my-2"></div>
 
