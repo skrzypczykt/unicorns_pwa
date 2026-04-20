@@ -25,7 +25,7 @@ interface Registration {
   id: string
   user_id: string
   status: string
-  payment_processed: boolean
+  payment_status: string
   users: {
     display_name: string
     email: string
@@ -169,7 +169,7 @@ const AdminAttendancePage = () => {
           id,
           user_id,
           status,
-          payment_processed,
+          payment_status,
           users!registrations_user_id_fkey (
             display_name,
             email
@@ -350,7 +350,7 @@ const AdminAttendancePage = () => {
           .from('registrations')
           .update({
             status: 'attended',
-            payment_processed: true
+            payment_status: 'paid'
           })
           .eq('id', registrationId)
 
@@ -660,7 +660,7 @@ const AdminAttendancePage = () => {
                             </span>
                           )}
                         </p>
-                        {reg.payment_processed && (
+                        {reg.payment_status === 'paid' && (
                           <p className="text-xs text-green-600 mt-1">✓ Płatność przetworzona</p>
                         )}
                       </div>

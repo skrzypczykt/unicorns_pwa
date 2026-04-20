@@ -20,7 +20,7 @@ interface Registration {
   user_id: string
   status: string
   registered_at: string
-  payment_processed: boolean
+  payment_status: string
   can_cancel_until: string
   users: {
     display_name: string
@@ -66,7 +66,7 @@ const ActivityParticipantsPage = () => {
           user_id,
           status,
           registered_at,
-          payment_processed,
+          payment_status,
           can_cancel_until,
           users (
             display_name,

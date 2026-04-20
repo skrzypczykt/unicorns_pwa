@@ -22,7 +22,7 @@ interface Registration {
   id: string
   user_id: string
   status: string
-  payment_processed: boolean
+  payment_status: string
   payment_status: string
   users: {
     display_name: string
@@ -102,7 +102,7 @@ const TrainerClassesPage = () => {
           id,
           user_id,
           status,
-          payment_processed,
+          payment_status,
           payment_status,
           users!registrations_user_id_fkey (
             display_name,
@@ -529,7 +529,7 @@ const TrainerClassesPage = () => {
                             ) : (
                               <span className="text-red-600 font-semibold">✗ Nieopłacone</span>
                             )}
-                            {reg.payment_processed && (
+                            {reg.payment_status === 'paid' && (
                               <span className="ml-2 text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
                                 Przetworzone
                               </span>
