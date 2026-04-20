@@ -171,11 +171,11 @@ const WeeklyCalendarView = ({
 
   return (
     <div className="overflow-x-auto pb-4">
-      <div className="min-w-[800px]">
+      <div className="min-w-[800px] relative">
         {/* Header - Dni tygodnia */}
-        <div className="grid grid-cols-8 gap-1 mb-1">
+        <div className="grid grid-cols-8 gap-1 mb-1 sticky top-0 z-20 bg-white/95 backdrop-blur-sm pb-1">
           {/* Kolumna godzin - pusta komórka */}
-          <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-2 text-center font-bold text-gray-700 text-sm">
+          <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-2 text-center font-bold text-gray-700 text-sm sticky left-0 z-30">
             Godz.
           </div>
 
@@ -232,7 +232,7 @@ const WeeklyCalendarView = ({
           return (
             <div key={hour} className="grid grid-cols-8 gap-1 mb-1">
               {/* Kolumna godzin */}
-              <div className="bg-white/80 rounded-lg p-2 flex items-start justify-center text-xs font-semibold text-gray-600 border border-purple-100">
+              <div className="bg-white/80 rounded-lg p-2 flex items-start justify-center text-xs font-semibold text-gray-600 border border-purple-100 sticky left-0 z-10">
                 {hour.toString().padStart(2, '0')}:00
               </div>
 
