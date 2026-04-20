@@ -7,46 +7,82 @@ interface ActivityType {
   name: string
   description: string
   image_url: string | null
+  default_trainer_id: string | null
+  facebook_group_url: string | null
   active_count?: number
+  trainer_name?: string
+}
+
+interface Trainer {
+  id: string
+  display_name: string
+  email: string
 }
 
 const AdminSectionsPage = () => {
   const navigate = useNavigate()
   const [sections, setSections] = useState<ActivityType[]>([])
+  const [trainers, setTrainers] = useState<Trainer[]>([])
   const [loading, setLoading] = useState(true)
   const [editingSection, setEditingSection] = useState<ActivityType | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    image_url: ''
+    image_url: '',
+    default_trainer_id: '',
+    facebook_group_url: ''
   })
 
   useEffect(() => {
     fetchSections()
+    fetchTrainers()
   }, [])
+
+  const fetchTrainers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, display_name, email')
+        .in('role', ['trainer', 'external_trainer', 'admin'])
+        .order('display_name', { ascending: true })
+
+      if (error) throw error
+      setTrainers(data || [])
+    } catch (error) {
+      console.error('Error fetching trainers:', error)
+    }
+  }
 
   const fetchSections = async () => {
     try {
-      // Pobierz typy zajęć
+      // Pobierz typy zajęć z nazwą trenera
       const { data: typesData, error: typesError } = await supabase
         .from('activity_types')
-        .select('*')
+        .select(`
+          *,
+          users!activity_types_default_trainer_id_fkey (
+            display_name
+          )
+        `)
         .order('name', { ascending: true })
 
       if (typesError) throw typesError
 
       // Pobierz liczbę aktywnych zajęć dla każdej sekcji
       const sectionsWithCounts = await Promise.all(
-        (typesData || []).map(async (type) => {
+        (typesData || []).map(async (type: any) => {
           const { count } = await supabase
             .from('activities')
             .select('*', { count: 'exact', head: true })
             .eq('activity_type_id', type.id)
             .eq('status', 'scheduled')
 
+          const trainerName = type.users?.display_name || null
+
           return {
             ...type,
+            trainer_name: trainerName,
             active_count: count || 0
           }
         })
@@ -66,7 +102,9 @@ const AdminSectionsPage = () => {
     setFormData({
       name: section.name,
       description: section.description || '',
-      image_url: section.image_url || ''
+      image_url: section.image_url || '',
+      default_trainer_id: section.default_trainer_id || '',
+      facebook_group_url: section.facebook_group_url || ''
     })
     setShowForm(true)
   }
@@ -76,7 +114,9 @@ const AdminSectionsPage = () => {
     setFormData({
       name: '',
       description: '',
-      image_url: ''
+      image_url: '',
+      default_trainer_id: '',
+      facebook_group_url: ''
     })
     setShowForm(true)
   }
@@ -92,7 +132,9 @@ const AdminSectionsPage = () => {
           .update({
             name: formData.name,
             description: formData.description,
-            image_url: formData.image_url || null
+            image_url: formData.image_url || null,
+            default_trainer_id: formData.default_trainer_id || null,
+            facebook_group_url: formData.facebook_group_url || null
           })
           .eq('id', editingSection.id)
 
@@ -105,7 +147,9 @@ const AdminSectionsPage = () => {
           .insert({
             name: formData.name,
             description: formData.description,
-            image_url: formData.image_url || null
+            image_url: formData.image_url || null,
+            default_trainer_id: formData.default_trainer_id || null,
+            facebook_group_url: formData.facebook_group_url || null
           })
 
         if (error) throw error
@@ -123,7 +167,7 @@ const AdminSectionsPage = () => {
   const handleCancel = () => {
     setShowForm(false)
     setEditingSection(null)
-    setFormData({ name: '', description: '', image_url: '' })
+    setFormData({ name: '', description: '', image_url: '', default_trainer_id: '', facebook_group_url: '' })
   }
 
   if (loading) {
@@ -213,6 +257,43 @@ const AdminSectionsPage = () => {
               </p>
             </div>
 
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Domyślny trener/organizator (opcjonalnie)
+              </label>
+              <select
+                value={formData.default_trainer_id}
+                onChange={(e) => setFormData({ ...formData, default_trainer_id: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+              >
+                <option value="">Brak domyślnego trenera</option>
+                {trainers.map((trainer) => (
+                  <option key={trainer.id} value={trainer.id}>
+                    {trainer.display_name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Trener zostanie automatycznie przypisany do nowych zajęć tej sekcji
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Link do grupy Facebook (opcjonalnie)
+              </label>
+              <input
+                type="url"
+                value={formData.facebook_group_url}
+                onChange={(e) => setFormData({ ...formData, facebook_group_url: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                placeholder="https://facebook.com/groups/..."
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Link będzie widoczny dla uczestników zajęć tej sekcji
+              </p>
+            </div>
+
             <div className="flex gap-2">
               <button
                 type="submit"
@@ -232,9 +313,9 @@ const AdminSectionsPage = () => {
         </div>
       )}
 
-      {/* Lista sekcji */}
+      {/* Lista sekcji - ukryj "Inne" */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sections.map((section) => (
+        {sections.filter(s => s.name !== 'Inne').map((section) => (
           <div
             key={section.id}
             className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all"
@@ -262,10 +343,31 @@ const AdminSectionsPage = () => {
               </p>
             )}
 
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm text-gray-500">
-                📊 {section.active_count} aktywnych zajęć
-              </span>
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">📊 Aktywnych zajęć:</span>
+                <span className="font-semibold">{section.active_count}</span>
+              </div>
+
+              {section.trainer_name && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">👤 Domyślny trener:</span>
+                  <span className="font-semibold">{section.trainer_name}</span>
+                </div>
+              )}
+
+              {section.facebook_group_url && (
+                <div className="text-sm">
+                  <a
+                    href={section.facebook_group_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                  >
+                    📘 Grupa Facebook →
+                  </a>
+                </div>
+              )}
             </div>
 
             <button
