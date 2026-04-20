@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { formatDuration } from '../utils/formatDuration'
 import { ACTIVITY_TYPE_IMAGES } from '../data/activityImages'
 import EditEventNotificationModal from '../components/EditEventNotificationModal'
+import ActivityTypeSelector from '../components/ActivityTypeSelector'
+import ActivityCreationBreadcrumbs from '../components/ActivityCreationBreadcrumbs'
 
 interface Activity {
   id: string
@@ -57,6 +59,10 @@ const AdminActivitiesPage = () => {
   const [showEditNotificationModal, setShowEditNotificationModal] = useState(false)
   const [participantCount, setParticipantCount] = useState(0)
   const [pendingFormData, setPendingFormData] = useState<any>(null)
+
+  // Wieloetapowy flow dodawania wydarzenia
+  const [creationStep, setCreationStep] = useState<number>(1)
+  const [activityMode, setActivityMode] = useState<'single' | 'recurring' | 'special' | null>(null)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -192,12 +198,20 @@ const AdminActivitiesPage = () => {
         return
       }
 
+      // Auto-generuj nazwę dla wydarzeń cyklicznych jeśli pusta
+      let finalName = formData.name
+      if (activityMode === 'recurring' && !formData.name.trim()) {
+        const typeName = activityTypes.find(t => t.id === formData.activity_type_id)?.name || 'Zajęcia'
+        finalName = `${typeName} - zajęcia cykliczne`
+      }
+
       // Konwertuj puste stringi na null i datetime-local na ISO z timezone
       // Wykluczamy pola UI które nie są kolumnami w bazie
       const { send_notification, unlimited_participants, send_email_notification, email_subject, email_body, ...formDataWithoutNotification } = formData
 
       const dataToSave = {
         ...formDataWithoutNotification,
+        name: finalName,
         date_time: toISOWithTimezone(formData.date_time),
         // Wydarzenia specjalne nie mają registration_opens_at - zapisy od razu
         registration_opens_at: formData.is_special_event ? null : toISOWithTimezone(formData.registration_opens_at),
@@ -546,6 +560,62 @@ const AdminActivitiesPage = () => {
     }
   }
 
+  const handleModeSelection = async (mode: 'single' | 'recurring' | 'special') => {
+    setActivityMode(mode)
+    setCreationStep(2)
+
+    // Ustaw wartości domyślne w zależności od trybu
+    const innTypeId = activityTypes.find(t => t.name === 'Inne')?.id || ''
+
+    setFormData({
+      ...formData,
+      is_special_event: mode === 'special',
+      is_recurring: mode === 'recurring',
+      activity_type_id: mode === 'special' ? innTypeId : '',
+      trainer_id: mode === 'special' ? '' : formData.trainer_id,
+      recurrence_pattern: mode === 'recurring' ? 'weekly' : 'none'
+    })
+  }
+
+  const handleBackStep = () => {
+    if (creationStep > 1) {
+      setCreationStep(creationStep - 1)
+      if (creationStep === 2) {
+        // Wróciliśmy do wyboru typu - resetuj mode
+        setActivityMode(null)
+      }
+    } else {
+      // Zamknij formularz
+      resetForm()
+      setCreationStep(1)
+      setActivityMode(null)
+    }
+  }
+
+  const handleNextStep = () => {
+    // Walidacja przed przejściem do etapu 3
+    if (creationStep === 2) {
+      // Sprawdź wymagane pola
+      if (!formData.name && activityMode !== 'recurring') {
+        alert('Nazwa jest wymagana')
+        return
+      }
+      if (!formData.activity_type_id && activityMode !== 'special') {
+        alert('Typ zajęć jest wymagany')
+        return
+      }
+      if (!formData.trainer_id && activityMode !== 'special') {
+        alert('Trener jest wymagany')
+        return
+      }
+      if (!formData.date_time) {
+        alert('Data i godzina są wymagane')
+        return
+      }
+    }
+    setCreationStep(3)
+  }
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -576,6 +646,8 @@ const AdminActivitiesPage = () => {
     })
     setEditingId(null)
     setShowForm(false)
+    setCreationStep(1)
+    setActivityMode(null)
   }
 
   const formatDate = (dateString: string) => {
@@ -719,87 +791,127 @@ const AdminActivitiesPage = () => {
 
       {showForm && (
         <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
-          <h2 className="text-xl font-bold text-purple-600 mb-4">
-            {editingId ? 'Edytuj zajęcia' : 'Nowe zajęcia'}
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-purple-600">
+              {editingId ? 'Edytuj zajęcia' : 'Nowe zajęcia'}
+            </h2>
+            <button
+              type="button"
+              onClick={resetForm}
+              className="text-gray-500 hover:text-gray-700 text-sm"
+            >
+              ✕ Zamknij
+            </button>
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Nazwa zajęć *
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                />
-              </div>
+          {/* Breadcrumbs tylko dla nowych (nie edycji) */}
+          {!editingId && (
+            <ActivityCreationBreadcrumbs currentStep={creationStep} activityMode={activityMode} />
+          )}
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Typ zajęć *
-                </label>
-                <select
-                  value={formData.activity_type_id}
-                  onChange={(e) => setFormData({ ...formData, activity_type_id: e.target.value })}
-                  required
-                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                >
-                  <option value="">Wybierz typ zajęć</option>
-                  {activityTypes.map((type) => (
-                    <option key={type.id} value={type.id}>
-                      {type.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* ETAP 1: Wybór typu (tylko dla nowych) */}
+          {!editingId && creationStep === 1 && (
+            <ActivityTypeSelector onSelect={handleModeSelection} />
+          )}
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  {formData.is_special_event ? 'Organizator (opcjonalnie)' : 'Trener *'}
-                </label>
-                <select
-                  value={formData.trainer_id}
-                  onChange={(e) => setFormData({ ...formData, trainer_id: e.target.value })}
-                  required={!formData.is_special_event}
-                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                >
-                  <option value="">{formData.is_special_event ? 'Brak organizatora' : 'Wybierz trenera'}</option>
-                  {trainers.map((trainer) => (
-                    <option key={trainer.id} value={trainer.id}>
-                      {trainer.display_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* ETAP 2 & 3: Formularz (lub edycja) */}
+          {(editingId || creationStep >= 2) && (
+            <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Pokazuj pola tylko w etapie 2 lub przy edycji */}
+            {(editingId || creationStep === 2) && (
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Nazwa - opcjonalna dla recurring */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Nazwa zajęć {activityMode !== 'recurring' && '*'}
+                    {activityMode === 'recurring' && (
+                      <span className="text-xs text-gray-500 ml-2">(opcjonalna - wygenerowana z typu)</span>
+                    )}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required={activityMode !== 'recurring' && !editingId}
+                    placeholder={activityMode === 'recurring' ? 'Zostanie wygenerowana automatycznie...' : ''}
+                    className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
 
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Opis
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
-                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                />
-              </div>
+                {/* Typ zajęć - ukryty dla special (auto="Inne") */}
+                {activityMode !== 'special' && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Typ zajęć *
+                    </label>
+                    <select
+                      value={formData.activity_type_id}
+                      onChange={(e) => setFormData({ ...formData, activity_type_id: e.target.value })}
+                      required
+                      className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                    >
+                      <option value="">Wybierz typ zajęć</option>
+                      {activityTypes.map((type) => (
+                        <option key={type.id} value={type.id}>
+                          {type.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Data i godzina *
-                </label>
-                <input
-                  type="datetime-local"
-                  value={formData.date_time}
-                  onChange={(e) => setFormData({ ...formData, date_time: e.target.value })}
-                  required
-                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                />
+                {/* Trener/Organizator */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {activityMode === 'special' ? 'Organizator (opcjonalnie)' : 'Trener *'}
+                  </label>
+                  <select
+                    value={formData.trainer_id}
+                    onChange={(e) => setFormData({ ...formData, trainer_id: e.target.value })}
+                    required={activityMode !== 'special' && !editingId}
+                    className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                  >
+                    <option value="">{activityMode === 'special' ? 'Brak organizatora' : 'Wybierz trenera'}</option>
+                    {trainers.map((trainer) => (
+                      <option key={trainer.id} value={trainer.id}>
+                        {trainer.display_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
+            )}
+              </div>
+            )}
+
+            {/* POZOSTAŁE POLA - Etap 2 lub edycja */}
+            {(editingId || creationStep === 2) && (
+              <>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Opis
+                    </label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      rows={3}
+                      className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Data i godzina *
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={formData.date_time}
+                      onChange={(e) => setFormData({ ...formData, date_time: e.target.value })}
+                      required
+                      className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                    />
+                  </div>
 
               {/* Czas trwania - różne pola dla zwykłych zajęć vs wydarzeń specjalnych */}
               {!formData.is_special_event ? (
@@ -1245,30 +1357,17 @@ const AdminActivitiesPage = () => {
                   )}
                 </div>
               )}
+              </>
+            )}
 
-              {/* Zajęcia cykliczne */}
-              <div className="border-t-2 border-purple-200 pt-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <input
-                    type="checkbox"
-                    id="is_recurring"
-                    checked={formData.is_recurring || false}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      is_recurring: e.target.checked,
-                      recurrence_pattern: e.target.checked ? 'weekly' : 'none'
-                    })}
-                    className="h-5 w-5 text-purple-600 rounded"
-                    disabled={formData.is_special_event}
-                  />
-                  <label htmlFor="is_recurring" className={`text-sm font-semibold ${formData.is_special_event ? 'text-gray-400' : 'text-gray-700'}`}>
-                    🔄 Zajęcia cykliczne (powtarzające się)
-                    {formData.is_special_event && <span className="text-xs ml-2">(wyłączone dla wydarzeń specjalnych)</span>}
-                  </label>
-                </div>
+            {/* ETAP 3: Zajęcia cykliczne - tylko dla recurring w etapie 3 */}
+              {!editingId && creationStep === 3 && activityMode === 'recurring' && (
+                <div className="border-t-2 border-purple-200 pt-6">
+                  <h3 className="text-lg font-bold text-purple-600 mb-4">
+                    🔄 Reguła powtarzania
+                  </h3>
 
-                {formData.is_recurring && (
-                  <div className="space-y-4 pl-8 border-l-4 border-purple-300">
+                  <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Częstotliwość *
@@ -1307,8 +1406,115 @@ const AdminActivitiesPage = () => {
                       </div>
                     )}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+
+              {/* ETAP 3: Powiadomienia - dla single/special */}
+              {!editingId && creationStep === 3 && (activityMode === 'single' || activityMode === 'special') && (
+                <div className="border-t-2 border-purple-200 pt-6">
+                  <h3 className="text-lg font-bold text-purple-600 mb-4">
+                    🔔 Powiadomienia
+                  </h3>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="send_notification"
+                        checked={formData.send_notification}
+                        onChange={(e) => setFormData({ ...formData, send_notification: e.target.checked })}
+                        className="h-5 w-5 text-purple-600 rounded"
+                      />
+                      <label htmlFor="send_notification" className="text-sm font-semibold text-gray-700">
+                        📱 Wyślij powiadomienia push
+                      </label>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="send_email_notification"
+                        checked={formData.send_email_notification}
+                        onChange={(e) => setFormData({ ...formData, send_email_notification: e.target.checked })}
+                        className="h-5 w-5 text-purple-600 rounded"
+                      />
+                      <label htmlFor="send_email_notification" className="text-sm font-semibold text-gray-700">
+                        📧 Wyślij powiadomienia email
+                      </label>
+                    </div>
+
+                    <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-600">
+                      ℹ️ Powiadomienia zostaną wysłane do użytkowników z włączonymi preferencjami powiadomień.
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Stare checkbox dla recurring - TYLKO przy edycji */}
+              {editingId && (
+                <div className="border-t-2 border-purple-200 pt-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <input
+                      type="checkbox"
+                      id="is_recurring"
+                      checked={formData.is_recurring || false}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        is_recurring: e.target.checked,
+                        recurrence_pattern: e.target.checked ? 'weekly' : 'none'
+                      })}
+                      className="h-5 w-5 text-purple-600 rounded"
+                      disabled={formData.is_special_event}
+                    />
+                    <label htmlFor="is_recurring" className={`text-sm font-semibold ${formData.is_special_event ? 'text-gray-400' : 'text-gray-700'}`}>
+                      🔄 Zajęcia cykliczne (powtarzające się)
+                      {formData.is_special_event && <span className="text-xs ml-2">(wyłączone dla wydarzeń specjalnych)</span>}
+                    </label>
+                  </div>
+
+                  {formData.is_recurring && (
+                    <div className="space-y-4 pl-8 border-l-4 border-purple-300">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Częstotliwość *
+                        </label>
+                        <select
+                          value={formData.recurrence_pattern || 'weekly'}
+                          onChange={(e) => setFormData({ ...formData, recurrence_pattern: e.target.value })}
+                          className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        >
+                          <option value="weekly">Co tydzień</option>
+                          <option value="monthly">Co miesiąc</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Powtarzaj do *
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={formData.recurrence_end_date || ''}
+                          onChange={(e) => setFormData({ ...formData, recurrence_end_date: e.target.value })}
+                          required={formData.is_recurring}
+                          className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        />
+                      </div>
+
+                      {formData.date_time && formData.recurrence_end_date && (
+                        <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                          <p className="text-sm text-blue-800">
+                            ℹ️ Zostanie utworzonych <strong>{calculateInstanceCount()}</strong> zajęć.
+                          </p>
+                          <p className="text-xs text-blue-600 mt-1">
+                            Pierwsze zajęcia będą rodzicielskie (szablon), pozostałe zostaną wygenerowane automatycznie.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Status - tylko przy edycji */}
               {editingId && (
@@ -1330,22 +1536,64 @@ const AdminActivitiesPage = () => {
               )}
             </div>
 
+            {/* Przyciski nawigacji */}
             <div className="flex gap-2">
-              <button
-                type="submit"
-                className="flex-1 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
-              >
-                {editingId ? 'Zapisz zmiany' : 'Utwórz zajęcia'}
-              </button>
-              <button
-                type="button"
-                onClick={resetForm}
-                className="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
-              >
-                Anuluj
-              </button>
+              {/* Przycisk Wstecz - tylko w etapie 2 dla nowych */}
+              {!editingId && creationStep === 2 && (
+                <button
+                  type="button"
+                  onClick={handleBackStep}
+                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
+                >
+                  ← Wstecz
+                </button>
+              )}
+
+              {/* Przycisk Dalej - tylko w etapie 2 dla nowych */}
+              {!editingId && creationStep === 2 && (
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  className="flex-1 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                >
+                  Dalej →
+                </button>
+              )}
+
+              {/* Przycisk Submit - etap 3 lub edycja */}
+              {(editingId || creationStep === 3) && (
+                <>
+                  {!editingId && creationStep === 3 && (
+                    <button
+                      type="button"
+                      onClick={handleBackStep}
+                      className="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
+                    >
+                      ← Wstecz
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    className="flex-1 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                  >
+                    {editingId ? 'Zapisz zmiany' : activityMode === 'recurring' ? 'Generuj serię i zapisz' : 'Utwórz zajęcia'}
+                  </button>
+                </>
+              )}
+
+              {/* Przycisk Anuluj - zawsze dostępny przy edycji */}
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
+                >
+                  Anuluj
+                </button>
+              )}
             </div>
           </form>
+          )}
         </div>
       )}
 
