@@ -96,7 +96,7 @@ serve(async (req) => {
         // Get registration
         const { data: registration } = await supabaseAdmin
           .from('registrations')
-          .select('id, payment_processed')
+          .select('id, payment_status')
           .eq('activity_id', activity_id)
           .eq('user_id', attendance.user_id)
           .eq('status', 'registered')
@@ -135,8 +135,8 @@ serve(async (req) => {
           continue
         }
 
-        // If marked as PRESENT and payment not yet processed, deduct balance
-        if (attendance.status === 'present' && !registration.payment_processed) {
+        // If marked as PRESENT and payment not yet paid, mark as paid
+        if (attendance.status === 'present' && registration.payment_status !== 'paid') {
           // Get user's current balance
           const { data: userData } = await supabaseAdmin
             .from('users')
@@ -208,7 +208,8 @@ serve(async (req) => {
             .from('registrations')
             .update({
               status: 'attended',
-              payment_processed: true
+              payment_status: 'paid',
+              paid_at: new Date().toISOString()
             })
             .eq('id', registration.id)
 
@@ -223,7 +224,7 @@ serve(async (req) => {
               new_values: {
                 attendance_user_id: attendance.user_id,
                 status: attendance.status,
-                payment_processed: true,
+                payment_status: 'paid',
                 amount_charged: cost,
                 new_balance: newBalance
               }
@@ -233,7 +234,7 @@ serve(async (req) => {
             user_id: attendance.user_id,
             user_name: userData.display_name,
             status: attendance.status,
-            payment_processed: true,
+            payment_status: 'paid',
             amount_charged: cost,
             new_balance: newBalance
           })
@@ -247,14 +248,14 @@ serve(async (req) => {
           results.push({
             user_id: attendance.user_id,
             status: attendance.status,
-            payment_processed: false
+            payment_status: 'pending'
           })
         } else {
           // Already processed
           results.push({
             user_id: attendance.user_id,
             status: attendance.status,
-            payment_processed: registration.payment_processed,
+            payment_status: registration.payment_status,
             note: 'Already processed'
           })
         }

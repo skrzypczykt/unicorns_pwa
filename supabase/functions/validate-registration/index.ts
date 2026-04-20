@@ -149,7 +149,7 @@ serve(async (req) => {
       user_id: user.id,
       status: 'registered' as const,
       can_cancel_until: cancellationDeadline,
-      payment_processed: false,
+      payment_status: 'pending' as const,
       cancelled_at: null
     }
 
@@ -224,7 +224,7 @@ serve(async (req) => {
         payment_info: {
           amount_due: activity.cost,
           payment_timing: 'Payment will be deducted when attendance is marked as present',
-          payment_processed: false
+          payment_status: 'pending'
         }
       }),
       {

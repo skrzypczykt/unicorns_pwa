@@ -179,7 +179,7 @@ const ActivitiesPage = () => {
 
       const { data, error } = await supabase
         .from('registrations')
-        .select('id, activity_id, can_cancel_until, payment_processed')
+        .select('id, activity_id, can_cancel_until, payment_status')
         .eq('user_id', user.id)
         .in('status', ['registered', 'attended'])  // Include attended status
 
@@ -188,14 +188,14 @@ const ActivitiesPage = () => {
       const registrations: Record<string, {
         registrationId: string
         canCancelUntil: string
-        paymentProcessed: boolean
+        paymentStatus: string
       }> = {}
 
       data?.forEach(r => {
         registrations[r.activity_id] = {
           registrationId: r.id,
           canCancelUntil: r.can_cancel_until,
-          paymentProcessed: r.payment_processed
+          paymentStatus: r.payment_status
         }
       })
 
@@ -351,7 +351,6 @@ const ActivitiesPage = () => {
             .update({
               status: 'registered',
               can_cancel_until: cancellationDeadline.toISOString(),
-              payment_processed: paymentStatus === 'paid',
               payment_status: paymentStatus,
               payment_due_date: paymentDueDate,
               paid_at: paymentStatus === 'paid' ? new Date().toISOString() : null,
@@ -370,7 +369,6 @@ const ActivitiesPage = () => {
             user_id: user.id,
             status: 'registered',
             can_cancel_until: cancellationDeadline.toISOString(),
-            payment_processed: paymentStatus === 'paid',
             payment_status: paymentStatus,
             payment_due_date: paymentDueDate,
             paid_at: paymentStatus === 'paid' ? new Date().toISOString() : null

@@ -9,7 +9,6 @@ interface Registration {
   status: string
   can_cancel_until: string
   registered_at: string
-  payment_processed: boolean
   payment_status: 'paid' | 'pending' | 'overdue'
   payment_due_date: string | null
   paid_at: string | null
@@ -87,7 +86,6 @@ const MyClassesPage = () => {
           status,
           can_cancel_until,
           registered_at,
-          payment_processed,
           payment_status,
           payment_due_date,
           paid_at,
@@ -138,7 +136,7 @@ const MyClassesPage = () => {
     // 4. Odśwież listę rejestracji
   }
 
-  const handleCancelClick = (registrationId: string, canCancelUntil: string, paymentProcessed: boolean) => {
+  const handleCancelClick = (registrationId: string, canCancelUntil: string, paymentStatus: string) => {
     // Check if cancellation is allowed
     const now = new Date()
     const deadline = new Date(canCancelUntil)
@@ -148,8 +146,8 @@ const MyClassesPage = () => {
       return
     }
 
-    if (paymentProcessed) {
-      alert('Nie możesz anulować - zajęcia zostały już opłacone (oznaczono obecność).')
+    if (paymentStatus === 'paid') {
+      alert('Nie możesz anulować - zajęcia zostały już opłacone.')
       return
     }
 
@@ -198,9 +196,9 @@ const MyClassesPage = () => {
     })
   }
 
-  const canCancel = (canCancelUntil: string, status: string, paymentProcessed: boolean) => {
+  const canCancel = (canCancelUntil: string, status: string, paymentStatus: string) => {
     if (status !== 'registered') return false
-    if (paymentProcessed) return false
+    if (paymentStatus === 'paid') return false
     const now = new Date()
     const deadline = new Date(canCancelUntil)
     return now < deadline
@@ -285,7 +283,7 @@ const MyClassesPage = () => {
         <div className="space-y-4">
           {registrations.map((reg) => {
             const isProcessing = cancelling === reg.id
-            const canCancelNow = canCancel(reg.can_cancel_until, reg.status, reg.payment_processed)
+            const canCancelNow = canCancel(reg.can_cancel_until, reg.status, reg.payment_status)
             const isFlipped = flippedCard === reg.id
 
             return (
@@ -332,27 +330,20 @@ const MyClassesPage = () => {
                               </span>
                             )}
 
-                            {/* Status płatności - tylko jeśli NIE jest payment_processed */}
-                            {!reg.payment_processed && reg.payment_status === 'paid' && (
+                            {/* Status płatności */}
+                            {reg.payment_status === 'paid' && (
                               <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold whitespace-nowrap">
                                 ✅ Opłacone
                               </span>
                             )}
-                            {!reg.payment_processed && reg.payment_status === 'pending' && (
+                            {reg.payment_status === 'pending' && reg.status === 'registered' && (
                               <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold whitespace-nowrap">
                                 ⏳ Do zapłaty
                               </span>
                             )}
-                            {!reg.payment_processed && reg.payment_status === 'overdue' && (
+                            {reg.payment_status === 'overdue' && reg.status === 'registered' && (
                               <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold whitespace-nowrap">
                                 ❗ Przeterminowane
-                              </span>
-                            )}
-
-                            {/* Payment processed badge - tylko jeśli attended */}
-                            {reg.payment_processed && reg.status === 'attended' && (
-                              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold whitespace-nowrap">
-                                ✓ Opłacone
                               </span>
                             )}
                         </div>
@@ -379,7 +370,7 @@ const MyClassesPage = () => {
                       </div>
                     </div>
 
-                      {reg.status === 'registered' && !reg.payment_processed && (
+                      {reg.status === 'registered' && reg.payment_status !== 'paid' && (
                         <div className="mt-3 text-xs text-gray-500">
                           <span>⚠️ Możesz anulować do: {formatDate(reg.can_cancel_until)}</span>
                         </div>
@@ -458,7 +449,7 @@ const MyClassesPage = () => {
                             if (canShowCancelButton) {
                               return (
                                 <button
-                                  onClick={() => handleCancelClick(reg.id, reg.can_cancel_until, reg.payment_processed)}
+                                  onClick={() => handleCancelClick(reg.id, reg.can_cancel_until, reg.payment_status)}
                                   disabled={isProcessing}
                                   className="flex-1 min-w-[150px] px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                                 >

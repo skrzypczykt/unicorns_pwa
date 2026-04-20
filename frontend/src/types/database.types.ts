@@ -174,7 +174,6 @@ export interface Database {
           status: 'registered' | 'cancelled' | 'attended' | 'no_show'
           can_cancel_until: string
           cancelled_at: string | null
-          payment_processed: boolean
           payment_status: 'paid' | 'pending' | 'overdue'
           payment_due_date: string | null
           paid_at: string | null
@@ -190,7 +189,6 @@ export interface Database {
           status?: 'registered' | 'cancelled' | 'attended' | 'no_show'
           can_cancel_until: string
           cancelled_at?: string | null
-          payment_processed?: boolean
           payment_status?: 'paid' | 'pending' | 'overdue'
           payment_due_date?: string | null
           paid_at?: string | null
@@ -206,7 +204,6 @@ export interface Database {
           status?: 'registered' | 'cancelled' | 'attended' | 'no_show'
           can_cancel_until?: string
           cancelled_at?: string | null
-          payment_processed?: boolean
           payment_status?: 'paid' | 'pending' | 'overdue'
           payment_due_date?: string | null
           paid_at?: string | null
