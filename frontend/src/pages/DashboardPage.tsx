@@ -96,6 +96,12 @@ const DashboardPage = ({ profile }: DashboardPageProps) => {
               Zarządzaj zajęciami
             </button>
             <button
+              onClick={() => navigate('/admin/sections')}
+              className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            >
+              🏷️ Zarządzaj Sekcjami
+            </button>
+            <button
               onClick={() => navigate('/admin/users')}
               className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
             >

@@ -20,6 +20,7 @@ import EditProfilePage from './pages/EditProfilePage'
 import NotificationsPage from './pages/NotificationsPage'
 import SettingsPage from './pages/SettingsPage'
 import AdminActivitiesPage from './pages/AdminActivitiesPage'
+import AdminSectionsPage from './pages/AdminSectionsPage'
 import AdminReportsPage from './pages/AdminReportsPage'
 import AdminAttendancePage from './pages/AdminAttendancePage'
 import ActivityParticipantsPage from './pages/ActivityParticipantsPage'
@@ -227,6 +228,7 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/activities" element={<AdminActivitiesPage />} />
           <Route path="/admin/activities/:activityId/participants" element={<ActivityParticipantsPage />} />
+          <Route path="/admin/sections" element={<AdminSectionsPage />} />
           <Route path="/admin/reports" element={<AdminReportsPage />} />
           <Route path="/admin/attendance" element={<AdminAttendancePage />} />
           <Route path="/admin/member-news" element={<AdminMemberNewsPage />} />

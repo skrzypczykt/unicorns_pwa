@@ -181,6 +181,13 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                     <span>📋</span>
                     <span className="text-sm">Zarządzaj zajęciami</span>
                   </button>
+                  <button
+                    onClick={() => handleNavigate('/admin/sections')}
+                    className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
+                  >
+                    <span>🏷️</span>
+                    <span className="text-sm">Zarządzaj Sekcjami</span>
+                  </button>
                   {profile.role === 'admin' && (
                     <button
                       onClick={() => handleNavigate('/admin/users')}
