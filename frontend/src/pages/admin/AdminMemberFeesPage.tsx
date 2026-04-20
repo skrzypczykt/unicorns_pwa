@@ -476,13 +476,13 @@ const AdminMemberFeesPage = () => {
               <span>💰</span>
               Zarządzanie Składkami
             </h1>
-            <p className="text-gray-600">Naliczaj składki i zarządzaj wpłatami członków</p>
+            <p className="text-gray-600">Zarządzaj wpłatami i planami składek członków</p>
           </div>
           <button
-            onClick={() => navigate('/')}
-            className="hidden md:flex px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
+            onClick={() => navigate('/admin/member-zone-management')}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
           >
-            ← Panel Admin
+            ← Zarządzanie Strefą Członka
           </button>
         </div>
 
@@ -516,13 +516,6 @@ const AdminMemberFeesPage = () => {
                 </select>
               </div>
             </div>
-
-            <button
-              onClick={handleChargeAll}
-              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
-            >
-              ⚡ Nalicz wszystkim
-            </button>
           </div>
         </div>
 
@@ -622,18 +615,6 @@ const AdminMemberFeesPage = () => {
                       <td className="px-4 py-3">
                         <div className="flex gap-2 flex-wrap">
                           <button
-                            onClick={() => handleChargeFee(member.id, member.membership_fee_plan)}
-                            disabled={member.membership_fee_exempt}
-                            className={`px-3 py-1 text-xs font-semibold rounded transition-all ${
-                              member.membership_fee_exempt
-                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                : 'bg-purple-500 hover:bg-purple-600 text-white'
-                            }`}
-                            title={member.membership_fee_exempt ? 'Członek zwolniony ze składki' : 'Nalicz składkę'}
-                          >
-                            ⚡ Nalicz
-                          </button>
-                          <button
                             onClick={() => handleAddPayment(member.id)}
                             className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-xs font-semibold rounded transition-all"
                             title="Dodaj wpłatę"
@@ -674,11 +655,9 @@ const AdminMemberFeesPage = () => {
             <span>Informacje</span>
           </h3>
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>• <strong>Nalicz</strong> - odejmuje składkę (15 zł lub 160 zł) od salda członka</li>
             <li>• <strong>Wpłata</strong> - dodaje wpłatę do salda członka</li>
             <li>• <strong>Zwolnij</strong> - zwolnienie ze składki (członek nie będzie naliczany automatycznie)</li>
-            <li>• <strong>Nalicz wszystkim</strong> - automatycznie nalicza składkę każdemu członkowi zgodnie z jego planem (oprócz zwolnionych)</li>
-            <li>• Zmiana planu będzie uwzględniona przy następnym naliczeniu</li>
+            <li>• Zmiana planu składkowego wpływa na przyszłe naliczenia</li>
           </ul>
         </div>
 

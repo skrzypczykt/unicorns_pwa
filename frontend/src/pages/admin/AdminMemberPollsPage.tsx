@@ -320,10 +320,10 @@ const AdminMemberPollsPage = () => {
             <p className="text-gray-600">Twórz głosowania i sprawdź wyniki</p>
           </div>
           <button
-            onClick={() => navigate('/')}
-            className="hidden md:flex px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
+            onClick={() => navigate('/admin/member-zone-management')}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
           >
-            ← Panel Admin
+            ← Zarządzanie Strefą Członka
           </button>
         </div>
 
@@ -563,24 +563,28 @@ const AdminMemberPollsPage = () => {
                     </div>
 
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEdit(poll)}
-                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-all"
-                      >
-                        ✏️ Edytuj
-                      </button>
+                      {!isEnded && (
+                        <button
+                          onClick={() => handleEdit(poll)}
+                          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-all"
+                        >
+                          ✏️ Edytuj
+                        </button>
+                      )}
                       <button
                         onClick={() => isViewingResults ? setViewingResultsId(null) : handleViewResults(poll.id)}
                         className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg transition-all"
                       >
                         {isViewingResults ? '👁️ Ukryj wyniki' : '📊 Zobacz wyniki'}
                       </button>
-                      <button
-                        onClick={() => handleDelete(poll.id)}
-                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all"
-                      >
-                        🗑️ Usuń
-                      </button>
+                      {!isEnded && (
+                        <button
+                          onClick={() => handleDelete(poll.id)}
+                          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all"
+                        >
+                          🗑️ Usuń
+                        </button>
+                      )}
                     </div>
                   </div>
                 )
@@ -590,13 +594,6 @@ const AdminMemberPollsPage = () => {
         </div>
       </div>
 
-      {/* Results Modal Overlay */}
-      {viewingResultsId && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setViewingResultsId(null)}
-        />
-      )}
     </div>
   )
 }

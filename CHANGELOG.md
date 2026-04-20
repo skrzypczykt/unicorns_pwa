@@ -16,6 +16,22 @@ Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
   - Hierarchia od ogólnych do specjalistycznych funkcji
   - Lepsza wizualna separacja między sekcjami
 
+- **Zarządzanie głosowaniami**
+  - Ukryto przyciski edycji i usuwania dla zakończonych głosowań
+  - Pozostawiono tylko "Zobacz wyniki" dla zakończonych głosowań
+
+- **Przyciski nawigacji**
+  - Wszystkie podstrony zarządzania Strefą Członka (dokumenty, aktualności, głosowania, składki) kierują do `/admin/member-zone-management`
+  - Przyciski widoczne na wszystkich rozmiarach ekranów
+
+- **Zarządzanie składkami**
+  - Usunięto przyciski "Nalicz" i "Nalicz wszystkim"
+  - Zaktualizowano opis strony i dokumentację
+
+### Naprawiono
+
+- Czarny overlay zasłaniający wyniki głosowania w panelu administracyjnym
+
 ## [0.2.8] - 2026-04-20
 
 ### Dodano
