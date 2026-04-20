@@ -76,6 +76,60 @@ const WeeklyCalendarView = ({
     return durationMinutes > 180
   }
 
+  // Sprawdź czy dana godzina ma jakiekolwiek zajęcia w dowolnym dniu
+  const hasAnyActivitiesAtHour = (hour: number, days: Date[]) => {
+    return days.some(day => {
+      const slotActivities = getActivitiesForSlot(day, hour)
+      return slotActivities.length > 0
+    })
+  }
+
+  // Znajdź puste bloki (minimum 2 kolejne godziny bez zajęć)
+  const getEmptyBlocks = (hours: number[], days: Date[]) => {
+    const emptyBlocks: { start: number; end: number }[] = []
+    let currentBlockStart: number | null = null
+
+    hours.forEach((hour, index) => {
+      const hasActivities = hasAnyActivitiesAtHour(hour, days)
+
+      if (!hasActivities) {
+        if (currentBlockStart === null) {
+          currentBlockStart = hour
+        }
+      } else {
+        if (currentBlockStart !== null) {
+          const blockLength = hour - currentBlockStart
+          // Tylko bloki minimum 2 godziny
+          if (blockLength >= 2) {
+            emptyBlocks.push({ start: currentBlockStart, end: hour - 1 })
+          }
+          currentBlockStart = null
+        }
+      }
+    })
+
+    // Sprawdź ostatni blok
+    if (currentBlockStart !== null) {
+      const lastHour = hours[hours.length - 1]
+      const blockLength = lastHour - currentBlockStart + 1
+      if (blockLength >= 2) {
+        emptyBlocks.push({ start: currentBlockStart, end: lastHour })
+      }
+    }
+
+    return emptyBlocks
+  }
+
+  // Sprawdź czy godzina jest częścią pustego bloku
+  const isInEmptyBlock = (hour: number, emptyBlocks: { start: number; end: number }[]) => {
+    return emptyBlocks.some(block => hour >= block.start && hour <= block.end)
+  }
+
+  // Sprawdź czy to początek pustego bloku (renderujemy separator)
+  const isEmptyBlockStart = (hour: number, emptyBlocks: { start: number; end: number }[]) => {
+    return emptyBlocks.some(block => block.start === hour)
+  }
+
   // Znajdź zajęcia dla danego dnia i godziny
   const getActivitiesForSlot = (date: Date, hour: number) => {
     return activities.filter(activity => {
@@ -91,6 +145,10 @@ const WeeklyCalendarView = ({
 
   const daysOfWeek = getDaysOfWeek()
   const hourSlots = getHourSlots()
+  const emptyBlocks = getEmptyBlocks(hourSlots, daysOfWeek)
+
+  // Sprawdź czy kalendarz jest całkowicie pusty
+  const isCalendarEmpty = activities.length === 0
 
   // Formatuj nagłówek dnia
   const formatDayHeader = (date: Date) => {
@@ -98,6 +156,17 @@ const WeeklyCalendarView = ({
     const dayName = dayNames[date.getDay()]
     const dayNum = date.getDate()
     return `${dayName} ${dayNum}`
+  }
+
+  // Jeśli kalendarz jest pusty, pokaż komunikat
+  if (isCalendarEmpty) {
+    return (
+      <div className="text-center py-12 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200">
+        <span className="text-6xl mb-4 block">📅</span>
+        <p className="text-xl text-gray-600 font-semibold mb-2">Brak zajęć w tym tygodniu</p>
+        <p className="text-sm text-gray-500">Sprawdź widok kafelkowy lub wróć później</p>
+      </div>
+    )
   }
 
   return (
@@ -133,21 +202,48 @@ const WeeklyCalendarView = ({
         </div>
 
         {/* Grid - Godziny x Dni */}
-        {hourSlots.map((hour) => (
-          <div key={hour} className="grid grid-cols-8 gap-1 mb-1">
-            {/* Kolumna godzin */}
-            <div className="bg-white/80 rounded-lg p-2 flex items-start justify-center text-xs font-semibold text-gray-600 border border-purple-100">
-              {hour.toString().padStart(2, '0')}:00
-            </div>
+        {hourSlots.map((hour) => {
+          // Sprawdź czy ta godzina jest w pustym bloku
+          const inEmptyBlock = isInEmptyBlock(hour, emptyBlocks)
+          const isBlockStart = isEmptyBlockStart(hour, emptyBlocks)
 
-            {/* Komórki dla każdego dnia */}
-            {daysOfWeek.map((day, dayIdx) => {
-              const slotActivities = getActivitiesForSlot(day, hour)
+          // Jeśli w pustym bloku, pokaż separator tylko na początku bloku
+          if (inEmptyBlock) {
+            if (isBlockStart) {
+              const block = emptyBlocks.find(b => b.start === hour)
+              const blockHours = block ? block.end - block.start + 1 : 0
 
-              if (slotActivities.length === 0) {
-                return (
-                  <div
-                    key={dayIdx}
+              return (
+                <div key={`empty-${hour}`} className="grid grid-cols-8 gap-1 mb-1">
+                  <div className="col-span-8 bg-white/40 rounded-lg border border-dashed border-gray-300 p-3 flex items-center justify-center">
+                    <div className="text-center text-gray-400 text-xs">
+                      <div className="mb-1">⋮</div>
+                      <div className="text-[10px]">Brak zajęć ({blockHours}h)</div>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+            // Pomiń pozostałe godziny w tym bloku
+            return null
+          }
+
+          // Renderuj normalny wiersz z zajęciami
+          return (
+            <div key={hour} className="grid grid-cols-8 gap-1 mb-1">
+              {/* Kolumna godzin */}
+              <div className="bg-white/80 rounded-lg p-2 flex items-start justify-center text-xs font-semibold text-gray-600 border border-purple-100">
+                {hour.toString().padStart(2, '0')}:00
+              </div>
+
+              {/* Komórki dla każdego dnia */}
+              {daysOfWeek.map((day, dayIdx) => {
+                const slotActivities = getActivitiesForSlot(day, hour)
+
+                if (slotActivities.length === 0) {
+                  return (
+                    <div
+                      key={dayIdx}
                     className="bg-white/40 rounded-lg border border-gray-200 min-h-[80px]"
                   ></div>
                 )
@@ -231,8 +327,9 @@ const WeeklyCalendarView = ({
                 </div>
               )
             })}
-          </div>
-        ))}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
