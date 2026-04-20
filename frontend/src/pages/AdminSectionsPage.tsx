@@ -107,6 +107,7 @@ const AdminSectionsPage = () => {
       facebook_group_url: section.facebook_group_url || ''
     })
     setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleAddNew = () => {

@@ -4,6 +4,48 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.2.4] - 2026-04-20
+
+### Dodano
+
+- **Wieloetapowy kreator wydarzeń** (3 kroki)
+  - Krok 1: Wybór typu wydarzenia (Jednostkowe/Cykliczne/Specjalne)
+  - Krok 2: Szczegóły (Typ zajęć/Sekcja, Nazwa, Data, Limit, itp.)
+  - Krok 3: Reguła powtarzania (dla cyklicznych) lub Podsumowanie
+  - Breadcrumbs pokazujące aktualny krok
+  - Komponenty: ActivityTypeSelector, ActivityCreationBreadcrumbs
+
+- **Panel zarządzania sekcjami** (`/admin/sections`)
+  - Widok listy wszystkich sekcji z liczbą aktywnych zajęć
+  - Formularz dodawania/edycji sekcji
+  - Podgląd obrazka w czasie rzeczywistym przy wprowadzaniu URL
+  - Domyślny trener dla sekcji (auto-wypełnianie w kreatorze wydarzeń)
+  - Link do grupy Facebook dla sekcji
+  - Ukrywanie sekcji "Inne" w widoku listy
+  - Przewijanie do góry strony po kliknięciu "Edytuj"
+  - Link w hamburger menu i na Dashboard
+
+- **Migracje bazy danych**
+  - 030: Czyszczenie pól członkowskich dla nie-członków
+  - 031: Refaktoryzacja "Wydarzenia specjalne" → checkbox + typ "Inne"
+  - 032: Dodanie image_url do activity_types z domyślnymi obrazkami
+  - 033: Dodanie default_trainer_id i facebook_group_url do activity_types
+
+### Zmieniono
+
+- **Wydarzenia specjalne** - checkbox zamiast typu z listy rozwijanej
+  - Wydarzenia specjalne mają teraz typ "Inne" + zaznaczony checkbox `is_special_event`
+  - Usunięto typ "Wydarzenia specjalne" z listy rozwijanej
+  - Etykieta "Typ zajęć" zmieniona na "Typ zajęć / Nazwa sekcji"
+
+- **Kolejność pól w formularzu** - Typ zajęć/Sekcja przed polem Nazwa
+- **Auto-wypełnianie trenera** - przy wyborze sekcji automatycznie ustawia się domyślny trener (jeśli zdefiniowany)
+
+### Naprawiono
+
+- **Workbox "No route found" warnings** - dodano NetworkOnly routing dla wszystkich requestów do Supabase API
+- **Przewijanie przy edycji** - po kliknięciu "Edytuj" strona przewija się płynnie na górę
+
 ## [0.2.2] - 2026-04-19
 
 ### Zmieniono
