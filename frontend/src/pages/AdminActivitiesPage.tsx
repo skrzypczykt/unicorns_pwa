@@ -78,6 +78,9 @@ const AdminActivitiesPage = () => {
     is_special_event: false,
     whatsapp_group_url: '',
     send_notification: false,
+    send_email_notification: false,
+    email_subject: '',
+    email_body: '',
     requires_immediate_payment: false,
     payment_deadline_hours: 48,
     requires_registration: true
@@ -300,6 +303,45 @@ const AdminActivitiesPage = () => {
           }
         } else if (!formData.send_notification && newActivity && !formData.is_recurring) {
           alert('✅ Nowe zajęcia utworzone!')
+        }
+
+        // Wyślij powiadomienia email (jeśli zaznaczone)
+        if (newActivity && formData.send_email_notification && formData.email_subject && formData.email_body) {
+          console.log('[Email] Calling send-email-notification')
+
+          try {
+            const { data: { session } } = await supabase.auth.getSession()
+
+            const emailResponse = await fetch(
+              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+                  'Authorization': `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({
+                  subject: formData.email_subject,
+                  body: formData.email_body,
+                  activityId: newActivity.id
+                })
+              }
+            )
+
+            const emailData = await emailResponse.json()
+
+            if (!emailResponse.ok) {
+              console.error('[Email] Error sending emails:', emailData)
+              alert(`⚠️ Powiadomienia email: ${emailData.error}`)
+            } else {
+              console.log('[Email] Emails sent successfully:', emailData)
+              alert(`✅ Wysłano ${emailData.sent} emaili!`)
+            }
+          } catch (err) {
+            console.error('[Email] Error sending emails:', err)
+            alert('⚠️ Wystąpił błąd przy wysyłaniu powiadomień email')
+          }
         }
       }
 
@@ -916,6 +958,73 @@ const AdminActivitiesPage = () => {
                   </div>
                 )}
               </div>
+
+              {/* Powiadomienia email - tylko dla wydarzeń specjalnych */}
+              {formData.is_special_event && (
+                <div className="border-t-2 border-purple-200 pt-6">
+                  <div className="flex items-center gap-3 mb-2">
+                    <input
+                      type="checkbox"
+                      id="send_email_notification"
+                      checked={formData.send_email_notification || false}
+                      onChange={(e) => setFormData({ ...formData, send_email_notification: e.target.checked })}
+                      className="h-5 w-5 text-purple-600 rounded"
+                    />
+                    <label htmlFor="send_email_notification" className="text-sm font-semibold text-gray-700">
+                      📧 Wyślij email do wszystkich użytkowników
+                    </label>
+                  </div>
+
+                  {formData.send_email_notification && (
+                    <div className="space-y-4 mt-4">
+                      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg text-sm text-purple-800 mb-4">
+                        <p className="font-semibold mb-1">📧 Email do wszystkich użytkowników</p>
+                        <p>Email zostanie wysłany do wszystkich zarejestrowanych użytkowników z informacją o wydarzeniu specjalnym.</p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Tytuł emaila *
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.email_subject}
+                          onChange={(e) => setFormData({ ...formData, email_subject: e.target.value })}
+                          placeholder="np. 🎉 Nowe wydarzenie specjalne: Spływ kajakowy!"
+                          className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Treść emaila *
+                        </label>
+                        <textarea
+                          value={formData.email_body}
+                          onChange={(e) => setFormData({ ...formData, email_body: e.target.value })}
+                          placeholder="Opisz wydarzenie..."
+                          rows={6}
+                          className="w-full px-4 py-3 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData({
+                            ...formData,
+                            email_subject: `🎉 Nowe wydarzenie: ${formData.name}`,
+                            email_body: `Zapraszamy na ${formData.name}!\n\n📅 Data: ${formData.date_time ? new Date(formData.date_time).toLocaleString('pl-PL') : 'Do ustalenia'}\n📍 Miejsce: ${formData.location || 'Do ustalenia'}\n💰 Koszt: ${formData.cost} zł\n\n${formData.description || 'Szczegóły wkrótce!'}\n\nZapisz się przez aplikację Unicorns!`
+                          })
+                        }}
+                        className="px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-sm transition-all"
+                      >
+                        📄 Załaduj szablon
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Ustawienia płatności - tylko dla wydarzeń płatnych */}
               {formData.cost > 0 && (
