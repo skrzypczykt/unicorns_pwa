@@ -1,6 +1,8 @@
 /// <reference lib="webworker" />
 import { clientsClaim } from 'workbox-core'
 import { precacheAndRoute } from 'workbox-precaching'
+import { registerRoute } from 'workbox-routing'
+import { NetworkOnly } from 'workbox-strategies'
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -10,6 +12,19 @@ precacheAndRoute(self.__WB_MANIFEST)
 // Take control immediately
 self.skipWaiting()
 clientsClaim()
+
+// Supabase API requests - NetworkOnly (nie cache'uj)
+registerRoute(
+  ({ url }) => url.hostname.includes('supabase.co'),
+  new NetworkOnly(),
+  'GET'
+)
+
+registerRoute(
+  ({ url }) => url.hostname.includes('supabase.co'),
+  new NetworkOnly(),
+  'POST'
+)
 
 // Push Notification Handler
 self.addEventListener('push', (event) => {
