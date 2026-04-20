@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import HeroCarousel from '../components/HeroCarousel'
 
 interface DashboardPageProps {
   profile: {
@@ -18,20 +19,8 @@ const DashboardPage = ({ profile }: DashboardPageProps) => {
       {/* Regular user dashboard cards - hide for external_trainer only */}
       {profile.role !== 'external_trainer' && (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Dashboard Cards */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-4xl">📅</span>
-              <h2 className="text-xl font-bold text-purple-600">Nadchodzące zajęcia</h2>
-            </div>
-            <p className="text-gray-600 mb-4">Zobacz dostępne zajęcia sportowe</p>
-            <button
-              onClick={() => navigate('/activities')}
-              className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
-            >
-              Przeglądaj zajęcia
-            </button>
-          </div>
+          {/* Hero Carousel - zastępuje pierwszy kafelek */}
+          <HeroCarousel />
 
           <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 hover:shadow-xl transition-all">
             <div className="flex items-center gap-3 mb-4">
