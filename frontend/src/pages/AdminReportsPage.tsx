@@ -274,7 +274,7 @@ export default function AdminReportsPage() {
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-purple-900">📊 Raporty Księgowe</h1>
+          <h1 className="text-3xl font-bold text-purple-900">📊 Raporty</h1>
           <button
             onClick={() => navigate('/')}
             className="hidden md:flex px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all items-center gap-2"

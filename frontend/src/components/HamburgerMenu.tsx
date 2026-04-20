@@ -195,7 +195,7 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                     className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
                   >
                     <span>📊</span>
-                    <span className="text-sm">Raporty księgowe</span>
+                    <span className="text-sm">Raporty</span>
                   </button>
                 </>
               )}
