@@ -147,7 +147,7 @@ ${body}
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'Unicorns Łódź <noreply@unicorns.org.pl>',
+            from: 'Unicorns Łódź <onboarding@resend.dev>',
             to: [recipient.email],
             subject: subject,
             html: htmlBody,
