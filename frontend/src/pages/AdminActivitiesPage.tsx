@@ -881,8 +881,6 @@ const AdminActivitiesPage = () => {
                 </div>
               </div>
             )}
-              </div>
-            )}
 
             {/* POZOSTAŁE POLA - Etap 2 lub edycja */}
             {(editingId || creationStep === 2) && (
