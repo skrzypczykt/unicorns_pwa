@@ -1533,7 +1533,6 @@ const AdminActivitiesPage = () => {
                   </select>
                 </div>
               )}
-            </div>
 
             {/* Przyciski nawigacji */}
             <div className="flex gap-2">
