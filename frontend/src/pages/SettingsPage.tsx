@@ -15,7 +15,6 @@ interface UserProfile {
 interface NotificationSettings {
   push_enabled: boolean
   email_enabled: boolean
-  sms_enabled: boolean
   activity_reminders: boolean
   new_activities: boolean
   balance_alerts: boolean
@@ -33,7 +32,6 @@ const SettingsPage = () => {
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
     push_enabled: true,
     email_enabled: true,
-    sms_enabled: false,
     activity_reminders: true,
     new_activities: true,
     balance_alerts: true,
@@ -43,6 +41,7 @@ const SettingsPage = () => {
   // Other settings
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false)
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false)
+  const [deleteConfirmation, setDeleteConfirmation] = useState('')
   const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' })
 
   useEffect(() => {
@@ -88,9 +87,9 @@ const SettingsPage = () => {
     const newValue = !notificationSettings[key]
     let newSettings = { ...notificationSettings, [key]: newValue }
 
-    // Jeśli włączamy/wyłączamy główne powiadomienia (push/email/sms),
+    // Jeśli włączamy/wyłączamy główne powiadomienia (push/email),
     // automatycznie włącz/wyłącz wszystkie powiązane powiadomienia
-    if (key === 'push_enabled' || key === 'email_enabled' || key === 'sms_enabled') {
+    if (key === 'push_enabled' || key === 'email_enabled') {
       newSettings = {
         ...newSettings,
         activity_reminders: newValue,
@@ -169,8 +168,36 @@ const SettingsPage = () => {
   }
 
   const handleDeleteAccount = async () => {
-    alert('⚠️ Funkcja usuwania konta jest w przygotowaniu.\n\nSkontaktuj się z administratorem: unicorns.lodz@gmail.com')
-    setShowDeleteAccountModal(false)
+    if (deleteConfirmation !== 'USUŃ MOJE KONTO') {
+      alert('Wpisz "USUŃ MOJE KONTO" aby potwierdzić')
+      return
+    }
+
+    try {
+      // Wywołaj Edge Function
+      const { data, error } = await supabase.functions.invoke('delete-user-account', {
+        body: { userId: profile?.id }
+      })
+
+      if (error) throw error
+
+      if (data.error) {
+        alert(`❌ ${data.error}`)
+        return
+      }
+
+      alert('✅ Konto zostało usunięte. Zostaniesz wylogowany.')
+
+      // Wyloguj użytkownika
+      await supabase.auth.signOut()
+      navigate('/login')
+    } catch (error: any) {
+      console.error('Error deleting account:', error)
+      alert(`Wystąpił błąd: ${error.message}`)
+    } finally {
+      setShowDeleteAccountModal(false)
+      setDeleteConfirmation('')
+    }
   }
 
   if (loading) {
@@ -334,20 +361,6 @@ const SettingsPage = () => {
               <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
                 notificationSettings.email_enabled ? 'translate-x-6' : ''
               }`}></div>
-            </button>
-          </div>
-
-          {/* SMS notifications */}
-          <div className="flex items-center justify-between py-3 bg-gray-50 -mx-6 px-6">
-            <div>
-              <p className="font-semibold text-gray-800">📱 Powiadomienia SMS</p>
-              <p className="text-xs text-gray-500">Wiadomości SMS o ważnych wydarzeniach (wkrótce)</p>
-            </div>
-            <button
-              disabled
-              className="relative w-14 h-8 rounded-full bg-gray-200 cursor-not-allowed"
-            >
-              <div className="absolute top-1 left-1 w-6 h-6 bg-gray-400 rounded-full"></div>
             </button>
           </div>
         </div>
@@ -536,8 +549,22 @@ const SettingsPage = () => {
                 <ul className="text-sm text-red-700 space-y-1 list-disc list-inside">
                   <li>Wszystkie Twoje dane osobowe</li>
                   <li>Historia transakcji i rezerwacji</li>
+                  <li>Powiadomienia i subskrypcje</li>
                   <li>Dostęp do konta i aplikacji</li>
                 </ul>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 text-left">
+                  Wpisz dokładnie: <span className="text-red-600">USUŃ MOJE KONTO</span>
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmation}
+                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-red-300 rounded-lg focus:border-red-500 focus:outline-none"
+                  placeholder="USUŃ MOJE KONTO"
+                />
               </div>
             </div>
 
@@ -550,9 +577,10 @@ const SettingsPage = () => {
               </button>
               <button
                 onClick={handleDeleteAccount}
-                className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all"
+                disabled={deleteConfirmation !== 'USUŃ MOJE KONTO'}
+                className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Usuń konto
+                Usuń konto na zawsze
               </button>
             </div>
           </div>
