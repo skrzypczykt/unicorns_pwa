@@ -193,13 +193,13 @@ const AdminUsersPage = () => {
         </button>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Users list */}
-        <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Users list - ukryj na mobile gdy wybrany użytkownik */}
+        <div className={selectedUser ? 'hidden md:block' : ''}>
           <h2 className="text-xl font-bold text-purple-600 mb-4">
             Wszyscy użytkownicy ({users.length})
           </h2>
-          <div className="space-y-3 max-h-[600px] overflow-y-auto">
+          <div className="space-y-3 max-h-[400px] md:max-h-[600px] overflow-y-auto">
             {users.map((user) => (
               <div
                 key={user.id}
@@ -237,13 +237,21 @@ const AdminUsersPage = () => {
           </div>
         </div>
 
-        {/* Balance update form */}
-        <div className="sticky top-4 space-y-6">
+        {/* User details panel - fullwidth na mobile */}
+        <div className={`${selectedUser ? '' : 'hidden md:block'} md:sticky md:top-4 space-y-6 pb-24 md:pb-0`}>
           {selectedUser ? (
             <>
               {/* User info card */}
               <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6">
-                <h2 className="text-xl font-bold text-purple-600 mb-4">Wybrany użytkownik</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-purple-600">Wybrany użytkownik</h2>
+                  <button
+                    onClick={() => setSelectedUser(null)}
+                    className="md:hidden px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm transition-all"
+                  >
+                    ← Lista
+                  </button>
+                </div>
 
                 <div className="mb-4 p-4 bg-purple-50 rounded-lg">
                   <p className="font-bold text-purple-600">{selectedUser.display_name}</p>
