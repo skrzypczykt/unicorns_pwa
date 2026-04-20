@@ -122,7 +122,7 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                 className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
               >
                 <span>💼</span>
-                <span className="text-sm">Moje Konto</span>
+                <span className="text-sm">Moje konto</span>
               </button>
 
               <button
@@ -147,7 +147,7 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                 className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
               >
                 <span>💝</span>
-                <span className="text-sm">Wsparcie / Darowizny</span>
+                <span className="text-sm">Wsparcie / darowizny</span>
               </button>
 
               {/* Legal Notice */}
@@ -186,7 +186,7 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                     className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
                   >
                     <span>🏷️</span>
-                    <span className="text-sm">Zarządzaj Sekcjami</span>
+                    <span className="text-sm">Zarządzaj sekcjami</span>
                   </button>
                   {profile.role === 'admin' && (
                     <button
