@@ -16,6 +16,16 @@ Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
   - Wskaźniki slajdów (dots) i strzałki nawigacji
   - Płynne przejścia fade między slajdami
 
+- **System przypomnień o płatności** (backend)
+  - GitHub Actions scheduler - uruchamianie co 6h
+  - Edge Function: send-payment-reminders
+  - Migracja 034: Poprawiona funkcja RPC (dodano activity_cost)
+  - Logowanie powiadomień do push_notifications_log
+  - Inteligentna częstotliwość:
+    - >24h do terminu: przypomnienie co 24h
+    - ≤24h do terminu: przypomnienie co 6h (pilne ⚠️)
+  - Powiadomienie zawiera: nazwę wydarzenia, termin płatności, kwotę
+
 ### Zmieniono
 
 - **Formatowanie czasu anulowania** - bardziej czytelne
