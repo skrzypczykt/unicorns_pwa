@@ -3,6 +3,7 @@ import { supabase } from '../supabase/client'
 import { useNavigate } from 'react-router-dom'
 import { formatDuration } from '../utils/formatDuration'
 import { ACTIVITY_TYPE_IMAGES } from '../data/activityImages'
+import EditEventNotificationModal from '../components/EditEventNotificationModal'
 
 interface Activity {
   id: string
@@ -53,6 +54,9 @@ const AdminActivitiesPage = () => {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string[]>(['scheduled']) // Domyślnie aktywne
+  const [showEditNotificationModal, setShowEditNotificationModal] = useState(false)
+  const [participantCount, setParticipantCount] = useState(0)
+  const [pendingFormData, setPendingFormData] = useState<any>(null)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -213,6 +217,45 @@ const AdminActivitiesPage = () => {
       console.log('[Admin] Saving activity with data:', dataToSave)
       console.log('[Admin] Is editing?', !!editingId, 'ID:', editingId)
 
+      // Jeśli edycja - sprawdź liczbę uczestników i pokaż modal
+      if (editingId) {
+        const { count, error: countError } = await supabase
+          .from('registrations')
+          .select('*', { count: 'exact', head: true })
+          .eq('activity_id', editingId)
+          .eq('status', 'registered')
+
+        if (countError) {
+          console.error('Error counting participants:', countError)
+        }
+
+        const participantsCount = count || 0
+
+        // Zapisz dane i pokaż modal (tylko jeśli są uczestnicy)
+        setPendingFormData(dataToSave)
+        setParticipantCount(participantsCount)
+
+        if (participantsCount > 0) {
+          setShowEditNotificationModal(true)
+          return // Czekaj na decyzję użytkownika
+        }
+      }
+
+      // Kontynuuj zapis (dla nowych lub edycji bez uczestników)
+      await saveActivity(dataToSave, false)
+    } catch (error) {
+      console.error('[Admin] ❌ ERROR saving activity:', error)
+      console.error('[Admin] Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        fullError: error
+      })
+      alert('Wystąpił błąd podczas zapisywania')
+    }
+  }
+
+  const saveActivity = async (dataToSave: any, sendNotifications: boolean) => {
+    try {
       if (editingId) {
         // Update existing activity
         console.log('[Admin] Updating activity ID:', editingId)
@@ -228,7 +271,13 @@ const AdminActivitiesPage = () => {
           throw error
         }
         console.log('[Admin] Updated activity:', updatedActivity)
-        alert('✅ Zajęcia zaktualizowane!')
+
+        // Wyślij powiadomienia jeśli requested
+        if (sendNotifications && updatedActivity) {
+          await sendEventUpdateNotifications(updatedActivity)
+        } else {
+          alert('✅ Zajęcia zaktualizowane!')
+        }
       } else {
         // Create new activity
         const { data: newActivity, error } = await supabase
@@ -357,6 +406,76 @@ const AdminActivitiesPage = () => {
       })
       alert('Wystąpił błąd podczas zapisywania')
     }
+  }
+
+  const sendEventUpdateNotifications = async (activity: any) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      // Wyślij powiadomienia push
+      const pushResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-push-notifications`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify({
+            activityId: activity.id,
+            activityName: activity.name,
+            dateTime: activity.date_time,
+            isUpdate: true // Flaga że to edycja
+          })
+        }
+      )
+
+      const pushData = await pushResponse.json()
+
+      // Wyślij email
+      const emailBody = `Informujemy o zmianach w wydarzeniu "${activity.name}".\n\nNowa data: ${new Date(activity.date_time).toLocaleString('pl-PL')}\nMiejsce: ${activity.location}\n\nZaloguj się do aplikacji Unicorns aby zobaczyć szczegóły.`
+
+      const emailResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify({
+            subject: `🔔 Zmiana w wydarzeniu: ${activity.name}`,
+            body: emailBody,
+            activityId: activity.id,
+            notificationType: 'event_updated'
+          })
+        }
+      )
+
+      const emailData = await emailResponse.json()
+
+      alert(`✅ Zajęcia zaktualizowane!\n\nWysłano powiadomienia:\n📱 Push: ${pushData.sent || 0}\n📧 Email: ${emailData.sent || 0}`)
+    } catch (err) {
+      console.error('[Notifications] Error:', err)
+      alert('✅ Zajęcia zaktualizowane, ale wystąpił błąd przy wysyłaniu powiadomień')
+    }
+  }
+
+  const handleConfirmNotifications = async () => {
+    setShowEditNotificationModal(false)
+    await saveActivity(pendingFormData, true)
+  }
+
+  const handleSkipNotifications = async () => {
+    setShowEditNotificationModal(false)
+    await saveActivity(pendingFormData, false)
+  }
+
+  const handleCancelEdit = () => {
+    setShowEditNotificationModal(false)
+    setPendingFormData(null)
   }
 
   // Helper: konwertuj ISO string (UTC z bazy) na format datetime-local (lokalny czas)
@@ -1332,6 +1451,16 @@ const AdminActivitiesPage = () => {
           ))
         )}
       </div>
+
+      {/* Modal powiadomień o edycji */}
+      {showEditNotificationModal && (
+        <EditEventNotificationModal
+          participantCount={participantCount}
+          onConfirm={handleConfirmNotifications}
+          onSkip={handleSkipNotifications}
+          onCancel={handleCancelEdit}
+        />
+      )}
     </div>
   )
 }

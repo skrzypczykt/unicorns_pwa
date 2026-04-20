@@ -57,9 +57,9 @@ serve(async (req) => {
       )
     }
 
-    const { activityId, activityName, dateTime, userId, sendToAll } = body
+    const { activityId, activityName, dateTime, userId, sendToAll, isUpdate } = body
 
-    console.log('Received request:', { activityId, activityName, dateTime, userId, sendToAll })
+    console.log('Received request:', { activityId, activityName, dateTime, userId, sendToAll, isUpdate })
 
     // Verify userId is admin (optional security check)
     if (userId) {
@@ -98,7 +98,21 @@ serve(async (req) => {
 
     let userIds: string[] = []
 
-    if (sendToAll) {
+    if (isUpdate) {
+      // Dla edycji - wyślij tylko do zarejestrowanych uczestników
+      console.log('Sending to REGISTERED participants only (event update)')
+
+      const { data: participants, error: participantsError } = await supabase
+        .from('registrations')
+        .select('user_id')
+        .eq('activity_id', activityId)
+        .eq('status', 'registered')
+
+      if (participantsError) throw participantsError
+
+      userIds = [...new Set(participants?.map((p: any) => p.user_id) || [])]
+      console.log('Registered participants:', userIds.length)
+    } else if (sendToAll) {
       // Wyślij do WSZYSTKICH użytkowników którzy mają push subscriptions
       console.log('Sending to ALL users with push subscriptions')
 
@@ -211,15 +225,23 @@ serve(async (req) => {
       minute: '2-digit'
     })
 
-    // Rozróżnij tytuł: wydarzenie specjalne vs zwykłe zajęcia
+    // Rozróżnij tytuł: aktualizacja, wydarzenie specjalne vs zwykłe zajęcia
     const isSpecialEvent = activity?.is_special_event || sendToAll
-    const titlePrefix = isSpecialEvent ? '🎉 Nowe wydarzenie' : '🦄 Nowe zajęcia'
+    let titlePrefix
+    let bodyText
 
-    // Dodaj wzmiankę o WhatsApp jeśli dostępna (z fallbackiem do activity_type)
-    let bodyText = `📅 ${formattedDate} - Zapisz się teraz!`
-    const whatsappLink = activity?.whatsapp_group_url || activity?.activity_types?.whatsapp_group_url
-    if (whatsappLink) {
-      bodyText += ` 💬 Grupa WhatsApp dostępna!`
+    if (isUpdate) {
+      titlePrefix = '🔔 Zmiana w wydarzeniu'
+      bodyText = `📅 Nowa data: ${formattedDate}. Sprawdź szczegóły!`
+    } else {
+      titlePrefix = isSpecialEvent ? '🎉 Nowe wydarzenie' : '🦄 Nowe zajęcia'
+      bodyText = `📅 ${formattedDate} - Zapisz się teraz!`
+
+      // Dodaj wzmiankę o WhatsApp jeśli dostępna (z fallbackiem do activity_type)
+      const whatsappLink = activity?.whatsapp_group_url || activity?.activity_types?.whatsapp_group_url
+      if (whatsappLink) {
+        bodyText += ` 💬 Grupa WhatsApp dostępna!`
+      }
     }
 
     const notification = {
@@ -228,10 +250,11 @@ serve(async (req) => {
       icon: '/unicorns-logo.png',
       badge: '/badge-icon.svg',
       data: {
-        url: '/activities',
+        url: '/my-classes',
         activityId,
-        hasWhatsApp: !!whatsappLink,
-        isSpecialEvent: isSpecialEvent
+        hasWhatsApp: !isUpdate && !!(activity?.whatsapp_group_url || activity?.activity_types?.whatsapp_group_url),
+        isSpecialEvent: isSpecialEvent,
+        isUpdate: !!isUpdate
       }
     }
 
@@ -258,7 +281,7 @@ serve(async (req) => {
             activity_id: activityId,
             title: notification.title,
             body: notification.body,
-            type: isSpecialEvent ? 'special_event' : 'new_activity',
+            type: isUpdate ? 'event_updated' : (isSpecialEvent ? 'special_event' : 'new_activity'),
             status: 'sent'
           })
 
@@ -279,7 +302,7 @@ serve(async (req) => {
             activity_id: activityId,
             title: notification.title,
             body: notification.body,
-            type: isSpecialEvent ? 'special_event' : 'new_activity',
+            type: isUpdate ? 'event_updated' : (isSpecialEvent ? 'special_event' : 'new_activity'),
             status: 'failed',
             error_message: error.message
           })

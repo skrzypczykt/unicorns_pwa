@@ -55,7 +55,7 @@ serve(async (req) => {
       )
     }
 
-    const { subject, body, activityId } = await req.json()
+    const { subject, body, activityId, notificationType } = await req.json()
 
     if (!subject || !body) {
       return new Response(
@@ -64,17 +64,48 @@ serve(async (req) => {
       )
     }
 
-    console.log(`[Send Email] Sending notification for activity ${activityId || 'N/A'}`)
+    console.log(`[Send Email] Sending notification for activity ${activityId || 'N/A'}, type: ${notificationType || 'general'}`)
 
-    // Get all users with email notifications enabled
-    const { data: users, error: usersError } = await supabase
-      .from('users')
-      .select('email, display_name')
-      .eq('email_notifications_enabled', true)
+    let users
 
-    if (usersError) {
-      console.error('[Send Email] Error fetching users:', usersError)
-      throw usersError
+    // Jeśli to aktualizacja wydarzenia - wyślij tylko do uczestników
+    if (notificationType === 'event_updated' && activityId) {
+      const { data: participants, error: participantsError } = await supabase
+        .from('registrations')
+        .select(`
+          user_id,
+          users!registrations_user_id_fkey (
+            email,
+            display_name,
+            email_notifications_enabled
+          )
+        `)
+        .eq('activity_id', activityId)
+        .eq('status', 'registered')
+
+      if (participantsError) {
+        console.error('[Send Email] Error fetching participants:', participantsError)
+        throw participantsError
+      }
+
+      // Filtruj tylko tych z włączonymi powiadomieniami email
+      users = participants
+        ?.filter(p => p.users?.email_notifications_enabled)
+        .map(p => ({ email: p.users.email, display_name: p.users.display_name })) || []
+
+    } else {
+      // Standardowa wysyłka - do wszystkich z włączonymi powiadomieniami
+      const { data: allUsers, error: usersError } = await supabase
+        .from('users')
+        .select('email, display_name')
+        .eq('email_notifications_enabled', true)
+
+      if (usersError) {
+        console.error('[Send Email] Error fetching users:', usersError)
+        throw usersError
+      }
+
+      users = allUsers
     }
 
     if (!users || users.length === 0) {
@@ -84,7 +115,7 @@ serve(async (req) => {
       )
     }
 
-    console.log(`[Send Email] Found ${users.length} users with email notifications enabled`)
+    console.log(`[Send Email] Found ${users.length} users to send emails`)
 
     // Prepare HTML email
     const htmlBody = `
@@ -164,7 +195,7 @@ ${body}
             activity_id: activityId || null,
             title: subject,
             body: body,
-            type: 'special_event',
+            type: notificationType || 'special_event',
             status: 'sent'
           })
         } else {
