@@ -1355,6 +1355,7 @@ const AdminActivitiesPage = () => {
                   )}
                 </div>
               )}
+                </div>
               </>
             )}
 
