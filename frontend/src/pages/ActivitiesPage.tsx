@@ -8,6 +8,7 @@ import { addToGoogleCalendar, calculateEndTime } from '../utils/calendarHelpers'
 import PublicHamburgerMenu from '../components/PublicHamburgerMenu'
 import WeeklyCalendarView from '../components/WeeklyCalendarView'
 import ActivitySlidePanel from '../components/ActivitySlidePanel'
+import { formatCancellationTime } from '../utils/formatCancellationTime'
 
 interface Activity {
   id: string
@@ -755,7 +756,7 @@ const ActivitiesPage = () => {
                       )}
                       <div className="flex items-center gap-2 text-xs text-gray-500">
                         <span>⚠️</span>
-                        <span>Anulowanie: {activity.cancellation_hours}h przed zajęciami</span>
+                        <span>Anulowanie: {formatCancellationTime(activity.cancellation_hours)}</span>
                       </div>
                     </div>
 
@@ -1029,7 +1030,7 @@ const ActivitiesPage = () => {
                   )}
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <span>⚠️</span>
-                    <span>Anulowanie: {activity.cancellation_hours}h przed zajęciami</span>
+                    <span>Anulowanie: {formatCancellationTime(activity.cancellation_hours)}</span>
                   </div>
                 </div>
 
