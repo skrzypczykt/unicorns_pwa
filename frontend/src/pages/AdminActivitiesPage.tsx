@@ -162,7 +162,7 @@ const AdminActivitiesPage = () => {
     try {
       const { data, error } = await supabase
         .from('activity_types')
-        .select('id, name')
+        .select('id, name, default_trainer_id')
         .order('name', { ascending: true })
 
       if (error) throw error
@@ -828,7 +828,19 @@ const AdminActivitiesPage = () => {
                     </label>
                     <select
                       value={formData.activity_type_id}
-                      onChange={(e) => setFormData({ ...formData, activity_type_id: e.target.value })}
+                      onChange={(e) => {
+                        const selectedTypeId = e.target.value
+                        const selectedType = activityTypes.find(t => t.id === selectedTypeId)
+
+                        // Auto-wypełnij trainera jeśli sekcja ma domyślnego trenera
+                        const newTrainerId = (selectedType as any)?.default_trainer_id || formData.trainer_id
+
+                        setFormData({
+                          ...formData,
+                          activity_type_id: selectedTypeId,
+                          trainer_id: newTrainerId
+                        })
+                      }}
                       required
                       className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
                     >
