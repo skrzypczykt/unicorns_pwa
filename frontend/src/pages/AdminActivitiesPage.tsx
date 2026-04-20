@@ -601,7 +601,7 @@ const AdminActivitiesPage = () => {
         return
       }
       if (!formData.activity_type_id && activityMode !== 'special') {
-        alert('Typ zajęć jest wymagany')
+        alert('Typ zajęć / Nazwa sekcji jest wymagany')
         return
       }
       if (!formData.trainer_id && activityMode !== 'special') {
@@ -820,11 +820,11 @@ const AdminActivitiesPage = () => {
             {/* Pokazuj pola tylko w etapie 2 lub przy edycji */}
             {(editingId || creationStep === 2) && (
               <div className="grid md:grid-cols-2 gap-4">
-                {/* Typ zajęć - ukryty dla special (auto="Inne") - PIERWSZY */}
+                {/* Typ zajęć / Nazwa sekcji - ukryty dla special (auto="Inne") - PIERWSZY */}
                 {activityMode !== 'special' && (
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Typ zajęć *
+                      Typ zajęć / Nazwa sekcji *
                     </label>
                     <select
                       value={formData.activity_type_id}
@@ -832,7 +832,7 @@ const AdminActivitiesPage = () => {
                       required
                       className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
                     >
-                      <option value="">Wybierz typ zajęć</option>
+                      <option value="">Wybierz typ / sekcję</option>
                       {activityTypes.map((type) => (
                         <option key={type.id} value={type.id}>
                           {type.name}
