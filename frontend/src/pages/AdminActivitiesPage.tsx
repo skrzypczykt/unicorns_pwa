@@ -189,8 +189,8 @@ const AdminActivitiesPage = () => {
       }
 
       // Konwertuj puste stringi na null i datetime-local na ISO z timezone
-      // Wykluczamy send_notification i unlimited_participants - to tylko parametry UI, nie kolumny w bazie
-      const { send_notification, unlimited_participants, ...formDataWithoutNotification } = formData
+      // Wykluczamy pola UI które nie są kolumnami w bazie
+      const { send_notification, unlimited_participants, send_email_notification, email_subject, email_body, ...formDataWithoutNotification } = formData
 
       const dataToSave = {
         ...formDataWithoutNotification,
