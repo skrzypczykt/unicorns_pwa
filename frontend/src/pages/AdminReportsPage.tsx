@@ -10,10 +10,10 @@ interface ActivityType {
 }
 
 interface AttendanceReportRow {
-  user_name: string
   section_name: string
   attended: number
   no_show: number
+  registered: number
   total_registrations: number
   attendance_rate: number
 }
@@ -233,28 +233,28 @@ export default function AdminReportsPage() {
       throw error
     }
 
-    // Aggregate attendance data
+    // Aggregate attendance data by section (activity type)
     const aggregated: Record<string, AttendanceReportRow> = {}
 
     data?.forEach((reg: any) => {
       // Skip records with missing data
-      const user = Array.isArray(reg.users) ? reg.users[0] : reg.users
       const activity = Array.isArray(reg.activities) ? reg.activities[0] : reg.activities
       const activityType = activity?.activity_types
       const activityTypeName = Array.isArray(activityType) ? activityType[0]?.name : activityType?.name
 
-      if (!user || !activity || !activityTypeName) {
-        console.warn('Skipping registration with missing data:', reg)
+      if (!activity || !activityTypeName) {
+        console.warn('Skipping registration with missing activity data:', reg)
         return
       }
 
-      const key = `${user.display_name}-${activityTypeName}`
+      // Agregacja per sekcja (typ zajęć), nie per użytkownik
+      const key = activityTypeName
       if (!aggregated[key]) {
         aggregated[key] = {
-          user_name: user.display_name,
           section_name: activityTypeName,
           attended: 0,
           no_show: 0,
+          registered: 0,
           total_registrations: 0,
           attendance_rate: 0
         }
@@ -263,6 +263,7 @@ export default function AdminReportsPage() {
       aggregated[key].total_registrations++
       if (reg.status === 'attended') aggregated[key].attended++
       if (reg.status === 'no_show') aggregated[key].no_show++
+      if (reg.status === 'registered') aggregated[key].registered++
     })
 
     // Calculate attendance rate
@@ -491,9 +492,6 @@ export default function AdminReportsPage() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Użytkownik
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Sekcja
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -501,6 +499,9 @@ export default function AdminReportsPage() {
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Nieobecności
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Zapisani
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Razem
@@ -514,9 +515,6 @@ export default function AdminReportsPage() {
                     {(reportData as unknown as AttendanceReportRow[]).map((row, index) => (
                       <tr key={index}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {row.user_name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {row.section_name}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600">
@@ -524,6 +522,9 @@ export default function AdminReportsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-red-600">
                           {row.no_show}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-blue-600">
+                          {row.registered}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
                           {row.total_registrations}
