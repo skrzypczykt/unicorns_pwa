@@ -4,17 +4,30 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
-## [0.2.6] - 2026-04-20
+## [0.2.7] - 2026-04-20
 
 ### Dodano
 
-- **Przesuwająca się galeria na stronie głównej**
-  - Nowy komponent: HeroCarousel
-  - Automatyczne przełączanie co 5 sekund
-  - Slajd 1: Kafelek "Nadchodzące zajęcia" z przyciskiem
-  - Slajd 2: Zdjęcie promocyjne Unicorns Łódź
-  - Wskaźniki slajdów (dots) i strzałki nawigacji
-  - Płynne przejścia fade między slajdami
+- **Wydarzenia online**
+  - Migracja 036: Kolumny `is_online` i `meeting_link`
+  - Checkbox "Wydarzenie online" w formularzu tworzenia wydarzenia
+  - Automatyczne przełączanie między polem "Lokalizacja" (stacjonarne) a "Link do spotkania" (online)
+  - Walidacja: link wymagany dla wydarzeń online, lokalizacja wymagana dla stacjonarnych
+  - Wyświetlanie linku do spotkania zamiast lokalizacji we wszystkich widokach
+  - Ikona 🌐 dla wydarzeń online (zamiast 📍)
+  - Klikalne linki do spotkań online (otwierają się w nowej karcie)
+
+- **Automatyczne powiadomienia o rozpoczęciu wydarzenia** (backend)
+  - Migracja 037: Nowy typ powiadomienia 'activity_start'
+  - GitHub Actions scheduler - uruchamianie co 10 minut
+  - Edge Function: send-activity-start-notifications
+  - Powiadomienia push dla uczestników wydarzeń stacjonarnych w momencie rozpoczęcia (15 min buffer)
+  - Tylko dla wydarzeń na żywo (is_online = false)
+  - Informacja o nazwie wydarzenia, godzinie rozpoczęcia i lokalizacji
+
+## [0.2.6] - 2026-04-20
+
+### Dodano
 
 - **System przypomnień o płatności** (backend)
   - GitHub Actions scheduler - uruchamianie co 6h
@@ -43,6 +56,12 @@ Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 - **Powiadomienia w ustawieniach**
   - "💰 Alerty salda" → "💳 Przypomnienie o płatności"
   - Opis: "Powiadomienie o upływającym terminie płatności"
+
+- **Automatyczna zmiana statusu wydarzeń** (backend)
+  - Migracja 035: Funkcja `update_past_activities_status()`
+  - GitHub Actions scheduler - uruchamianie codziennie o 1:00 UTC
+  - Edge Function: update-past-activities-status
+  - Wydarzenia które już się odbyły automatycznie zmieniają status z "scheduled" na "completed"
 
 ## [0.2.5] - 2026-04-20
 

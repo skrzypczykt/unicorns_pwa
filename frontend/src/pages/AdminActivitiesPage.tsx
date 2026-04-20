@@ -34,6 +34,8 @@ interface Activity {
   requires_immediate_payment?: boolean
   payment_deadline_hours?: number
   requires_registration?: boolean
+  is_online?: boolean
+  meeting_link?: string | null
 }
 
 interface Trainer {
@@ -93,7 +95,9 @@ const AdminActivitiesPage = () => {
     email_body: '',
     requires_immediate_payment: false,
     payment_deadline_hours: 48,
-    requires_registration: true
+    requires_registration: true,
+    is_online: false,
+    meeting_link: ''
   })
 
   useEffect(() => {
@@ -1013,18 +1017,55 @@ const AdminActivitiesPage = () => {
                 />
               </div>
 
+              {/* Checkbox: Wydarzenie online */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Lokalizacja *
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_online}
+                    onChange={(e) => setFormData({ ...formData, is_online: e.target.checked, location: '', meeting_link: '' })}
+                    className="w-5 h-5 text-purple-600 border-2 border-purple-300 rounded focus:ring-purple-500"
+                  />
+                  <span className="text-sm font-semibold text-gray-700">🌐 Wydarzenie online</span>
                 </label>
-                <input
-                  type="text"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  required
-                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                />
               </div>
+
+              {/* Pole: Lokalizacja (tylko dla wydarzeń stacjonarnych) */}
+              {!formData.is_online && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    📍 Lokalizacja *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    required={!formData.is_online}
+                    className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                    placeholder="np. Hala sportowa, ul. Piotrkowska 1"
+                  />
+                </div>
+              )}
+
+              {/* Pole: Link do spotkania (tylko dla wydarzeń online) */}
+              {formData.is_online && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    🔗 Link do spotkania online *
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.meeting_link}
+                    onChange={(e) => setFormData({ ...formData, meeting_link: e.target.value })}
+                    required={formData.is_online}
+                    className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                    placeholder="https://meet.google.com/abc-def-ghi"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Może to być Google Meet, Zoom, Microsoft Teams lub inny link do spotkania online.
+                  </p>
+                </div>
+              )}
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -1658,10 +1699,24 @@ const AdminActivitiesPage = () => {
                   <span>👥</span>
                   <span>Max {activity.max_participants} osób</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span>📍</span>
-                  <span>{activity.location}</span>
-                </div>
+                {activity.is_online ? (
+                  <div className="flex items-center gap-2">
+                    <span>🌐</span>
+                    <a
+                      href={activity.meeting_link || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-purple-600 hover:underline"
+                    >
+                      Spotkanie online
+                    </a>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span>📍</span>
+                    <span>{activity.location}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2 font-bold text-purple-600">
                   <span>💰</span>
                   <span>{activity.cost.toFixed(2)} zł</span>

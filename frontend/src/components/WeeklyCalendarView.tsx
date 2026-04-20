@@ -19,6 +19,8 @@ interface Activity {
   requires_immediate_payment?: boolean
   payment_deadline_hours?: number
   requires_registration?: boolean
+  is_online?: boolean
+  meeting_link?: string | null
 }
 
 interface WeeklyCalendarViewProps {

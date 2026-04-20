@@ -18,6 +18,8 @@ interface Activity {
   requires_immediate_payment?: boolean
   payment_deadline_hours?: number
   requires_registration?: boolean
+  is_online?: boolean
+  meeting_link?: string | null
 }
 
 interface ActivitySlidePanelProps {
@@ -136,10 +138,24 @@ const ActivitySlidePanel = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-gray-700">
-              <span className="text-2xl">📍</span>
-              <div className="font-semibold">{activity.location}</div>
-            </div>
+            {activity.is_online ? (
+              <div className="flex items-center gap-3 text-gray-700">
+                <span className="text-2xl">🌐</span>
+                <a
+                  href={activity.meeting_link || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-purple-600 hover:underline"
+                >
+                  Spotkanie online - kliknij aby dołączyć
+                </a>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 text-gray-700">
+                <span className="text-2xl">📍</span>
+                <div className="font-semibold">{activity.location}</div>
+              </div>
+            )}
 
             {activity.cost === 0 ? (
               <div className="flex items-center gap-3 text-green-600">

@@ -21,6 +21,8 @@ interface Registration {
     location: string
     status: string
     whatsapp_group_url?: string | null
+    is_online?: boolean
+    meeting_link?: string | null
     activity_types?: {
       whatsapp_group_url?: string | null
     }
@@ -360,10 +362,24 @@ const MyClassesPage = () => {
                         <span>⏱️</span>
                         <span>{formatDuration(reg.activity.duration_minutes)}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span>📍</span>
-                        <span>{reg.activity.location}</span>
-                      </div>
+                      {reg.activity.is_online ? (
+                        <div className="flex items-center gap-2">
+                          <span>🌐</span>
+                          <a
+                            href={reg.activity.meeting_link || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-600 hover:underline font-semibold"
+                          >
+                            Spotkanie online
+                          </a>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span>📍</span>
+                          <span>{reg.activity.location}</span>
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 font-bold text-purple-600">
                         <span>💰</span>
                         <span>{reg.activity.cost.toFixed(2)} zł</span>

@@ -31,6 +31,8 @@ interface Activity {
   requires_immediate_payment?: boolean
   payment_deadline_hours?: number
   requires_registration?: boolean
+  is_online?: boolean
+  meeting_link?: string | null
   activity_types?: {
     whatsapp_group_url?: string | null
   }
@@ -716,10 +718,24 @@ const ActivitiesPage = () => {
                         <span>⏱️</span>
                         <span>{activity.duration_description || formatDuration(activity.duration_minutes)}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <span>📍</span>
-                        <span>{activity.location}</span>
-                      </div>
+                      {activity.is_online ? (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span>🌐</span>
+                          <a
+                            href={activity.meeting_link || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-600 hover:underline font-semibold"
+                          >
+                            Spotkanie online
+                          </a>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span>📍</span>
+                          <span>{activity.location}</span>
+                        </div>
+                      )}
                       {/* Dla wydarzeń bezpłatnych pokaż tylko "Wstęp wolny" */}
                       {activity.cost === 0 ? (
                         <div className="flex items-center gap-2 text-sm font-bold text-green-600">
@@ -990,10 +1006,24 @@ const ActivitiesPage = () => {
                     <span>⏱️</span>
                     <span>{activity.duration_description || formatDuration(activity.duration_minutes)}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span>📍</span>
-                    <span>{activity.location}</span>
-                  </div>
+                  {activity.is_online ? (
+                    <div className="flex items-center gap-2 text-sm">
+                      <span>🌐</span>
+                      <a
+                        href={activity.meeting_link || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-purple-600 hover:underline font-semibold"
+                      >
+                        Spotkanie online
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm">
+                      <span>📍</span>
+                      <span>{activity.location}</span>
+                    </div>
+                  )}
                   {/* Dla wydarzeń bezpłatnych pokaż tylko "Wstęp wolny" */}
                   {activity.cost === 0 ? (
                     <div className="flex items-center gap-2 text-sm font-bold text-green-600">

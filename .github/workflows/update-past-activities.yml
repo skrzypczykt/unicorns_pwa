@@ -1,0 +1,20 @@
+name: Update Past Activities Status
+
+on:
+  schedule:
+    # Codziennie o 1:00 UTC (2:00/3:00 w Polsce w zależności od czasu)
+    - cron: '0 1 * * *'
+  workflow_dispatch: # Pozwala na ręczne uruchomienie
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Supabase Edge Function
+        run: |
+          curl -X POST \
+            "${{ secrets.SUPABASE_URL }}/functions/v1/update-past-activities-status" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{}'

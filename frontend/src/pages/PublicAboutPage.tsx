@@ -5,7 +5,6 @@ import { useMainWhatsAppChannel } from '../hooks/useMainWhatsAppChannel'
 import { APP_VERSION } from '../version'
 import PublicHamburgerMenu from '../components/PublicHamburgerMenu'
 import { useInstallPWA } from '../hooks/useInstallPWA'
-import HeroCarousel from '../components/HeroCarousel'
 
 interface PublicAboutPageProps {
   user?: any
@@ -55,13 +54,6 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
 
       {/* Zawartość strony O Nas */}
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Karuzela dla zalogowanych użytkowników */}
-        {isLoggedIn && (
-          <div className="mb-8">
-            <HeroCarousel />
-          </div>
-        )}
-
         {/* Hero Section */}
         <div className="bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 rounded-xl border-2 border-purple-300 p-8 mb-8 text-center">
           <img
