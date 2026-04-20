@@ -255,6 +255,25 @@ const AdminSectionsPage = () => {
               <p className="text-xs text-gray-500 mt-1">
                 Podaj link do obrazka z Unsplash lub innego serwisu
               </p>
+
+              {/* Podgląd obrazka */}
+              {formData.image_url && (
+                <div className="mt-3">
+                  <p className="text-xs font-semibold text-gray-700 mb-2">Podgląd:</p>
+                  <div className="h-40 rounded-lg overflow-hidden bg-gray-100 border-2 border-purple-200">
+                    <img
+                      src={formData.image_url}
+                      alt="Podgląd obrazka sekcji"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = ''
+                        e.currentTarget.alt = '❌ Nie można załadować obrazka'
+                        e.currentTarget.className = 'w-full h-full flex items-center justify-center text-red-500 text-sm'
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
