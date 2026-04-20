@@ -161,13 +161,22 @@ export default function AdminReportsPage() {
   }
 
   const generateAttendanceReport = async () => {
-    const monthStart = new Date(selectedMonth)
-    const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0, 23, 59, 59)
+    // Parsuj datę lokalnie aby uniknąć problemów ze strefą czasową
+    const [year, month] = selectedMonth.split('-').map(Number)
+    const monthStart = new Date(year, month - 1, 1, 0, 0, 0)
+    const monthEnd = new Date(year, month, 0, 23, 59, 59)
+
+    console.log('[Attendance Report] Date range:', {
+      selectedMonth,
+      monthStart: monthStart.toISOString(),
+      monthEnd: monthEnd.toISOString(),
+      selectedSection
+    })
 
     // Najpierw pobierz activities z tego miesiąca
     let activitiesQuery = supabase
       .from('activities')
-      .select('id')
+      .select('id, name, date_time')
       .gte('date_time', monthStart.toISOString())
       .lte('date_time', monthEnd.toISOString())
 
@@ -177,14 +186,22 @@ export default function AdminReportsPage() {
 
     const { data: activities, error: activitiesError } = await activitiesQuery
 
-    if (activitiesError) throw activitiesError
+    console.log('[Attendance Report] Found activities:', activities?.length, activities)
+
+    if (activitiesError) {
+      console.error('[Attendance Report] Error fetching activities:', activitiesError)
+      throw activitiesError
+    }
 
     if (!activities || activities.length === 0) {
+      console.warn('[Attendance Report] No activities found for selected period')
       setReportData([])
       return
     }
 
     const activityIds = activities.map(a => a.id)
+
+    console.log('[Attendance Report] Fetching registrations for activity IDs:', activityIds)
 
     // Teraz pobierz registrations dla tych activities
     const { data, error } = await supabase
@@ -206,7 +223,12 @@ export default function AdminReportsPage() {
       .in('activity_id', activityIds)
       .in('status', ['attended', 'no_show', 'registered'])
 
-    if (error) throw error
+    console.log('[Attendance Report] Found registrations:', data?.length, data)
+
+    if (error) {
+      console.error('[Attendance Report] Error fetching registrations:', error)
+      throw error
+    }
 
     // Aggregate attendance data
     const aggregated: Record<string, AttendanceReportRow> = {}
@@ -247,7 +269,9 @@ export default function AdminReportsPage() {
         : 0
     })
 
-    setReportData(Object.values(aggregated) as any)
+    const reportRows = Object.values(aggregated)
+    console.log('[Attendance Report] Final aggregated data:', reportRows)
+    setReportData(reportRows as any)
   }
 
   const handleExportCSV = () => {
