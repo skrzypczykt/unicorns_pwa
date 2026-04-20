@@ -1201,21 +1201,24 @@ const AdminActivitiesPage = () => {
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Status *
-                </label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  required
-                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                >
-                  <option value="scheduled">Zaplanowane</option>
-                  <option value="completed">Zakończone</option>
-                  <option value="cancelled">Anulowane</option>
-                </select>
-              </div>
+              {/* Status - tylko przy edycji */}
+              {editingId && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Status *
+                  </label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    required
+                    className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                  >
+                    <option value="scheduled">Zaplanowane</option>
+                    <option value="completed">Zakończone</option>
+                    <option value="cancelled">Anulowane</option>
+                  </select>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-2">
