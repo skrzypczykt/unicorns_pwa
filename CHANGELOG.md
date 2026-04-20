@@ -9,7 +9,7 @@ Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 ### Dodano
 
 - **Widok tygodniowy kalendarzowy** (domyślny)
-  - Siatka czasowa: godziny (6:00-23:00) × dni tygodnia (7 dni)
+  - Siatka czasowa: godziny (9:00-22:00) × dni tygodnia (7 dni)
   - Zajęcia wyświetlane jako bloki w odpowiednich slotach
   - Przypomina Google Calendar - kompaktowy i przejrzysty
   - Nowy komponent: WeeklyCalendarView
@@ -19,12 +19,36 @@ Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
   - Przyciski nad nagłówkiem sekcji
   - Aktywny widok podświetlony gradientem purple-pink
 
+- **Slide-in panel szczegółów wydarzenia**
+  - Wysuwany z prawej strony po kliknięciu w wydarzenie
+  - Pełny opis ze zdjęciem nagłówkowym
+  - Wszystkie szczegóły: data, godzina, lokalizacja, koszt, liczba miejsc
+  - Przyciski akcji: Zapisz się / Anuluj rezerwację / Zamknij
+  - Link do grupy WhatsApp (jeśli dostępny)
+  - Nie zasłania całkowicie widoku kalendarza
+  - Nowy komponent: ActivitySlidePanel
+
+- **Inteligentne ukrywanie pustych bloków**
+  - Bloki minimum 2h bez zajęć są ukrywane
+  - Separator z kropkami i informacją "Brak zajęć (Xh)"
+  - Komunikat dla całkowicie pustego kalendarza
+  - Lepsza czytelność i kompaktowość
+
 ### Zmieniono
 
 - **Harmonogram zajęć** - nie wyświetla już wydarzeń cyklicznych
   - Filtr: `is_recurring = false` i `parent_activity_id IS NULL`
   - Dotyczy zarówno regularnych zajęć jak i wydarzeń specjalnych
   - Tylko zajęcia jednostkowe są widoczne w harmonogramie
+
+- **Wysokość kafelków w kalendarzu** - proporcjonalna do czasu trwania
+  - 1 godzina = 80px bazowa wysokość
+  - Wydarzenia >3h wyświetlane jako 1h z gradientem fade-out
+  - Tekst "(trwa dłużej...)" dla długich wydarzeń
+  - Pokazuje tylko start wydarzenia dla lepszej przejrzystości
+
+- **Zakres godzin** w kalendarzu: 9:00-22:00 (zamiast 6:00-23:00)
+  - Dopasowane do rzeczywistych godzin zajęć
 
 ## [0.2.4] - 2026-04-20
 
