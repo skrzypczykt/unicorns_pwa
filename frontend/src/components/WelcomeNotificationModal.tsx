@@ -65,7 +65,7 @@ const WelcomeNotificationModal = () => {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-purple-500 font-bold">•</span>
-              <span>Alerty salda i ważne ogłoszenia</span>
+              <span>Przypomnienia o płatnościach i ważne ogłoszenia</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-purple-500 font-bold">•</span>

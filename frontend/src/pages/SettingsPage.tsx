@@ -313,8 +313,8 @@ const SettingsPage = () => {
           {/* Balance alerts */}
           <div className="flex items-center justify-between py-3 border-b border-gray-200">
             <div>
-              <p className="font-semibold text-gray-800">💰 Alerty salda</p>
-              <p className="text-xs text-gray-500">Powiadomienie gdy saldo jest niskie</p>
+              <p className="font-semibold text-gray-800">💳 Przypomnienie o płatności</p>
+              <p className="text-xs text-gray-500">Powiadomienie o upływającym terminie płatności</p>
             </div>
             <button
               onClick={() => handleToggleNotification('balance_alerts')}
