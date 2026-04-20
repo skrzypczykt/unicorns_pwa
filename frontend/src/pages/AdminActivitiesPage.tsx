@@ -820,25 +820,7 @@ const AdminActivitiesPage = () => {
             {/* Pokazuj pola tylko w etapie 2 lub przy edycji */}
             {(editingId || creationStep === 2) && (
               <div className="grid md:grid-cols-2 gap-4">
-                {/* Nazwa - opcjonalna dla recurring */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Nazwa zajęć {activityMode !== 'recurring' && '*'}
-                    {activityMode === 'recurring' && (
-                      <span className="text-xs text-gray-500 ml-2">(opcjonalna - wygenerowana z typu)</span>
-                    )}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required={activityMode !== 'recurring' && !editingId}
-                    placeholder={activityMode === 'recurring' ? 'Zostanie wygenerowana automatycznie...' : ''}
-                    className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                  />
-                </div>
-
-                {/* Typ zajęć - ukryty dla special (auto="Inne") */}
+                {/* Typ zajęć - ukryty dla special (auto="Inne") - PIERWSZY */}
                 {activityMode !== 'special' && (
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -859,6 +841,24 @@ const AdminActivitiesPage = () => {
                     </select>
                   </div>
                 )}
+
+                {/* Nazwa - opcjonalna dla recurring - DRUGI */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Nazwa zajęć {activityMode !== 'recurring' && '*'}
+                    {activityMode === 'recurring' && (
+                      <span className="text-xs text-gray-500 ml-2">(opcjonalna - wygenerowana z typu)</span>
+                    )}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required={activityMode !== 'recurring' && !editingId}
+                    placeholder={activityMode === 'recurring' ? 'Zostanie wygenerowana automatycznie...' : ''}
+                    className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
 
                 {/* Trener/Organizator */}
                 <div>
