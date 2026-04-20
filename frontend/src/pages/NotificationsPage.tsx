@@ -34,7 +34,7 @@ const NotificationsPage = () => {
         .select('*')
         .eq('user_id', user.id)
         .order('sent_at', { ascending: false })
-        .limit(50)
+        .limit(10)
 
       if (error) throw error
       setNotifications(data || [])

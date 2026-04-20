@@ -4,6 +4,7 @@ import InstagramFeed from '../components/social/InstagramFeed'
 import { useMainWhatsAppChannel } from '../hooks/useMainWhatsAppChannel'
 import { APP_VERSION } from '../version'
 import PublicHamburgerMenu from '../components/PublicHamburgerMenu'
+import { useInstallPWA } from '../hooks/useInstallPWA'
 
 interface PublicAboutPageProps {
   user?: any
@@ -20,6 +21,7 @@ interface PublicAboutPageProps {
 const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => {
   const navigate = useNavigate()
   const { whatsappUrl } = useMainWhatsAppChannel()
+  const { isInstalled } = useInstallPWA()
   const isLoggedIn = !!user && !!profile
 
   return (
@@ -399,18 +401,20 @@ const PublicAboutPage = ({ user, profile, onSignOut }: PublicAboutPageProps) => 
           <p className="text-xs text-gray-400 mt-2">Wersja {APP_VERSION}</p>
 
           {/* Przycisk instalacji PWA */}
-          <button
-            onClick={() => {
-              // Wyczyść dismissed localStorage żeby pokazać prompt ponownie
-              localStorage.removeItem('pwa-install-dismissed-ios')
-              localStorage.removeItem('pwa-install-dismissed')
-              // Odśwież stronę żeby prompt się pojawił
-              window.location.reload()
-            }}
-            className="mt-4 text-xs text-purple-400 hover:text-purple-600 underline transition-colors"
-          >
-            📱 Zainstaluj aplikację
-          </button>
+          {!isInstalled && (
+            <button
+              onClick={() => {
+                // Wyczyść dismissed localStorage żeby pokazać prompt ponownie
+                localStorage.removeItem('pwa-install-dismissed-ios')
+                localStorage.removeItem('pwa-install-dismissed')
+                // Odśwież stronę żeby prompt się pojawił
+                window.location.reload()
+              }}
+              className="mt-4 text-xs text-purple-400 hover:text-purple-600 underline transition-colors"
+            >
+              📱 Zainstaluj aplikację
+            </button>
+          )}
 
           {/* Wyloguj - ukryty na dole dla zalogowanych */}
           {isLoggedIn && onSignOut && (
