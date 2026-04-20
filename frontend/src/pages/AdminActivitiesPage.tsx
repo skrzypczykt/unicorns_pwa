@@ -744,17 +744,7 @@ const AdminActivitiesPage = () => {
                 </label>
                 <select
                   value={formData.activity_type_id}
-                  onChange={(e) => {
-                    const selectedTypeId = e.target.value
-                    const selectedType = activityTypes.find(t => t.id === selectedTypeId)
-                    // Automatycznie ustaw is_special_event jeśli wybrano "Wydarzenia specjalne"
-                    const isSpecialEvent = selectedType?.name === 'Wydarzenia specjalne'
-                    setFormData({
-                      ...formData,
-                      activity_type_id: selectedTypeId,
-                      is_special_event: isSpecialEvent
-                    })
-                  }}
+                  onChange={(e) => setFormData({ ...formData, activity_type_id: e.target.value })}
                   required
                   className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
                 >
