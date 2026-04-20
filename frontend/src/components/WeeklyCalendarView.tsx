@@ -29,7 +29,7 @@ interface WeeklyCalendarViewProps {
     paymentProcessed: boolean
   }>
   participantCounts: Record<string, number>
-  onViewDetails: (activityId: string) => void
+  onActivityClick: (activity: Activity) => void
   isLoggedIn: boolean
 }
 
@@ -37,7 +37,7 @@ const WeeklyCalendarView = ({
   activities,
   userRegistrations,
   participantCounts,
-  onViewDetails,
+  onActivityClick,
   isLoggedIn
 }: WeeklyCalendarViewProps) => {
   // Generuj tablicę dni tygodnia (7 dni od dziś)
@@ -52,13 +52,28 @@ const WeeklyCalendarView = ({
     return days
   }
 
-  // Generuj tablicę godzin (od 6:00 do 23:00)
+  // Generuj tablicę godzin (od 9:00 do 22:00)
   const getHourSlots = () => {
     const hours = []
-    for (let h = 6; h <= 23; h++) {
+    for (let h = 9; h <= 22; h++) {
       hours.push(h)
     }
     return hours
+  }
+
+  // Oblicz wysokość kafelka bazując na czasie trwania
+  // 1 godzina = 80px bazowa wysokość
+  const calculateCardHeight = (durationMinutes: number) => {
+    const maxDisplayDuration = 180 // 3h w minutach
+    const effectiveDuration = Math.min(durationMinutes, 60) // Dla >3h pokazuj jako 1h
+    const baseHeightPerHour = 80 // piksele
+    const heightInPixels = (effectiveDuration / 60) * baseHeightPerHour
+    return Math.max(heightInPixels, 80) // minimum 80px
+  }
+
+  // Sprawdź czy wydarzenie jest długie (>3h)
+  const isLongEvent = (durationMinutes: number) => {
+    return durationMinutes > 180
   }
 
   // Znajdź zajęcia dla danego dnia i godziny
@@ -148,18 +163,21 @@ const WeeklyCalendarView = ({
                     const registration = userRegistrations[activity.id]
                     const participantCount = participantCounts[activity.id] || 0
                     const isFull = activity.max_participants ? participantCount >= activity.max_participants : false
+                    const cardHeight = calculateCardHeight(activity.duration_minutes)
+                    const isLong = isLongEvent(activity.duration_minutes)
 
                     return (
                       <div
                         key={activity.id}
-                        className={`rounded-lg p-2 border-2 shadow-sm hover:shadow-md transition-all cursor-pointer text-xs ${
+                        className={`relative rounded-lg p-2 border-2 shadow-sm hover:shadow-md transition-all cursor-pointer text-xs overflow-hidden ${
                           isRegistered
                             ? 'bg-green-50 border-green-400'
                             : isFull
                             ? 'bg-gray-100 border-gray-400'
                             : 'bg-white/90 border-purple-300 hover:border-purple-500'
                         }`}
-                        onClick={() => onViewDetails(activity.id)}
+                        style={{ minHeight: `${cardHeight}px` }}
+                        onClick={() => onActivityClick(activity)}
                       >
                         {/* Minuty jeśli nie :00 */}
                         {minutes !== 0 && (
@@ -197,6 +215,16 @@ const WeeklyCalendarView = ({
                             Pełne
                           </div>
                         ) : null}
+
+                        {/* Gradient fade-out dla długich wydarzeń */}
+                        {isLong && (
+                          <>
+                            <div className="text-[10px] text-gray-500 italic mt-1">
+                              (trwa dłużej...)
+                            </div>
+                            <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white/90 to-transparent pointer-events-none"></div>
+                          </>
+                        )}
                       </div>
                     )
                   })}

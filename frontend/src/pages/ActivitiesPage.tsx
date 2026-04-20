@@ -7,6 +7,7 @@ import PaymentChoiceModal from '../components/PaymentChoiceModal'
 import { addToGoogleCalendar, calculateEndTime } from '../utils/calendarHelpers'
 import PublicHamburgerMenu from '../components/PublicHamburgerMenu'
 import WeeklyCalendarView from '../components/WeeklyCalendarView'
+import ActivitySlidePanel from '../components/ActivitySlidePanel'
 
 interface Activity {
   id: string
@@ -61,6 +62,8 @@ const ActivitiesPage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [flippedCard, setFlippedCard] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'calendar' | 'grid'>('calendar')
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null)
+  const [showSlidePanel, setShowSlidePanel] = useState(false)
 
   // Funkcja pomocnicza do odświeżania wszystkich danych
   const refreshAllData = () => {
@@ -249,6 +252,36 @@ const ActivitiesPage = () => {
 
   const handleCancelRegister = () => {
     setFlippedCard(null)
+  }
+
+  const handleActivityClick = (activity: Activity) => {
+    setSelectedActivity(activity)
+    setShowSlidePanel(true)
+  }
+
+  const handleSlidePanelRegister = async () => {
+    if (!selectedActivity) return
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      setShowLoginModal(true)
+      return
+    }
+
+    await handleRegister(selectedActivity.id, selectedActivity.cost, selectedActivity.cancellation_hours)
+    // Odśwież dane po zapisaniu
+    refreshAllData()
+  }
+
+  const handleSlidePanelCancel = async () => {
+    if (!selectedActivity) return
+
+    const registration = userRegistrations[selectedActivity.id]
+    if (!registration) return
+
+    await handleCancelRegistration(selectedActivity.id)
+    // Odśwież dane po anulowaniu
+    refreshAllData()
   }
 
   const handleRegister = async (activityId: string, cost: number, cancellationHours: number) => {
@@ -891,7 +924,7 @@ const ActivitiesPage = () => {
             activities={activities}
             userRegistrations={userRegistrations}
             participantCounts={participantCounts}
-            onViewDetails={(activityId) => navigate(`/activities/${activityId}`)}
+            onActivityClick={handleActivityClick}
             isLoggedIn={isLoggedIn}
           />
         ) : (
@@ -1210,6 +1243,22 @@ const ActivitiesPage = () => {
           </div>
         </div>
       )}
+
+      {/* Slide-in Panel */}
+      <ActivitySlidePanel
+        activity={selectedActivity}
+        isOpen={showSlidePanel}
+        onClose={() => {
+          setShowSlidePanel(false)
+          setSelectedActivity(null)
+        }}
+        isRegistered={selectedActivity ? !!userRegistrations[selectedActivity.id] : false}
+        participantCount={selectedActivity ? (participantCounts[selectedActivity.id] || 0) : 0}
+        onRegister={handleSlidePanelRegister}
+        onCancel={handleSlidePanelCancel}
+        isLoggedIn={isLoggedIn}
+        isProcessing={selectedActivity ? (registering === selectedActivity.id || cancelling === userRegistrations[selectedActivity.id]?.registrationId) : false}
+      />
       </div>
     </div>
   )
