@@ -1,7 +1,7 @@
 /**
  * Formatuje czas anulowania w bardziej czytelny sposób
- * @param hours - liczba godzin przed zajęciami
- * @returns sformatowany string, np. "7 dni przed zajęciami", "24h przed zajęciami"
+ * @param hours - liczba godzin przed wydarzeniem
+ * @returns sformatowany string, np. "do 7 dni przed wydarzeniem", "do 24h przed wydarzeniem"
  */
 export const formatCancellationTime = (hours: number): string => {
   if (hours === 0) {
@@ -14,11 +14,11 @@ export const formatCancellationTime = (hours: number): string => {
     const remainingHours = hours % 24
 
     if (remainingHours === 0) {
-      return `${days} ${days === 1 ? 'dzień' : days < 5 ? 'dni' : 'dni'} przed zajęciami`
+      return `do ${days} ${days === 1 ? 'dnia' : 'dni'} przed wydarzeniem`
     }
-    return `${days} ${days === 1 ? 'dzień' : days < 5 ? 'dni' : 'dni'} i ${remainingHours}h przed zajęciami`
+    return `do ${days} ${days === 1 ? 'dnia' : 'dni'} i ${remainingHours}h przed wydarzeniem`
   }
 
   // Poniżej 48h - zostaw godziny
-  return `${hours}h przed zajęciami`
+  return `do ${hours}h przed wydarzeniem`
 }
