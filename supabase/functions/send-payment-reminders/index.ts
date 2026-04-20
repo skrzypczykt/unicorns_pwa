@@ -213,6 +213,16 @@ serve(async (req) => {
             if (response.ok) {
               console.log(`Push sent to user ${reg.user_id} for registration ${reg.registration_id}`)
               sentCount++
+
+              // Zapisz do push_notifications_log
+              await supabaseAdmin.from('push_notifications_log').insert({
+                user_id: reg.user_id,
+                activity_id: reg.activity_id,
+                title: title,
+                body: body,
+                type: 'payment_reminder',
+                status: 'sent'
+              })
             } else {
               const errorText = await response.text()
               console.error(`Failed to send push to token ${token}:`, errorText)
