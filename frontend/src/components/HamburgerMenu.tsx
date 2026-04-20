@@ -114,6 +114,17 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                 </button>
               )}
 
+              {/* Admin: Member Zone Management - zawsze dostępne dla admina */}
+              {profile.role === 'admin' && (
+                <button
+                  onClick={() => handleNavigate('/admin/member-zone-management')}
+                  className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
+                >
+                  <span>🏛️</span>
+                  <span className="text-sm">Zarządzanie strefą członka</span>
+                </button>
+              )}
+
               <div className="border-t border-gray-200 my-2"></div>
 
               {/* Account & Settings */}

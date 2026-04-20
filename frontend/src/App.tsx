@@ -38,6 +38,7 @@ import AdminMemberNewsPage from './pages/admin/AdminMemberNewsPage'
 import AdminMemberDocumentsPage from './pages/admin/AdminMemberDocumentsPage'
 import AdminMemberPollsPage from './pages/admin/AdminMemberPollsPage'
 import AdminMemberFeesPage from './pages/admin/AdminMemberFeesPage'
+import AdminMemberZoneManagementPage from './pages/AdminMemberZoneManagementPage'
 import DonationsPage from './pages/DonationsPage'
 import LegalNoticePage from './pages/LegalNoticePage'
 
@@ -231,6 +232,7 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
           <Route path="/admin/sections" element={<AdminSectionsPage />} />
           <Route path="/admin/reports" element={<AdminReportsPage />} />
           <Route path="/admin/attendance" element={<AdminAttendancePage />} />
+          <Route path="/admin/member-zone-management" element={<AdminMemberZoneManagementPage />} />
           <Route path="/admin/member-news" element={<AdminMemberNewsPage />} />
           <Route path="/admin/member-documents" element={<AdminMemberDocumentsPage />} />
           <Route path="/admin/member-polls" element={<AdminMemberPollsPage />} />

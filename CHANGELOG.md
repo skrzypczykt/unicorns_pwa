@@ -25,6 +25,13 @@ Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
   - Tylko dla wydarzeń na żywo (is_online = false)
   - Informacja o nazwie wydarzenia, godzinie rozpoczęcia i lokalizacji
 
+- **Panel zarządzania strefą członka dla admina**
+  - Nowa strona `/admin/member-zone-management` - centralne miejsce zarządzania
+  - Link w menu hamburger dostępny zawsze dla admina (niezależnie od statusu członka)
+  - Szybki dostęp do: aktualności, dokumentów, głosowań, składek członkowskich
+  - Strefa Członka w menu widoczna tylko dla członków stowarzyszenia (is_association_member)
+  - Admin ma dostęp do zarządzania nawet jeśli nie jest członkiem
+
 ### Zmieniono
 
 - **Sortowanie w "Moje Rezerwacje"**
