@@ -1,7 +1,20 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { getCorsHeaders } from '../_shared/cors.ts'
 
 serve(async (req) => {
+  // Get CORS headers based on request origin
+  const origin = req.headers.get('origin')
+  const corsHeaders = getCorsHeaders(origin)
+
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders
+    })
+  }
+
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -13,7 +26,10 @@ serve(async (req) => {
     if (!activityTemplate || !activityTemplate.id) {
       return new Response(
         JSON.stringify({ error: 'Missing activityTemplate or id' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        }
       )
     }
 
@@ -27,14 +43,20 @@ serve(async (req) => {
     if (fetchError || !template) {
       return new Response(
         JSON.stringify({ error: 'Activity template not found' }),
-        { status: 404, headers: { 'Content-Type': 'application/json' } }
+        {
+          status: 404,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        }
       )
     }
 
     if (!template.is_recurring || !template.recurrence_end_date) {
       return new Response(
         JSON.stringify({ error: 'Activity is not recurring or missing end date' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        }
       )
     }
 
@@ -101,7 +123,9 @@ serve(async (req) => {
     if (instances.length === 0) {
       return new Response(
         JSON.stringify({ message: 'No instances to create', created: 0 }),
-        { headers: { 'Content-Type': 'application/json' } }
+        {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        }
       )
     }
 
@@ -115,7 +139,10 @@ serve(async (req) => {
       console.error('Insert error:', insertError)
       return new Response(
         JSON.stringify({ error: insertError.message }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        }
       )
     }
 
@@ -126,13 +153,18 @@ serve(async (req) => {
         pattern: template.recurrence_pattern,
         parent_id: template.id
       }),
-      { headers: { 'Content-Type': 'application/json' } }
+      {
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      }
     )
   } catch (error) {
     console.error('Function error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      }
     )
   }
 })
