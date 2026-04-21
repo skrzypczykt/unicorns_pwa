@@ -136,7 +136,7 @@ worker-src 'self';      # Service Workers (sw.js)
 
 ---
 
-### 6. Ograniczono `img-src` ⚠️
+### 6. Ograniczono `img-src` i dodano konkretne źródła ✅
 
 **Przed:**
 ```
@@ -145,19 +145,20 @@ img-src 'self' data: https: blob:;
 
 **Po:**
 ```
-img-src 'self' data: https://*.supabase.co blob:;
+img-src 'self' data: https://*.supabase.co https://www.unicorns.org.pl https://images.unsplash.com https://lh3.googleusercontent.com blob:;
 ```
 
 **Dlaczego:**
-- `https:` pozwala na WSZYSTKIE źródła HTTPS (zbyt szerokie!)
-- Ograniczamy do Supabase (tam są obrazki użytkowników)
+- `https:` pozwala na WSZYSTKIE źródła HTTPS (zbyt szerokie!) ❌
+- Dodano konkretne źródła używane przez aplikację:
+  - `https://*.supabase.co` - obrazki użytkowników z Supabase Storage
+  - `https://www.unicorns.org.pl` - logo, zdjęcia historii, aktualności
+  - `https://images.unsplash.com` - zdjęcia stock (Instagram feed, karuzela)
+  - `https://lh3.googleusercontent.com` - Google Drive (karuzela)
 - `data:` dla małych inline obrazków (base64)
 - `blob:` dla dynamicznych obrazków (canvas, downloads)
 
-**Ryzyko:** Jeśli ładujesz obrazki z innych źródeł (np. unicorns.org.pl), dodaj:
-```
-img-src 'self' data: https://*.supabase.co https://unicorns.org.pl blob:;
-```
+**Bezpieczeństwo:** Tylko zaufane źródła, brak wildcard ✅
 
 ---
 
@@ -285,7 +286,7 @@ Content-Security-Policy:
   script-src 'self' https://*.supabase.co;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com;
-  img-src 'self' data: https://*.supabase.co blob:;
+  img-src 'self' data: https://*.supabase.co https://www.unicorns.org.pl https://images.unsplash.com https://lh3.googleusercontent.com blob:;
   connect-src 'self' https://*.supabase.co wss://*.supabase.co;
   frame-src 'self' https://autopay.pl https://*.autopay.pl;
   manifest-src 'self';
@@ -296,6 +297,15 @@ Content-Security-Policy:
   frame-ancestors 'none';
   upgrade-insecure-requests;
 ```
+
+**Źródła obrazków:**
+- `'self'` - obrazki z własnej domeny (logo lokalnie)
+- `data:` - inline base64 images
+- `https://*.supabase.co` - Supabase Storage (upload użytkowników)
+- `https://www.unicorns.org.pl` - oficjalna strona (historia, aktualności)
+- `https://images.unsplash.com` - stock photos (Instagram feed)
+- `https://lh3.googleusercontent.com` - Google Drive (karuzela)
+- `blob:` - dynamiczne obrazki (canvas, downloads)
 
 ---
 
