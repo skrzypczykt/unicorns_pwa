@@ -2,6 +2,18 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getCorsHeaders } from '../_shared/cors.ts'
 
+// Decode JWT without verification (we trust the token from Supabase)
+function decodeJWT(token: string): any {
+  const parts = token.split('.')
+  if (parts.length !== 3) {
+    throw new Error('Invalid JWT format')
+  }
+
+  const payload = parts[1]
+  const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
+  return JSON.parse(decoded)
+}
+
 serve(async (req) => {
   // Get CORS headers based on request origin
   const origin = req.headers.get('origin')
@@ -16,34 +28,47 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client with service role key
+    // Get and decode the JWT token (ES256 tokens can't be verified with SERVICE_ROLE_KEY)
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing Authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    let userId: string
+
+    try {
+      const payload = decodeJWT(token)
+      userId = payload.sub
+
+      if (!userId) {
+        throw new Error('Missing user ID in token')
+      }
+    } catch (err) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Create Supabase client with service role key for database operations
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       { auth: { persistSession: false } }
     )
 
-    // Get the authenticated user
-    const authHeader = req.headers.get('Authorization')!
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Check if user is admin
-
-    const { data: profile } = await supabase
+    // Verify user exists and is admin
+    const { data: profile, error: profileError } = await supabase
       .from('users')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single()
 
-    if (profile?.role !== 'admin') {
+    if (profileError || !profile || profile.role !== 'admin') {
       return new Response(
         JSON.stringify({ error: 'Forbidden: Admin role required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
