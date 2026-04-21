@@ -16,49 +16,26 @@ serve(async (req) => {
   }
 
   try {
-    // Verify user authentication using anon key (supports ES256 tokens)
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing Authorization header' }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        }
-      )
-    }
-
-    // Create client with anon key for auth verification
-    const supabaseAuth = createClient(
+    // Create Supabase client with service role key
+    const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: {
-            Authorization: authHeader
-          }
-        }
-      }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false } }
     )
 
-    // Verify JWT token
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
+    // Get the authenticated user
+    const authHeader = req.headers.get('Authorization')!
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
     if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized', details: authError?.message }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        }
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Check if user is admin (using service role for database operations)
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    // Check if user is admin
 
     const { data: profile } = await supabase
       .from('users')
@@ -66,13 +43,10 @@ serve(async (req) => {
       .eq('id', user.id)
       .single()
 
-    if (!profile || profile.role !== 'admin') {
+    if (profile?.role !== 'admin') {
       return new Response(
-        JSON.stringify({ error: 'Forbidden: Admin access required' }),
-        {
-          status: 403,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        }
+        JSON.stringify({ error: 'Forbidden: Admin role required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
