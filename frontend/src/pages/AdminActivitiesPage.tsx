@@ -310,15 +310,34 @@ const AdminActivitiesPage = () => {
 
         // Jeśli cykliczne, generuj instancje
         if (formData.is_recurring && newActivity) {
-          const { error: funcError } = await supabase.functions.invoke('generate-recurring-activities', {
-            body: { activityTemplate: newActivity }
-          })
+          try {
+            const { data: { session } } = await supabase.auth.getSession()
 
-          if (funcError) {
-            console.error('Error generating instances:', funcError)
-            alert(`⚠️ Zajęcia utworzone, ale wystąpił błąd przy generowaniu serii: ${funcError.message}`)
-          } else {
-            alert(`✅ Zajęcia cykliczne utworzone! Wygenerowano serię wydarzeń.`)
+            const response = await fetch(
+              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-recurring-activities`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+                  'Authorization': `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({ activityTemplate: newActivity })
+              }
+            )
+
+            const data = await response.json()
+
+            if (!response.ok) {
+              console.error('Error generating instances:', data)
+              alert(`⚠️ Zajęcia utworzone, ale wystąpił błąd przy generowaniu serii: ${data.error}`)
+            } else {
+              console.log('Generated instances:', data)
+              alert(`✅ Zajęcia cykliczne utworzone! Wygenerowano ${data.created} instancji.`)
+            }
+          } catch (err) {
+            console.error('Error generating instances:', err)
+            alert('⚠️ Zajęcia utworzone, ale wystąpił błąd przy generowaniu serii')
           }
         } else {
           alert('✅ Nowe zajęcia utworzone!')
