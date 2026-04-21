@@ -1,0 +1,3 @@
+# Disable automatic JWT verification by Edge Runtime
+# We handle authentication manually in the function code
+verify_jwt = false
