@@ -41,6 +41,9 @@ import AdminMemberFeesPage from './pages/admin/AdminMemberFeesPage'
 import AdminMemberZoneManagementPage from './pages/AdminMemberZoneManagementPage'
 import DonationsPage from './pages/DonationsPage'
 import LegalNoticePage from './pages/LegalNoticePage'
+import PaymentSuccessPage from './pages/PaymentSuccessPage'
+import PaymentCancelPage from './pages/PaymentCancelPage'
+import AdminPaymentsPage from './pages/AdminPaymentsPage'
 
 interface UserProfile {
   id: string
@@ -237,12 +240,15 @@ const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any,
           <Route path="/admin/member-documents" element={<AdminMemberDocumentsPage />} />
           <Route path="/admin/member-polls" element={<AdminMemberPollsPage />} />
           <Route path="/admin/member-fees" element={<AdminMemberFeesPage />} />
+          <Route path="/admin/payments" element={<AdminPaymentsPage />} />
           <Route path="/member-zone" element={<MemberZonePage />} />
           <Route path="/member-zone/news" element={<MemberNewsPage />} />
           <Route path="/member-zone/documents" element={<MemberDocumentsPage />} />
           <Route path="/member-zone/polls" element={<MemberPollsPage />} />
           <Route path="/member-zone/fees" element={<MemberBalancePage />} />
           <Route path="/donations" element={<DonationsPage user={user} profile={profile} />} />
+          <Route path="/payment-success" element={<PaymentSuccessPage />} />
+          <Route path="/payment-cancel" element={<PaymentCancelPage />} />
           <Route path="/admin/*" element={
             <div className="p-8 text-center max-w-2xl mx-auto">
               <div className="text-6xl mb-4">⚙️</div>

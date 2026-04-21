@@ -25,10 +25,41 @@
 [[headers]]
   for = "/*"
   [headers.values]
+    # Prevent clickjacking
     X-Frame-Options = "DENY"
+
+    # Prevent MIME type sniffing
     X-Content-Type-Options = "nosniff"
+
+    # XSS Protection (legacy, CSP is better)
     X-XSS-Protection = "1; mode=block"
+
+    # Referrer policy
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+    # HSTS - Force HTTPS for 1 year (required by PSP)
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
+    # Content Security Policy (CSP) - Critical for payment security
+    # Note: Update domain after custom domain setup
+    Content-Security-Policy = '''
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com data:;
+      img-src 'self' data: https: blob:;
+      connect-src 'self' https://*.supabase.co https://www.google-analytics.com wss://*.supabase.co;
+      frame-src 'self' https://autopay.pl https://*.autopay.pl;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self' https://autopay.pl;
+      frame-ancestors 'none';
+      upgrade-insecure-requests;
+    '''
+
+    # Permissions Policy - Disable unused browser features
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(self)"
+
     # Enable PWA features
     Service-Worker-Allowed = "/"
 
