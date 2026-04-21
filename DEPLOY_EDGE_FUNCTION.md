@@ -30,6 +30,27 @@
    headers: { 'Content-Type': 'application/json', ...corsHeaders }
    ```
 
+4. **Weryfikacja autoryzacji (FIX 401):**
+   ```typescript
+   // Check Authorization header
+   const authHeader = req.headers.get('Authorization')
+   const token = authHeader.replace('Bearer ', '')
+   
+   // Verify JWT token
+   const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+   
+   // Check admin role
+   const { data: profile } = await supabase
+     .from('users')
+     .select('role')
+     .eq('id', user.id)
+     .single()
+   
+   if (profile.role !== 'admin') {
+     return 403 Forbidden
+   }
+   ```
+
 ---
 
 ## 🚀 WYMAGANE: Deploy funkcji do Supabase
