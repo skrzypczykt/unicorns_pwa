@@ -4,6 +4,42 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.3.5] - 2026-04-22 - Ulepszenia formularzy i sekcji
+
+### Dodano
+
+- **Edycja wydarzeń cyklicznych w sekcjach**
+  - Inline formularz edycji z pełnymi polami (nazwa, opis, dzień, godzina, koszt, etc.)
+  - Sortowanie po dniu tygodnia i godzinie
+  - Polskie tłumaczenia dni tygodnia
+  - Wyświetlanie "Poniedziałek o 18:00" zamiast ogólnikowego "Co tydzień"
+
+- **Flow tworzenia wydarzeń cyklicznych - zreorganizowane**
+  - Step 2: tylko podstawowe dane (nazwa, typ, trener, opis, lokalizacja, koszt, max. uczestników)
+  - Step 3: reguła powtarzania (dzień, godzina, czas trwania, anulowanie, okna rejestracji)
+  - Okna rejestracji jako godziny przed wydarzeniem (zamiast konkretnych dat)
+
+### Zmieniono
+
+- **Formularz wydarzeń cyklicznych - Step 2**
+  - Usunięto pola: data/czas, czas trwania, anulowanie, powiadomienia push
+  - Usunięto checkbox "Wydarzenie specjalne" (nie dotyczy recurring)
+
+- **Formularz wydarzeń cyklicznych - Step 3**
+  - Przeniesiono: dzień tygodnia, godzinę, czas trwania, anulowanie
+  - Dodano: okna rejestracji (godziny przed)
+  - Naprawiono checkbox "Nieskończone powtarzanie"
+
+- **Domyślne ustawienia**
+  - `requires_immediate_payment = true` dla wszystkich typów wydarzeń
+
+### Naprawiono
+
+- Przycisk "Zapisz zmiany" sekcji teraz przed listą wydarzeń cyklicznych
+- Przycisk "Edytuj" w wydarzeniach cyklicznych teraz otwiera formularz (zamiast prowadzić donikąd)
+- Walidacja formularza - pola Data/Czas/Anulowanie nie są wymagane dla recurring w step 2
+- Grid layout formularza zachowany mimo ukrytych pól
+
 ## [0.3.4] - 2026-04-22 - Bugfix: useNavigate Router Context
 
 ### Naprawiono
