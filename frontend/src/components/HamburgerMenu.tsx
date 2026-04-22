@@ -165,18 +165,8 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                     className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
                   >
                     <span>✅</span>
-                    <span className="text-sm">Panel trenera</span>
+                    <span className="text-sm">Obecności</span>
                   </button>
-                </>
-              )}
-
-              {/* SEKCJA: ADMINISTRACJA */}
-              {profile.role === 'admin' && (
-                <>
-                  <div className="border-t border-gray-200 my-2"></div>
-                  <div className="px-4 py-1">
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">🔧 Administracja</p>
-                  </div>
 
                   <button
                     onClick={() => handleNavigate('/admin/activities')}
@@ -193,6 +183,16 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                     <span>🏷️</span>
                     <span className="text-sm">Sekcje</span>
                   </button>
+                </>
+              )}
+
+              {/* SEKCJA: ADMINISTRACJA */}
+              {profile.role === 'admin' && (
+                <>
+                  <div className="border-t border-gray-200 my-2"></div>
+                  <div className="px-4 py-1">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">🔧 Administracja</p>
+                  </div>
 
                   <button
                     onClick={() => handleNavigate('/admin/users')}

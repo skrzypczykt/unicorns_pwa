@@ -7,7 +7,7 @@ import EditEventNotificationModal from '../components/EditEventNotificationModal
 import CancelActivityModal from '../components/CancelActivityModal'
 import ActivityTypeSelector from '../components/ActivityTypeSelector'
 import ActivityCreationBreadcrumbs from '../components/ActivityCreationBreadcrumbs'
-import { getWeekRange, formatWeekRange, groupActivitiesByDay, getShortDayName } from '../utils/weekHelpers'
+import WeeklyCalendarView from '../components/WeeklyCalendarView'
 
 interface Activity {
   id: string
@@ -123,19 +123,26 @@ const AdminActivitiesPage = () => {
 
   const fetchActivities = async () => {
     try {
-      // Get week range
-      const weekRange = getWeekRange(weekOffset)
+      // Calculate 7-day range from today + weekOffset (in days, not weeks)
+      const today = new Date()
+      const startDate = new Date(today)
+      startDate.setDate(today.getDate() + (weekOffset * 7))
+      startDate.setHours(0, 0, 0, 0)
 
-      // Fetch activities within the week range
-      // Regular activities: within week range, not special, not templates
+      const endDate = new Date(startDate)
+      endDate.setDate(startDate.getDate() + 6)
+      endDate.setHours(23, 59, 59, 999)
+
+      // Fetch activities within 7-day range
+      // Regular activities: within range, not special, not templates
       // Special activities: all scheduled special events (not filtered by week)
       const { data: regularActivitiesData, error: regularError } = await supabase
         .from('activities')
         .select('*')
         .eq('is_special_event', false)
         .neq('status', 'template')
-        .gte('date_time', weekRange.start.toISOString())
-        .lte('date_time', weekRange.end.toISOString())
+        .gte('date_time', startDate.toISOString())
+        .lte('date_time', endDate.toISOString())
         .order('date_time', { ascending: true })
 
       if (regularError) throw regularError
@@ -2050,9 +2057,27 @@ const AdminActivitiesPage = () => {
       {/* Regular Activities - Week View */}
       {!showForm && (() => {
         const regularActivities = activities.filter(a => !a.is_special_event)
-        const weekRange = getWeekRange(weekOffset)
-        const weekLabel = formatWeekRange(weekRange)
-        const activityGroups = groupActivitiesByDay(regularActivities)
+
+        // Calculate 7-day range label
+        const today = new Date()
+        const startDate = new Date(today)
+        startDate.setDate(today.getDate() + (weekOffset * 7))
+        const endDate = new Date(startDate)
+        endDate.setDate(startDate.getDate() + 6)
+
+        const formatDateRange = () => {
+          const months = ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru']
+          const startDay = startDate.getDate()
+          const endDay = endDate.getDate()
+          const startMonth = months[startDate.getMonth()]
+          const endMonth = months[endDate.getMonth()]
+
+          if (startDate.getMonth() === endDate.getMonth()) {
+            return `${startDay}-${endDay} ${startMonth}`
+          } else {
+            return `${startDay} ${startMonth} - ${endDay} ${endMonth}`
+          }
+        }
 
         return (
           <div className="space-y-4">
@@ -2064,14 +2089,14 @@ const AdminActivitiesPage = () => {
                   disabled={weekOffset === 0}
                   className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 rounded-lg transition-all font-semibold"
                 >
-                  ← Poprzedni tydzień
+                  ← Poprzednie 7 dni
                 </button>
 
                 <div className="text-center">
                   <h2 className="text-xl font-bold text-purple-600">
-                    {weekOffset === 0 ? 'Ten tydzień' : `Za ${weekOffset} ${weekOffset === 1 ? 'tydzień' : 'tygodnie'}`}
+                    {weekOffset === 0 ? 'Najbliższe 7 dni' : `Za ${weekOffset * 7} dni`}
                   </h2>
-                  <p className="text-sm text-gray-600">{weekLabel}</p>
+                  <p className="text-sm text-gray-600">{formatDateRange()}</p>
                 </div>
 
                 <button
@@ -2079,7 +2104,7 @@ const AdminActivitiesPage = () => {
                   disabled={weekOffset === 6}
                   className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 rounded-lg transition-all font-semibold"
                 >
-                  Następny tydzień →
+                  Następne 7 dni →
                 </button>
               </div>
 
@@ -2110,58 +2135,16 @@ const AdminActivitiesPage = () => {
 
             {/* Calendar View */}
             {viewMode === 'calendar' && (
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 overflow-hidden">
-                {/* Day Headers */}
-                <div className="grid grid-cols-7 border-b-2 border-purple-200">
-                  {[1, 2, 3, 4, 5, 6, 7].map(dayIndex => {
-                    const date = new Date(weekRange.start)
-                    date.setDate(weekRange.start.getDate() + (dayIndex - 1))
-                    const dayName = getShortDayName(dayIndex)
-                    const dayDate = date.getDate()
-
-                    return (
-                      <div key={dayIndex} className="p-3 text-center border-r border-purple-100 last:border-r-0">
-                        <div className="font-bold text-purple-600">{dayName}</div>
-                        <div className="text-sm text-gray-600">{dayDate}</div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Activity Cells */}
-                <div className="grid grid-cols-7 min-h-[400px]">
-                  {[1, 2, 3, 4, 5, 6, 7].map(dayIndex => {
-                    const dayActivities = activityGroups.get(dayIndex) || []
-
-                    return (
-                      <div key={dayIndex} className="border-r border-purple-100 last:border-r-0 p-2 space-y-2">
-                        {dayActivities.length === 0 ? (
-                          <div className="text-center text-gray-400 text-xs mt-4">Brak zajęć</div>
-                        ) : (
-                          dayActivities.map(activity => (
-                            <div
-                              key={activity.id}
-                              className="bg-purple-50 hover:bg-purple-100 rounded-lg p-2 border border-purple-200 cursor-pointer transition-all"
-                              onClick={() => handleEdit(activity)}
-                            >
-                              <div className="text-xs font-bold text-purple-700 mb-1">
-                                {activity.date_time ? new Date(activity.date_time).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) : ''}
-                              </div>
-                              <div className="text-xs font-semibold text-gray-800 mb-1 line-clamp-2">
-                                {activity.name}
-                              </div>
-                              <div className="flex items-center justify-between text-xs text-gray-600">
-                                <span>👥 {activity.registered_count || 0}/{activity.max_participants || '∞'}</span>
-                                <span className="font-bold text-purple-600">{activity.cost.toFixed(0)} zł</span>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
+              <WeeklyCalendarView
+                activities={regularActivities}
+                userRegistrations={{}} // Admin nie potrzebuje statusów rejestracji
+                participantCounts={regularActivities.reduce((acc, activity) => {
+                  acc[activity.id] = activity.registered_count || 0
+                  return acc
+                }, {} as Record<string, number>)}
+                onActivityClick={handleEdit}
+                isLoggedIn={true}
+              />
             )}
 
             {/* Grid View */}
