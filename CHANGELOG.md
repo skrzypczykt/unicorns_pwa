@@ -4,6 +4,54 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.3.2] - 2026-04-22 - Redesign Wydarzeń Cyklicznych
+
+### Dodano
+
+- **Nowy model wydarzeń cyklicznych**
+  - Parent activities (szablony) bez konkretnej daty - tylko reguły powtarzania
+  - Pola: `recurrence_day_of_week` (dzień tygodnia), `recurrence_time` (godzina)
+  - Obsługa nieskończonego powtarzania (`recurrence_end_date` NULL)
+  - Filtr "Pokaż szablony wydarzeń cyklicznych" w panelu admina
+  - Badge "🔄 Szablon" dla parent activities
+  - Sekcja recurring activities w edycji sekcji
+
+- **Formularz tworzenia wydarzeń cyklicznych**
+  - Dropdown wyboru dnia tygodnia (Poniedziałek-Niedziela)
+  - Input godziny (type="time")
+  - Checkbox "Nieskończone powtarzanie"
+  - Warunkowe pole daty końcowej (ukrywane dla infinite)
+  - Licznik instancji: "∞ (nieskończone - 8 tygodni generowane na raz)"
+
+### Zmieniono
+
+- **Database schema** (`migration 039`)
+  - `activities.date_time` - nullable (NULL dla szablonów)
+  - Dodano constraint sprawdzający konsystencję recurrence data
+  - Index dla szybkich zapytań o templates
+  
+- **Edge Function** `generate-recurring-activities`
+  - Obsługa nowych szablonów (day/time bez date_time)
+  - Funkcja `calculateNextOccurrence()` dla szablonów
+  - Wsparcie infinite recurrence (8-week rolling window)
+  - Zachowana backward compatibility ze starymi szablonami
+
+- **Admin Panel**
+  - Query w `fetchActivities` filtruje parent activities domyślnie
+  - Wyświetlanie daty: `Monday o 18:00` dla templates
+  - Dodano useEffect dependency: `showParentActivities`
+
+### Usunięto
+
+- Pole `facebook_group_url` z tabeli `activity_types`
+- Input "Link do grupy Facebook" z formularza sekcji
+- Wyświetlanie linku Facebook w kartach sekcji
+
+### Naprawiono
+
+- calculateInstanceCount - obsługa infinite recurrence
+- Typy TypeScript: `date_time: string | null`
+
 ## [0.3.1] - 2026-04-21 - CSP Security Improvements
 
 ### Bezpieczeństwo
