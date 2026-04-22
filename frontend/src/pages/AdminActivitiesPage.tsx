@@ -989,7 +989,7 @@ const AdminActivitiesPage = () => {
                   </div>
 
                   {/* Data i godzina - tylko dla single i special, nie dla recurring */}
-                  {activityMode !== 'recurring' && (
+                  {activityMode !== 'recurring' ? (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Data i godzina *
@@ -1002,6 +1002,9 @@ const AdminActivitiesPage = () => {
                         className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
                       />
                     </div>
+                  ) : (
+                    // Dla recurring - placeholder, żeby grid był równy
+                    <div></div>
                   )}
 
               {/* Czas trwania - tylko dla single i special, nie dla recurring */}
@@ -1193,19 +1196,24 @@ const AdminActivitiesPage = () => {
                 </p>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Anulowanie (godz. przed zajęciami) *
-                </label>
-                <input
-                  type="number"
-                  value={formData.cancellation_hours}
-                  onChange={(e) => setFormData({ ...formData, cancellation_hours: parseInt(e.target.value) })}
-                  required
-                  min="0"
-                  className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                />
-              </div>
+              {/* Anulowanie - tylko dla single i special, dla recurring będzie w step 3 */}
+              {activityMode !== 'recurring' ? (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Anulowanie (godz. przed zajęciami) *
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.cancellation_hours}
+                    onChange={(e) => setFormData({ ...formData, cancellation_hours: parseInt(e.target.value) })}
+                    required
+                    min="0"
+                    className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
+              ) : (
+                <div></div>
+              )}
 
               {/* Okna rejestracji - tylko dla single i special, nie dla recurring */}
               {activityMode !== 'recurring' && (
@@ -1553,19 +1561,35 @@ const AdminActivitiesPage = () => {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Czas trwania (minuty) *
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.duration_minutes}
-                        onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
-                        required
-                        min="15"
-                        step="15"
-                        className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                      />
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Czas trwania (minuty) *
+                        </label>
+                        <input
+                          type="number"
+                          value={formData.duration_minutes}
+                          onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
+                          required
+                          min="15"
+                          step="15"
+                          className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Anulowanie (godz. przed) *
+                        </label>
+                        <input
+                          type="number"
+                          value={formData.cancellation_hours}
+                          onChange={(e) => setFormData({ ...formData, cancellation_hours: parseInt(e.target.value) })}
+                          required
+                          min="0"
+                          className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        />
+                      </div>
                     </div>
 
                     <div className="border-t-2 border-purple-200 pt-4 mt-4">
