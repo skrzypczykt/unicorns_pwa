@@ -8,9 +8,17 @@ interface ActivityType {
   description: string
   image_url: string | null
   default_trainer_id: string | null
-  facebook_group_url: string | null
   active_count?: number
   trainer_name?: string
+}
+
+interface RecurringActivity {
+  id: string
+  name: string
+  recurrence_day_of_week: string | null
+  recurrence_time: string | null
+  recurrence_pattern: string
+  recurrence_end_date: string | null
 }
 
 interface Trainer {
@@ -23,6 +31,7 @@ const AdminSectionsPage = () => {
   const navigate = useNavigate()
   const [sections, setSections] = useState<ActivityType[]>([])
   const [trainers, setTrainers] = useState<Trainer[]>([])
+  const [recurringActivities, setRecurringActivities] = useState<RecurringActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [editingSection, setEditingSection] = useState<ActivityType | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -30,8 +39,7 @@ const AdminSectionsPage = () => {
     name: '',
     description: '',
     image_url: '',
-    default_trainer_id: '',
-    facebook_group_url: ''
+    default_trainer_id: ''
   })
 
   useEffect(() => {
@@ -97,16 +105,33 @@ const AdminSectionsPage = () => {
     }
   }
 
+  const fetchRecurringActivities = async (sectionId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('activities')
+        .select('id, name, recurrence_day_of_week, recurrence_time, recurrence_pattern, recurrence_end_date')
+        .eq('activity_type_id', sectionId)
+        .eq('is_recurring', true)
+        .is('parent_activity_id', null)
+        .order('name', { ascending: true })
+
+      if (error) throw error
+      setRecurringActivities(data || [])
+    } catch (error) {
+      console.error('Error fetching recurring activities:', error)
+    }
+  }
+
   const handleEdit = (section: ActivityType) => {
     setEditingSection(section)
     setFormData({
       name: section.name,
       description: section.description || '',
       image_url: section.image_url || '',
-      default_trainer_id: section.default_trainer_id || '',
-      facebook_group_url: section.facebook_group_url || ''
+      default_trainer_id: section.default_trainer_id || ''
     })
     setShowForm(true)
+    fetchRecurringActivities(section.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -116,9 +141,9 @@ const AdminSectionsPage = () => {
       name: '',
       description: '',
       image_url: '',
-      default_trainer_id: '',
-      facebook_group_url: ''
+      default_trainer_id: ''
     })
+    setRecurringActivities([])
     setShowForm(true)
   }
 
@@ -134,8 +159,7 @@ const AdminSectionsPage = () => {
             name: formData.name,
             description: formData.description,
             image_url: formData.image_url || null,
-            default_trainer_id: formData.default_trainer_id || null,
-            facebook_group_url: formData.facebook_group_url || null
+            default_trainer_id: formData.default_trainer_id || null
           })
           .eq('id', editingSection.id)
 
@@ -149,8 +173,7 @@ const AdminSectionsPage = () => {
             name: formData.name,
             description: formData.description,
             image_url: formData.image_url || null,
-            default_trainer_id: formData.default_trainer_id || null,
-            facebook_group_url: formData.facebook_group_url || null
+            default_trainer_id: formData.default_trainer_id || null
           })
 
         if (error) throw error
@@ -168,7 +191,8 @@ const AdminSectionsPage = () => {
   const handleCancel = () => {
     setShowForm(false)
     setEditingSection(null)
-    setFormData({ name: '', description: '', image_url: '', default_trainer_id: '', facebook_group_url: '' })
+    setRecurringActivities([])
+    setFormData({ name: '', description: '', image_url: '', default_trainer_id: '' })
   }
 
   if (loading) {
@@ -298,21 +322,40 @@ const AdminSectionsPage = () => {
               </p>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Link do grupy Facebook (opcjonalnie)
-              </label>
-              <input
-                type="url"
-                value={formData.facebook_group_url}
-                onChange={(e) => setFormData({ ...formData, facebook_group_url: e.target.value })}
-                className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                placeholder="https://facebook.com/groups/..."
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Link będzie widoczny dla uczestników zajęć tej sekcji
-              </p>
-            </div>
+            {editingSection && recurringActivities.length > 0 && (
+              <div className="mt-6 pt-6 border-t-2 border-purple-200">
+                <h3 className="text-lg font-bold text-purple-600 mb-4">
+                  🔄 Wydarzenia cykliczne dla tej sekcji
+                </h3>
+                <div className="space-y-2">
+                  {recurringActivities.map(activity => (
+                    <div
+                      key={activity.id}
+                      className="flex items-center justify-between p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+                    >
+                      <div>
+                        <p className="font-semibold">{activity.name}</p>
+                        <p className="text-sm text-gray-600">
+                          {activity.recurrence_day_of_week
+                            ? `${activity.recurrence_day_of_week} o ${activity.recurrence_time}`
+                            : `Co ${activity.recurrence_pattern === 'weekly' ? 'tydzień' : 'miesiąc'}`}
+                          {activity.recurrence_end_date
+                            ? ` do ${new Date(activity.recurrence_end_date).toLocaleDateString()}`
+                            : ' (nieskończone)'}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/admin/activities?edit=${activity.id}`)}
+                        className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all"
+                      >
+                        Edytuj
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-2">
               <button
@@ -373,19 +416,6 @@ const AdminSectionsPage = () => {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-500">👤 Domyślny trener:</span>
                   <span className="font-semibold">{section.trainer_name}</span>
-                </div>
-              )}
-
-              {section.facebook_group_url && (
-                <div className="text-sm">
-                  <a
-                    href={section.facebook_group_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                  >
-                    📘 Grupa Facebook →
-                  </a>
                 </div>
               )}
             </div>

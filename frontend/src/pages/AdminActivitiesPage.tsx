@@ -11,7 +11,7 @@ interface Activity {
   id: string
   name: string
   description: string
-  date_time: string
+  date_time: string | null
   duration_minutes: number
   duration_description?: string | null
   max_participants: number | null
@@ -26,6 +26,8 @@ interface Activity {
   is_recurring?: boolean
   recurrence_pattern?: string
   recurrence_end_date?: string | null
+  recurrence_day_of_week?: string | null
+  recurrence_time?: string | null
   parent_activity_id?: string | null
   image_url?: string | null
   is_special_event?: boolean
@@ -58,6 +60,7 @@ const AdminActivitiesPage = () => {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string[]>(['scheduled']) // Domyślnie aktywne
+  const [showParentActivities, setShowParentActivities] = useState(false)
   const [showEditNotificationModal, setShowEditNotificationModal] = useState(false)
   const [participantCount, setParticipantCount] = useState(0)
   const [pendingFormData, setPendingFormData] = useState<any>(null)
@@ -86,6 +89,8 @@ const AdminActivitiesPage = () => {
     is_recurring: false,
     recurrence_pattern: 'none',
     recurrence_end_date: '',
+    recurrence_day_of_week: '',
+    recurrence_time: '',
     image_url: '',
     is_special_event: false,
     whatsapp_group_url: '',
@@ -104,17 +109,24 @@ const AdminActivitiesPage = () => {
     fetchActivities()
     fetchTrainers()
     fetchActivityTypes()
-  }, [statusFilter]) // Odśwież gdy zmieni się filtr
+  }, [statusFilter, showParentActivities]) // Odśwież gdy zmieni się filtr
 
   const fetchActivities = async () => {
     try {
       // Fetch activities
-      const { data: activitiesData, error: activitiesError } = await supabase
+      let query = supabase
         .from('activities')
         .select('*')
         .in('status', statusFilter) // Filtruj po statusie
+
+      // Hide parent activities by default
+      if (!showParentActivities) {
+        query = query.or('is_recurring.eq.false,parent_activity_id.not.is.null')
+      }
+
+      const { data: activitiesData, error: activitiesError } = await query
         .order('is_special_event', { ascending: false })  // Wydarzenia specjalne najpierw
-        .order('date_time', { ascending: false })         // Potem po dacie
+        .order('date_time', { ascending: false, nullsFirst: false }) // Potem po dacie (templates na końcu)
 
       if (activitiesError) throw activitiesError
 
@@ -216,12 +228,22 @@ const AdminActivitiesPage = () => {
       const dataToSave = {
         ...formDataWithoutNotification,
         name: finalName,
-        date_time: toISOWithTimezone(formData.date_time),
+        // For recurring templates: set date_time to NULL and use recurrence fields
+        // For instances/single: use date_time
+        date_time: (formData.is_recurring && activityMode === 'recurring')
+          ? null
+          : toISOWithTimezone(formData.date_time),
         // Wydarzenia specjalne nie mają registration_opens_at - zapisy od razu
         registration_opens_at: formData.is_special_event ? null : toISOWithTimezone(formData.registration_opens_at),
         registration_closes_at: toISOWithTimezone(formData.registration_closes_at),
-        recurrence_end_date: toISOWithTimezone(formData.recurrence_end_date),
+        recurrence_end_date: toISOWithTimezone(formData.recurrence_end_date) || null,
         recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : 'none',
+        recurrence_day_of_week: (formData.is_recurring && activityMode === 'recurring')
+          ? formData.recurrence_day_of_week
+          : null,
+        recurrence_time: (formData.is_recurring && activityMode === 'recurring')
+          ? formData.recurrence_time
+          : null,
         // Wydarzenia specjalne nie mają trenera
         trainer_id: formData.is_special_event ? null : (formData.trainer_id || null),
         // Jeśli używamy duration_description, ustaw duration_minutes na 0 (placeholder)
@@ -659,13 +681,20 @@ const AdminActivitiesPage = () => {
       is_recurring: false,
       recurrence_pattern: 'none',
       recurrence_end_date: '',
+      recurrence_day_of_week: '',
+      recurrence_time: '',
       image_url: '',
       is_special_event: false,
       whatsapp_group_url: '',
       send_notification: false,
       requires_immediate_payment: false,
       payment_deadline_hours: 48,
-      requires_registration: true
+      requires_registration: true,
+      send_email_notification: false,
+      email_subject: '',
+      email_body: '',
+      is_online: false,
+      meeting_link: ''
     })
     setEditingId(null)
     setShowForm(false)
@@ -686,12 +715,32 @@ const AdminActivitiesPage = () => {
   }
 
   const calculateInstanceCount = () => {
-    if (!formData.date_time || !formData.recurrence_end_date || !formData.is_recurring) {
-      console.log('[Admin] Instance count = 0: missing data', {
-        date_time: formData.date_time,
-        recurrence_end_date: formData.recurrence_end_date,
-        is_recurring: formData.is_recurring
-      })
+    if (!formData.is_recurring) {
+      return 0
+    }
+
+    // Infinite recurrence
+    if (!formData.recurrence_end_date) {
+      return '∞ (nieskończone - 8 tygodni generowane na raz)'
+    }
+
+    // For new-style templates (day/time), we can't calculate without full date
+    // Just show that it will be generated
+    if (formData.recurrence_day_of_week && !formData.date_time) {
+      const end = new Date(formData.recurrence_end_date)
+      const now = new Date()
+      const diffMs = end.getTime() - now.getTime()
+
+      if (formData.recurrence_pattern === 'weekly' && diffMs > 0) {
+        const weeks = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000))
+        return Math.min(weeks + 1, 52)
+      }
+
+      return '~8 tygodni naprzód'
+    }
+
+    // Old-style calculation with date_time
+    if (!formData.date_time || !formData.recurrence_end_date) {
       return 0
     }
 
@@ -808,6 +857,19 @@ const AdminActivitiesPage = () => {
             >
               🔍 Wszystkie
             </button>
+          </div>
+
+          <div className="flex items-center gap-3 mt-4">
+            <input
+              type="checkbox"
+              id="show_parent_activities"
+              checked={showParentActivities}
+              onChange={(e) => setShowParentActivities(e.target.checked)}
+              className="h-4 w-4 text-purple-600 rounded"
+            />
+            <label htmlFor="show_parent_activities" className="text-sm text-gray-700">
+              🔄 Pokaż szablony wydarzeń cyklicznych
+            </label>
           </div>
         </div>
       )}
@@ -1453,26 +1515,79 @@ const AdminActivitiesPage = () => {
                       </select>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Powtarzaj do *
-                      </label>
-                      <input
-                        type="datetime-local"
-                        value={formData.recurrence_end_date || ''}
-                        onChange={(e) => setFormData({ ...formData, recurrence_end_date: e.target.value })}
-                        required={formData.is_recurring}
-                        className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                      />
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Dzień tygodnia *
+                        </label>
+                        <select
+                          value={formData.recurrence_day_of_week || ''}
+                          onChange={(e) => setFormData({ ...formData, recurrence_day_of_week: e.target.value })}
+                          required={formData.is_recurring && activityMode === 'recurring'}
+                          className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        >
+                          <option value="">Wybierz dzień...</option>
+                          <option value="Monday">Poniedziałek</option>
+                          <option value="Tuesday">Wtorek</option>
+                          <option value="Wednesday">Środa</option>
+                          <option value="Thursday">Czwartek</option>
+                          <option value="Friday">Piątek</option>
+                          <option value="Saturday">Sobota</option>
+                          <option value="Sunday">Niedziela</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Godzina *
+                        </label>
+                        <input
+                          type="time"
+                          value={formData.recurrence_time || ''}
+                          onChange={(e) => setFormData({ ...formData, recurrence_time: e.target.value })}
+                          required={formData.is_recurring && activityMode === 'recurring'}
+                          className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        />
+                      </div>
                     </div>
 
-                    {formData.date_time && formData.recurrence_end_date && (
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="infinite_recurrence"
+                        checked={!formData.recurrence_end_date}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          recurrence_end_date: e.target.checked ? '' : formData.recurrence_end_date
+                        })}
+                        className="h-4 w-4 text-purple-600 rounded"
+                      />
+                      <label htmlFor="infinite_recurrence" className="text-sm font-semibold text-gray-700">
+                        ♾️ Nieskończone powtarzanie (bez daty końcowej)
+                      </label>
+                    </div>
+
+                    {formData.recurrence_end_date && (
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Powtarzaj do
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={formData.recurrence_end_date || ''}
+                          onChange={(e) => setFormData({ ...formData, recurrence_end_date: e.target.value })}
+                          className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        />
+                      </div>
+                    )}
+
+                    {(formData.recurrence_day_of_week || formData.date_time) && (
                       <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
                         <p className="text-sm text-blue-800">
                           ℹ️ Zostanie utworzonych <strong>{calculateInstanceCount()}</strong> zajęć.
                         </p>
                         <p className="text-xs text-blue-600 mt-1">
-                          Pierwsze zajęcia będą rodzicielskie (szablon), pozostałe zostaną wygenerowane automatycznie.
+                          Szablon będzie bez konkretnej daty - instancje będą generowane automatycznie.
                         </p>
                       </div>
                     )}
@@ -1692,6 +1807,13 @@ const AdminActivitiesPage = () => {
             >
               <div className="flex items-center gap-3 mb-2">
                 <h3 className="text-xl font-bold text-purple-600">{activity.name}</h3>
+
+                {activity.is_recurring && activity.parent_activity_id === null && (
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
+                    🔄 Szablon
+                  </span>
+                )}
+
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                   activity.status === 'scheduled' ? 'bg-green-100 text-green-700' :
                   activity.status === 'completed' ? 'bg-blue-100 text-blue-700' :
@@ -1708,7 +1830,13 @@ const AdminActivitiesPage = () => {
               <div className="grid md:grid-cols-3 gap-2 text-sm mb-4">
                 <div className="flex items-center gap-2">
                   <span>📅</span>
-                  <span>{formatDate(activity.date_time)}</span>
+                  <span>
+                    {activity.date_time
+                      ? formatDate(activity.date_time)
+                      : activity.recurrence_day_of_week
+                        ? `${activity.recurrence_day_of_week} o ${activity.recurrence_time}`
+                        : 'Brak daty'}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span>⏱️</span>

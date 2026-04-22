@@ -55,6 +55,8 @@
 
 ## 🚀 WYMAGANE: Deploy funkcji do Supabase
 
+**UWAGA:** Bez deploy funkcja NIE zadziała! Lokalne zmiany w kodzie nie są automatycznie wdrażane do Supabase Cloud.
+
 ### Krok 1: Login do Supabase (jeśli nie zalogowany)
 
 ```bash
@@ -67,11 +69,16 @@ supabase login
 supabase link --project-ref tezpojcudbjlkcilwwjr
 ```
 
-### Krok 3: Deploy funkcji
+### Krok 3: Deploy funkcji ⚠️ KRYTYCZNE
 
 ```bash
 supabase functions deploy generate-recurring-activities
 ```
+
+**Dlaczego deploy jest wymagany:**
+- Git push NIE deployuje Edge Functions
+- Supabase Cloud używa starej wersji kodu dopóki nie uruchomisz `deploy`
+- Błąd "Unsupported JWT algorithm ES256" = stara wersja bez fix
 
 **Oczekiwany output:**
 ```

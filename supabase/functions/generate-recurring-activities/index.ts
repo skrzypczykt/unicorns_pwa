@@ -14,6 +14,34 @@ function decodeJWT(token: string): any {
   return JSON.parse(decoded)
 }
 
+// Calculate next occurrence for new-style templates (day of week + time)
+function calculateNextOccurrence(dayOfWeek: string, time: string): Date {
+  const now = new Date()
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const targetDay = daysOfWeek.indexOf(dayOfWeek)
+
+  if (targetDay === -1) {
+    throw new Error(`Invalid day of week: ${dayOfWeek}`)
+  }
+
+  const currentDay = now.getDay()
+  let daysUntilTarget = targetDay - currentDay
+
+  // If target day already passed this week, get next week's occurrence
+  if (daysUntilTarget <= 0) {
+    daysUntilTarget += 7
+  }
+
+  const nextDate = new Date(now)
+  nextDate.setDate(now.getDate() + daysUntilTarget)
+
+  // Set the time
+  const [hours, minutes, seconds = '0'] = time.split(':')
+  nextDate.setHours(parseInt(hours), parseInt(minutes), parseInt(seconds || '0'), 0)
+
+  return nextDate
+}
+
 serve(async (req) => {
   // Get CORS headers based on request origin
   const origin = req.headers.get('origin')
@@ -104,9 +132,23 @@ serve(async (req) => {
       )
     }
 
-    if (!template.is_recurring || !template.recurrence_end_date) {
+    if (!template.is_recurring) {
       return new Response(
-        JSON.stringify({ error: 'Activity is not recurring or missing end date' }),
+        JSON.stringify({ error: 'Activity is not recurring' }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        }
+      )
+    }
+
+    // Detect template format
+    const isOldStyle = template.date_time && !template.recurrence_day_of_week
+    const isNewStyle = !template.date_time && template.recurrence_day_of_week && template.recurrence_time
+
+    if (!isOldStyle && !isNewStyle) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid template format: must have either date_time (old) or day/time (new)' }),
         {
           status: 400,
           headers: { 'Content-Type': 'application/json', ...corsHeaders }
@@ -115,25 +157,44 @@ serve(async (req) => {
     }
 
     const instances = []
-    const startDate = new Date(template.date_time)
-    const endDate = new Date(template.recurrence_end_date)
+    let startDate: Date
+
+    // Calculate start date based on template format
+    if (isOldStyle) {
+      // Old-style template: use date_time as base
+      startDate = new Date(template.date_time)
+    } else {
+      // New-style template: calculate next occurrence from day/time
+      startDate = calculateNextOccurrence(template.recurrence_day_of_week, template.recurrence_time)
+    }
+
+    // Handle end date (can be NULL for infinite recurrence)
+    const endDate = template.recurrence_end_date
+      ? new Date(template.recurrence_end_date)
+      : null
 
     // LIMIT: Generuj max 8 tygodni do przodu od teraz
     const maxFutureDate = new Date()
     maxFutureDate.setDate(maxFutureDate.getDate() + 56) // 8 tygodni = 56 dni
 
     // Użyj wcześniejszej daty: końcowa data serii LUB 8 tygodni od teraz
-    const effectiveEndDate = endDate < maxFutureDate ? endDate : maxFutureDate
+    // Dla nieskończonych serii (endDate = null), generuj do 8 tygodni
+    const effectiveEndDate = endDate
+      ? (endDate < maxFutureDate ? endDate : maxFutureDate)
+      : maxFutureDate
 
     let currentDate = new Date(startDate)
     let count = 0
     const MAX_INSTANCES = 52 // Limit bezpieczeństwa: max 52 instancje
 
-    // Pomiń pierwszą datę (szablon już istnieje jako parent)
-    if (template.recurrence_pattern === 'weekly') {
-      currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000)
-    } else if (template.recurrence_pattern === 'monthly') {
-      currentDate.setMonth(currentDate.getMonth() + 1)
+    // Dla starego stylu: pomiń pierwszą datę (szablon już istnieje jako parent)
+    // Dla nowego stylu: zaczynamy od pierwszej daty (template nie ma date_time)
+    if (isOldStyle) {
+      if (template.recurrence_pattern === 'weekly') {
+        currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000)
+      } else if (template.recurrence_pattern === 'monthly') {
+        currentDate.setMonth(currentDate.getMonth() + 1)
+      }
     }
 
     // Generuj instancje do effectiveEndDate (max 8 tygodni)
@@ -161,7 +222,9 @@ serve(async (req) => {
         parent_activity_id: template.id,
         is_recurring: false,
         recurrence_pattern: 'none',
-        recurrence_end_date: null
+        recurrence_end_date: null,
+        recurrence_day_of_week: null,
+        recurrence_time: null
       })
 
       // Przesuń datę
