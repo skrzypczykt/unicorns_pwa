@@ -114,14 +114,19 @@ const AdminActivitiesPage = () => {
   const fetchActivities = async () => {
     try {
       // Fetch activities
+      // If showing parent activities, include 'template' status in filter
+      const effectiveStatusFilter = showParentActivities
+        ? [...statusFilter, 'template']
+        : statusFilter
+
       let query = supabase
         .from('activities')
         .select('*')
-        .in('status', statusFilter) // Filtruj po statusie
+        .in('status', effectiveStatusFilter) // Filtruj po statusie (+ template jeśli showParentActivities)
 
-      // Hide parent activities by default
+      // Hide parent activities by default (templates have status='template' so already excluded if not in filter)
       if (!showParentActivities) {
-        query = query.or('is_recurring.eq.false,parent_activity_id.not.is.null')
+        query = query.neq('status', 'template')
       }
 
       const { data: activitiesData, error: activitiesError } = await query
@@ -244,6 +249,10 @@ const AdminActivitiesPage = () => {
         recurrence_time: (formData.is_recurring && activityMode === 'recurring')
           ? formData.recurrence_time
           : null,
+        // Szablony mają status 'template', nie 'scheduled'
+        status: (formData.is_recurring && activityMode === 'recurring')
+          ? 'template'
+          : formData.status,
         // Wydarzenia specjalne nie mają trenera
         trainer_id: formData.is_special_event ? null : (formData.trainer_id || null),
         // Jeśli używamy duration_description, ustaw duration_minutes na 0 (placeholder)
