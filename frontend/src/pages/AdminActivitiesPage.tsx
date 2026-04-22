@@ -6,6 +6,7 @@ import { ACTIVITY_TYPE_IMAGES } from '../data/activityImages'
 import EditEventNotificationModal from '../components/EditEventNotificationModal'
 import ActivityTypeSelector from '../components/ActivityTypeSelector'
 import ActivityCreationBreadcrumbs from '../components/ActivityCreationBreadcrumbs'
+import { getWeekRange, formatWeekRange, groupActivitiesByDay, getShortDayName } from '../utils/weekHelpers'
 
 interface Activity {
   id: string
@@ -59,7 +60,10 @@ const AdminActivitiesPage = () => {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [statusFilter, setStatusFilter] = useState<string[]>(['scheduled']) // Domyślnie aktywne
+
+  // Week-based navigation
+  const [weekOffset, setWeekOffset] = useState(0) // 0 = current week, 1 = next week, etc.
+  const [viewMode, setViewMode] = useState<'calendar' | 'grid'>('calendar') // View mode for regular activities
   const [showEditNotificationModal, setShowEditNotificationModal] = useState(false)
   const [participantCount, setParticipantCount] = useState(0)
   const [pendingFormData, setPendingFormData] = useState<any>(null)
@@ -108,20 +112,40 @@ const AdminActivitiesPage = () => {
     fetchActivities()
     fetchTrainers()
     fetchActivityTypes()
-  }, [statusFilter]) // Odśwież gdy zmieni się filtr
+  }, [weekOffset]) // Odśwież gdy zmieni się tydzień
 
   const fetchActivities = async () => {
     try {
-      // Fetch activities - always exclude templates (status='template')
-      let query = supabase
+      // Get week range
+      const weekRange = getWeekRange(weekOffset)
+
+      // Fetch activities within the week range
+      // Regular activities: within week range, not special, not templates
+      // Special activities: all scheduled special events (not filtered by week)
+      const { data: regularActivitiesData, error: regularError } = await supabase
         .from('activities')
         .select('*')
-        .in('status', statusFilter)
-        .neq('status', 'template') // Zawsze ukryj szablony wydarzeń cyklicznych
+        .eq('is_special_event', false)
+        .neq('status', 'template')
+        .gte('date_time', weekRange.start.toISOString())
+        .lte('date_time', weekRange.end.toISOString())
+        .order('date_time', { ascending: true })
 
-      const { data: activitiesData, error: activitiesError } = await query
-        .order('is_special_event', { ascending: false })  // Wydarzenia specjalne najpierw
-        .order('date_time', { ascending: false, nullsFirst: false }) // Potem po dacie
+      if (regularError) throw regularError
+
+      // Fetch special events (all upcoming, not filtered by week)
+      const { data: specialActivitiesData, error: specialError } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('is_special_event', true)
+        .neq('status', 'template')
+        .eq('status', 'scheduled')
+        .order('date_time', { ascending: true })
+
+      if (specialError) throw specialError
+
+      // Combine both
+      const activitiesData = [...(regularActivitiesData || []), ...(specialActivitiesData || [])]
 
       if (activitiesError) throw activitiesError
 

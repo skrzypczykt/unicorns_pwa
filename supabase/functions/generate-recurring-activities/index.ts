@@ -15,6 +15,7 @@ function decodeJWT(token: string): any {
 }
 
 // Calculate next occurrence for new-style templates (day of week + time)
+// Returns the nearest occurrence within the next 7 days
 function calculateNextOccurrence(dayOfWeek: string, time: string): Date {
   const now = new Date()
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -27,9 +28,20 @@ function calculateNextOccurrence(dayOfWeek: string, time: string): Date {
   const currentDay = now.getDay()
   let daysUntilTarget = targetDay - currentDay
 
-  // If target day already passed this week, get next week's occurrence
-  if (daysUntilTarget <= 0) {
+  // If target day is today or already passed this week, get next week's occurrence
+  // BUT: if it's today and the time hasn't passed yet, use today
+  if (daysUntilTarget < 0) {
     daysUntilTarget += 7
+  } else if (daysUntilTarget === 0) {
+    // It's today - check if time has passed
+    const [hours, minutes, seconds = '0'] = time.split(':')
+    const targetTime = new Date(now)
+    targetTime.setHours(parseInt(hours), parseInt(minutes), parseInt(seconds || '0'), 0)
+
+    if (now >= targetTime) {
+      // Time already passed today, get next week
+      daysUntilTarget = 7
+    }
   }
 
   const nextDate = new Date(now)
