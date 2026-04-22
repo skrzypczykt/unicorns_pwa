@@ -1260,33 +1260,35 @@ const AdminActivitiesPage = () => {
                 </div>
               )}
 
-              {/* Wydarzenia specjalne */}
-              <div className="border-t-2 border-yellow-200 pt-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <input
-                    type="checkbox"
-                    id="is_special_event"
-                    checked={formData.is_special_event || false}
-                    onChange={(e) => setFormData({ ...formData, is_special_event: e.target.checked })}
-                    className="h-5 w-5 text-yellow-600 rounded"
-                  />
-                  <label htmlFor="is_special_event" className="text-sm font-semibold text-gray-700">
-                    🏆 Wydarzenie specjalne (zawody, spływy, wyjazdy)
-                  </label>
-                </div>
-
-                {formData.is_special_event && (
-                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-                    <p className="font-semibold mb-2">ℹ️ Wydarzenia specjalne:</p>
-                    <ul className="list-disc list-inside space-y-1">
-                      <li>Nie wymagają przypisanego trenera</li>
-                      <li>Zapisy otwarte od razu po dodaniu do bazy</li>
-                      <li>Obecność nie jest sprawdzana (brak oznaczeń uczestnictwa)</li>
-                      <li>Idealne dla wycieczek, zawodów, spływów kajakowych itp.</li>
-                    </ul>
+              {/* Wydarzenia specjalne - tylko dla single, nie dla recurring */}
+              {activityMode !== 'recurring' && (
+                <div className="border-t-2 border-yellow-200 pt-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <input
+                      type="checkbox"
+                      id="is_special_event"
+                      checked={formData.is_special_event || false}
+                      onChange={(e) => setFormData({ ...formData, is_special_event: e.target.checked })}
+                      className="h-5 w-5 text-yellow-600 rounded"
+                    />
+                    <label htmlFor="is_special_event" className="text-sm font-semibold text-gray-700">
+                      🏆 Wydarzenie specjalne (zawody, spływy, wyjazdy)
+                    </label>
                   </div>
-                )}
-              </div>
+
+                  {formData.is_special_event && (
+                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+                      <p className="font-semibold mb-2">ℹ️ Wydarzenia specjalne:</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>Nie wymagają przypisanego trenera</li>
+                        <li>Zapisy otwarte od razu po dodaniu do bazy</li>
+                        <li>Obecność nie jest sprawdzana (brak oznaczeń uczestnictwa)</li>
+                        <li>Idealne dla wycieczek, zawodów, spływów kajakowych itp.</li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Powiadomienia push - tylko dla single i special, nie dla recurring */}
               {activityMode !== 'recurring' && (
