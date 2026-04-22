@@ -4,6 +4,28 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.3.7] - 2026-04-22 - Ujednolicenie kalendarza i Panel Trenera
+
+### Zmieniono
+
+- **Kalendarz w panelu administracyjnym**
+  - Zastąpiono prosty widok tydzień (7 kolumn) komponentem WeeklyCalendarView
+  - Identyczny wygląd jak w Harmonogramie zajęć dla użytkowników
+  - Widok godzinowy (9:00-22:00) z kafelkami zajęć
+  - Automatyczne ukrywanie pustych bloków godzinowych (min. 2h)
+  - Wyświetla 7 dni od dziś zamiast tygodnia Pon-Niedz
+  - Nawigacja "Poprzednie/Następne 7 dni"
+
+- **Menu - Panel Trenera**
+  - Przeniesiono "Zajęcia" (📋) z sekcji Administracja do Panel Trenera
+  - Przeniesiono "Sekcje" (🏷️) z sekcji Administracja do Panel Trenera
+  - Zmieniono nazwę "Panel trenera" → "Obecności" (✅)
+  - Dostępne dla: trainer, external_trainer, admin
+
+- **Menu - Administracja** (tylko admin)
+  - Usunięto "Zajęcia" i "Sekcje" (przeniesione do Panel Trenera)
+  - Pozostawiono: Użytkownicy, Strefa członka, Raporty, Płatności, Zwroty
+
 ## [0.3.6] - 2026-04-22 - System zwrotów i anulowania zajęć
 
 ### Dodano
