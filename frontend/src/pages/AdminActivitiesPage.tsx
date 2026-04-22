@@ -97,7 +97,7 @@ const AdminActivitiesPage = () => {
     send_email_notification: false,
     email_subject: '',
     email_body: '',
-    requires_immediate_payment: false,
+    requires_immediate_payment: true,
     payment_deadline_hours: 48,
     requires_registration: true,
     is_online: false,
@@ -988,51 +988,56 @@ const AdminActivitiesPage = () => {
                     />
                   </div>
 
+                  {/* Data i godzina - tylko dla single i special, nie dla recurring */}
+                  {activityMode !== 'recurring' && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Data i godzina *
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={formData.date_time}
+                        onChange={(e) => setFormData({ ...formData, date_time: e.target.value })}
+                        required
+                        className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                      />
+                    </div>
+                  )}
+
+              {/* Czas trwania - tylko dla single i special, nie dla recurring */}
+              {activityMode !== 'recurring' && (
+                !formData.is_special_event ? (
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Data i godzina *
+                      Czas trwania (minuty) *
                     </label>
                     <input
-                      type="datetime-local"
-                      value={formData.date_time}
-                      onChange={(e) => setFormData({ ...formData, date_time: e.target.value })}
+                      type="number"
+                      value={formData.duration_minutes}
+                      onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
                       required
+                      min="15"
+                      step="15"
                       className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
                     />
                   </div>
-
-              {/* Czas trwania - różne pola dla zwykłych zajęć vs wydarzeń specjalnych */}
-              {!formData.is_special_event ? (
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Czas trwania (minuty) *
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.duration_minutes}
-                    onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
-                    required
-                    min="15"
-                    step="15"
-                    className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
-                  />
-                </div>
-              ) : (
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Czas trwania (opis tekstowy)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.duration_description}
-                    onChange={(e) => setFormData({ ...formData, duration_description: e.target.value })}
-                    placeholder='np. "3 dni", "cały weekend", "do ustalenia"'
-                    className="w-full px-4 py-2 border-2 border-yellow-200 rounded-lg focus:border-yellow-500 focus:outline-none"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Dla wydarzeń specjalnych możesz wpisać dowolny opis czasu trwania zamiast konkretnej liczby minut
-                  </p>
-                </div>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Czas trwania (opis tekstowy)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.duration_description}
+                      onChange={(e) => setFormData({ ...formData, duration_description: e.target.value })}
+                      placeholder='np. "3 dni", "cały weekend", "do ustalenia"'
+                      className="w-full px-4 py-2 border-2 border-yellow-200 rounded-lg focus:border-yellow-500 focus:outline-none"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Dla wydarzeń specjalnych możesz wpisać dowolny opis czasu trwania zamiast konkretnej liczby minut
+                    </p>
+                  </div>
+                )
               )}
 
               <div>
@@ -1202,40 +1207,41 @@ const AdminActivitiesPage = () => {
                 />
               </div>
 
-              {/* Okna rejestracji */}
-              <div className="col-span-2 border-t-2 border-purple-200 pt-4 mt-4">
-                <h3 className="text-lg font-bold text-purple-600 mb-3">⏰ Okna rejestracji (opcjonalnie)</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Określ kiedy zapisy są otwarte. Pozostaw puste aby zapisy były otwarte od razu do rozpoczęcia zajęć.
-                </p>
+              {/* Okna rejestracji - tylko dla single i special, nie dla recurring */}
+              {activityMode !== 'recurring' && (
+                <div className="col-span-2 border-t-2 border-purple-200 pt-4 mt-4">
+                  <h3 className="text-lg font-bold text-purple-600 mb-3">⏰ Okna rejestracji (opcjonalnie)</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Określ kiedy zapisy są otwarte. Pozostaw puste aby zapisy były otwarte od razu do rozpoczęcia zajęć.
+                  </p>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Zapisy otwarte od
-                    </label>
-                    <input
-                      type="datetime-local"
-                      value={formData.registration_opens_at || ''}
-                      onChange={(e) => setFormData({ ...formData, registration_opens_at: e.target.value || '' })}
-                      disabled={formData.is_special_event}
-                      className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none disabled:bg-gray-100"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      {formData.is_special_event
-                        ? 'Wydarzenia specjalne - zapisy od razu po dodaniu'
-                        : 'Pozostaw puste aby zapisy były otwarte od razu'}
-                    </p>
-                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Zapisy otwarte od
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={formData.registration_opens_at || ''}
+                        onChange={(e) => setFormData({ ...formData, registration_opens_at: e.target.value || '' })}
+                        disabled={formData.is_special_event}
+                        className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none disabled:bg-gray-100"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formData.is_special_event
+                          ? 'Wydarzenia specjalne - zapisy od razu po dodaniu'
+                          : 'Pozostaw puste aby zapisy były otwarte od razu'}
+                      </p>
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Zapisy zamknięte o
-                    </label>
-                    <input
-                      type="datetime-local"
-                      value={formData.registration_closes_at || ''}
-                      onChange={(e) => setFormData({ ...formData, registration_closes_at: e.target.value || '' })}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Zapisy zamknięte o
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={formData.registration_closes_at || ''}
+                        onChange={(e) => setFormData({ ...formData, registration_closes_at: e.target.value || '' })}
                       className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
                     />
                     <p className="text-xs text-gray-500 mt-1">
@@ -1243,7 +1249,8 @@ const AdminActivitiesPage = () => {
                     </p>
                   </div>
                 </div>
-              </div>
+                </div>
+              )}
 
               {/* Wydarzenia specjalne */}
               <div className="border-t-2 border-yellow-200 pt-6">
@@ -1273,40 +1280,42 @@ const AdminActivitiesPage = () => {
                 )}
               </div>
 
-              {/* Powiadomienia push */}
-              <div className="border-t-2 border-blue-200 pt-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <input
-                    type="checkbox"
-                    id="send_notification"
-                    checked={formData.send_notification || false}
-                    onChange={(e) => setFormData({ ...formData, send_notification: e.target.checked })}
-                    className="h-5 w-5 text-blue-600 rounded"
-                  />
-                  <label htmlFor="send_notification" className="text-sm font-semibold text-gray-700">
-                    🔔 Wyślij powiadomienie push
-                  </label>
-                </div>
-
-                {formData.send_notification && (
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-                    {formData.is_special_event ? (
-                      <>
-                        <p className="font-semibold mb-1">📢 Powiadomienie dla WSZYSTKICH użytkowników</p>
-                        <p>Wydarzenia specjalne są wysyłane do wszystkich użytkowników z włączonymi powiadomieniami push (nie tylko zainteresowanych tym typem zajęć).</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="font-semibold mb-1">📢 Powiadomienie dla zainteresowanych</p>
-                        <p>Powiadomienie zostanie wysłane tylko do użytkowników zainteresowanych tym typem zajęć (np. Taniec, Siatkówka).</p>
-                      </>
-                    )}
+              {/* Powiadomienia push - tylko dla single i special, nie dla recurring */}
+              {activityMode !== 'recurring' && (
+                <div className="border-t-2 border-blue-200 pt-6">
+                  <div className="flex items-center gap-3 mb-2">
+                    <input
+                      type="checkbox"
+                      id="send_notification"
+                      checked={formData.send_notification || false}
+                      onChange={(e) => setFormData({ ...formData, send_notification: e.target.checked })}
+                      className="h-5 w-5 text-blue-600 rounded"
+                    />
+                    <label htmlFor="send_notification" className="text-sm font-semibold text-gray-700">
+                      🔔 Wyślij powiadomienie push
+                    </label>
                   </div>
-                )}
-              </div>
 
-              {/* Powiadomienia email - tylko dla wydarzeń specjalnych */}
-              {formData.is_special_event && (
+                  {formData.send_notification && (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+                      {formData.is_special_event ? (
+                        <>
+                          <p className="font-semibold mb-1">📢 Powiadomienie dla WSZYSTKICH użytkowników</p>
+                          <p>Wydarzenia specjalne są wysyłane do wszystkich użytkowników z włączonymi powiadomieniami push (nie tylko zainteresowanych tym typem zajęć).</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-semibold mb-1">📢 Powiadomienie dla zainteresowanych</p>
+                          <p>Powiadomienie zostanie wysłane tylko do użytkowników zainteresowanych tym typem zajęć (np. Taniec, Siatkówka).</p>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Powiadomienia email - tylko dla wydarzeń specjalnych (nie dla recurring) */}
+              {formData.is_special_event && activityMode !== 'recurring' && (
                 <div className="border-t-2 border-purple-200 pt-6">
                   <div className="flex items-center gap-3 mb-2">
                     <input
@@ -1544,15 +1553,80 @@ const AdminActivitiesPage = () => {
                       </div>
                     </div>
 
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Czas trwania (minuty) *
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.duration_minutes}
+                        onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
+                        required
+                        min="15"
+                        step="15"
+                        className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="border-t-2 border-purple-200 pt-4 mt-4">
+                      <h4 className="text-md font-bold text-purple-600 mb-3">⏰ Okna rejestracji (domyślne dla wszystkich instancji)</h4>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Określ domyślne okna zapisów dla wszystkich wydarzeń wygenerowanych z tego szablonu.
+                      </p>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Zapisy otwarte (godzin przed)
+                          </label>
+                          <input
+                            type="number"
+                            value={formData.registration_opens_at || ''}
+                            onChange={(e) => setFormData({ ...formData, registration_opens_at: e.target.value })}
+                            placeholder="np. 168 (tydzień)"
+                            className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Pozostaw puste aby zapisy były otwarte od razu
+                          </p>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Zapisy zamknięte (godzin przed)
+                          </label>
+                          <input
+                            type="number"
+                            value={formData.registration_closes_at || ''}
+                            onChange={(e) => setFormData({ ...formData, registration_closes_at: e.target.value })}
+                            placeholder="np. 2"
+                            className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Pozostaw puste aby zapisy były otwarte do początku zajęć
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="flex items-center gap-3">
                       <input
                         type="checkbox"
                         id="infinite_recurrence"
-                        checked={!formData.recurrence_end_date}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          recurrence_end_date: e.target.checked ? '' : formData.recurrence_end_date
-                        })}
+                        checked={!formData.recurrence_end_date || formData.recurrence_end_date === ''}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData({ ...formData, recurrence_end_date: '' })
+                          } else {
+                            // Ustaw domyślną datę końcową za 3 miesiące
+                            const threeMonthsLater = new Date()
+                            threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3)
+                            setFormData({
+                              ...formData,
+                              recurrence_end_date: threeMonthsLater.toISOString().slice(0, 16)
+                            })
+                          }
+                        }}
                         className="h-4 w-4 text-purple-600 rounded"
                       />
                       <label htmlFor="infinite_recurrence" className="text-sm font-semibold text-gray-700">
@@ -1560,7 +1634,7 @@ const AdminActivitiesPage = () => {
                       </label>
                     </div>
 
-                    {formData.recurrence_end_date && (
+                    {formData.recurrence_end_date && formData.recurrence_end_date !== '' && (
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
                           Powtarzaj do
