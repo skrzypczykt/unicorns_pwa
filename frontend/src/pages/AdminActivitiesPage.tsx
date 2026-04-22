@@ -60,7 +60,6 @@ const AdminActivitiesPage = () => {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string[]>(['scheduled']) // Domyślnie aktywne
-  const [showParentActivities, setShowParentActivities] = useState(false)
   const [showEditNotificationModal, setShowEditNotificationModal] = useState(false)
   const [participantCount, setParticipantCount] = useState(0)
   const [pendingFormData, setPendingFormData] = useState<any>(null)
@@ -109,29 +108,20 @@ const AdminActivitiesPage = () => {
     fetchActivities()
     fetchTrainers()
     fetchActivityTypes()
-  }, [statusFilter, showParentActivities]) // Odśwież gdy zmieni się filtr
+  }, [statusFilter]) // Odśwież gdy zmieni się filtr
 
   const fetchActivities = async () => {
     try {
-      // Fetch activities
-      // If showing parent activities, include 'template' status in filter
-      const effectiveStatusFilter = showParentActivities
-        ? [...statusFilter, 'template']
-        : statusFilter
-
+      // Fetch activities - always exclude templates (status='template')
       let query = supabase
         .from('activities')
         .select('*')
-        .in('status', effectiveStatusFilter) // Filtruj po statusie (+ template jeśli showParentActivities)
-
-      // Hide parent activities by default (templates have status='template' so already excluded if not in filter)
-      if (!showParentActivities) {
-        query = query.neq('status', 'template')
-      }
+        .in('status', statusFilter)
+        .neq('status', 'template') // Zawsze ukryj szablony wydarzeń cyklicznych
 
       const { data: activitiesData, error: activitiesError } = await query
         .order('is_special_event', { ascending: false })  // Wydarzenia specjalne najpierw
-        .order('date_time', { ascending: false, nullsFirst: false }) // Potem po dacie (templates na końcu)
+        .order('date_time', { ascending: false, nullsFirst: false }) // Potem po dacie
 
       if (activitiesError) throw activitiesError
 
@@ -560,6 +550,12 @@ const AdminActivitiesPage = () => {
   }
 
   const handleEdit = (activity: Activity) => {
+    // Blokuj edycję szablonów wydarzeń cyklicznych
+    if (activity.status === 'template') {
+      alert('⚠️ Szablony wydarzeń cyklicznych można edytować tylko z poziomu Zarządzania Sekcjami.')
+      return
+    }
+
     console.log('[Admin] Editing activity:', activity.id, activity.name)
     console.log('[Admin] Activity data:', activity)
     setEditingId(activity.id)
@@ -868,18 +864,6 @@ const AdminActivitiesPage = () => {
             </button>
           </div>
 
-          <div className="flex items-center gap-3 mt-4">
-            <input
-              type="checkbox"
-              id="show_parent_activities"
-              checked={showParentActivities}
-              onChange={(e) => setShowParentActivities(e.target.checked)}
-              className="h-4 w-4 text-purple-600 rounded"
-            />
-            <label htmlFor="show_parent_activities" className="text-sm text-gray-700">
-              🔄 Pokaż szablony wydarzeń cyklicznych
-            </label>
-          </div>
         </div>
       )}
 

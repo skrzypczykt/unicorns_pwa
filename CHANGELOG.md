@@ -4,6 +4,50 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.3.3] - 2026-04-22 - Automatyczne Wylogowanie i Strefa Sekcji
+
+### Dodano
+
+- **Automatyczne wylogowanie użytkowników**
+  - Hook `useAuthMonitoring` monitorujący sesje użytkowników
+  - Wylogowanie przy zmianie roli (trigger + frontend monitoring)
+  - Wylogowanie przy usunięciu konta (onAuthStateChange + polling)
+  - Wylogowanie przy zmianie hasła (natywna obsługa Supabase)
+  - Polling co 5 minut sprawdzający istnienie konta
+  - Tracking `role_changed_at` w bazie danych (migration 041)
+
+- **WhatsApp w sekcjach**
+  - Pole `whatsapp_group_url` w tabeli `activity_types` (migration 042)
+  - Input "Link do grupy WhatsApp" w formularzu sekcji
+  - Wyświetlanie linku WhatsApp w kartach sekcji (💬 ikona)
+
+- **Zarządzanie wydarzeniami cyklicznymi z poziomu sekcji**
+  - Przycisk "🗑️ Usuń" dla każdego wydarzenia cyklicznego
+  - Przycisk "✏️ Edytuj" z przekierowaniem do edycji
+  - Wyświetlanie dnia tygodnia i godziny (np. "Monday o 18:00")
+  - Informacja "nieskończone" dla wydarzeń bez daty końcowej
+
+### Zmieniono
+
+- **Panel zarządzania zajęciami**
+  - Wydarzenia z `status='template'` zawsze ukryte
+  - Usunięto checkbox "Pokaż szablony wydarzeń cyklicznych"
+  - Blokada edycji szablonów z alertem (edycja tylko z sekcji)
+
+- **Frontend App.tsx**
+  - Integracja `useAuthMonitoring` hook
+  - Usunięto duplikujący się kod `onAuthStateChange`
+
+### Bezpieczeństwo
+
+- Automatyczne wymuszanie re-logowania przy zmianie uprawnień
+- Natychmiastowe wylogowanie przy usunięciu konta
+- Regularne sprawdzanie ważności sesji (5 min)
+
+### Dokumentacja
+
+- Dodano `AUTOMATIC_LOGOUT_IMPLEMENTATION.md` z opisem wszystkich scenariuszy
+
 ## [0.3.2] - 2026-04-22 - Redesign Wydarzeń Cyklicznych
 
 ### Dodano

@@ -8,6 +8,7 @@ interface ActivityType {
   description: string
   image_url: string | null
   default_trainer_id: string | null
+  whatsapp_group_url: string | null
   active_count?: number
   trainer_name?: string
 }
@@ -39,7 +40,8 @@ const AdminSectionsPage = () => {
     name: '',
     description: '',
     image_url: '',
-    default_trainer_id: ''
+    default_trainer_id: '',
+    whatsapp_group_url: ''
   })
 
   useEffect(() => {
@@ -128,7 +130,8 @@ const AdminSectionsPage = () => {
       name: section.name,
       description: section.description || '',
       image_url: section.image_url || '',
-      default_trainer_id: section.default_trainer_id || ''
+      default_trainer_id: section.default_trainer_id || '',
+      whatsapp_group_url: section.whatsapp_group_url || ''
     })
     setShowForm(true)
     fetchRecurringActivities(section.id)
@@ -141,7 +144,8 @@ const AdminSectionsPage = () => {
       name: '',
       description: '',
       image_url: '',
-      default_trainer_id: ''
+      default_trainer_id: '',
+      whatsapp_group_url: ''
     })
     setRecurringActivities([])
     setShowForm(true)
@@ -159,7 +163,8 @@ const AdminSectionsPage = () => {
             name: formData.name,
             description: formData.description,
             image_url: formData.image_url || null,
-            default_trainer_id: formData.default_trainer_id || null
+            default_trainer_id: formData.default_trainer_id || null,
+            whatsapp_group_url: formData.whatsapp_group_url || null
           })
           .eq('id', editingSection.id)
 
@@ -173,7 +178,8 @@ const AdminSectionsPage = () => {
             name: formData.name,
             description: formData.description,
             image_url: formData.image_url || null,
-            default_trainer_id: formData.default_trainer_id || null
+            default_trainer_id: formData.default_trainer_id || null,
+            whatsapp_group_url: formData.whatsapp_group_url || null
           })
 
         if (error) throw error
@@ -192,7 +198,7 @@ const AdminSectionsPage = () => {
     setShowForm(false)
     setEditingSection(null)
     setRecurringActivities([])
-    setFormData({ name: '', description: '', image_url: '', default_trainer_id: '' })
+    setFormData({ name: '', description: '', image_url: '', default_trainer_id: '', whatsapp_group_url: '' })
   }
 
   if (loading) {
@@ -322,37 +328,84 @@ const AdminSectionsPage = () => {
               </p>
             </div>
 
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Link do grupy WhatsApp (opcjonalnie)
+              </label>
+              <input
+                type="url"
+                value={formData.whatsapp_group_url}
+                onChange={(e) => setFormData({ ...formData, whatsapp_group_url: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                placeholder="https://chat.whatsapp.com/..."
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Link zapraszający do grupy WhatsApp tej sekcji
+              </p>
+            </div>
+
             {editingSection && recurringActivities.length > 0 && (
               <div className="mt-6 pt-6 border-t-2 border-purple-200">
                 <h3 className="text-lg font-bold text-purple-600 mb-4">
                   🔄 Wydarzenia cykliczne dla tej sekcji
                 </h3>
                 <div className="space-y-2">
-                  {recurringActivities.map(activity => (
-                    <div
-                      key={activity.id}
-                      className="flex items-center justify-between p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
-                    >
-                      <div>
-                        <p className="font-semibold">{activity.name}</p>
-                        <p className="text-sm text-gray-600">
-                          {activity.recurrence_day_of_week
-                            ? `${activity.recurrence_day_of_week} o ${activity.recurrence_time}`
-                            : `Co ${activity.recurrence_pattern === 'weekly' ? 'tydzień' : 'miesiąc'}`}
-                          {activity.recurrence_end_date
-                            ? ` do ${new Date(activity.recurrence_end_date).toLocaleDateString()}`
-                            : ' (nieskończone)'}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/admin/activities?edit=${activity.id}`)}
-                        className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all"
+                  {recurringActivities.map(activity => {
+                    const dayOfWeek = activity.recurrence_day_of_week
+                    const time = activity.recurrence_time?.slice(0, 5) // "HH:MM" format
+                    const displayTime = dayOfWeek && time
+                      ? `${dayOfWeek} o ${time}`
+                      : `Co ${activity.recurrence_pattern === 'weekly' ? 'tydzień' : 'miesiąc'}`
+
+                    return (
+                      <div
+                        key={activity.id}
+                        className="flex items-center justify-between p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
                       >
-                        Edytuj
-                      </button>
-                    </div>
-                  ))}
+                        <div className="flex-1">
+                          <p className="font-semibold">{activity.name}</p>
+                          <p className="text-sm text-gray-600">
+                            {displayTime}
+                            {activity.recurrence_end_date
+                              ? ` do ${new Date(activity.recurrence_end_date).toLocaleDateString()}`
+                              : ' (nieskończone)'}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (confirm(`Czy na pewno chcesz usunąć wydarzenie cykliczne "${activity.name}"? To usunie także wszystkie przyszłe instancje.`)) {
+                                try {
+                                  const { error } = await supabase
+                                    .from('activities')
+                                    .delete()
+                                    .eq('id', activity.id)
+
+                                  if (error) throw error
+                                  alert('✅ Wydarzenie cykliczne usunięte')
+                                  fetchRecurringActivities(editingSection.id)
+                                } catch (error: any) {
+                                  console.error('Error deleting recurring activity:', error)
+                                  alert(`Błąd: ${error.message}`)
+                                }
+                              }
+                            }}
+                            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all"
+                          >
+                            🗑️ Usuń
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => window.location.href = `/admin/sections?edit=${activity.id}`}
+                            className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all"
+                          >
+                            ✏️ Edytuj
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -416,6 +469,19 @@ const AdminSectionsPage = () => {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-500">👤 Domyślny trener:</span>
                   <span className="font-semibold">{section.trainer_name}</span>
+                </div>
+              )}
+
+              {section.whatsapp_group_url && (
+                <div className="text-sm">
+                  <a
+                    href={section.whatsapp_group_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold"
+                  >
+                    💬 Grupa WhatsApp →
+                  </a>
                 </div>
               )}
             </div>

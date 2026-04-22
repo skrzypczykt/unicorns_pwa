@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { supabase } from './supabase/client'
 import { APP_VERSION } from './version'
+import { useAuthMonitoring } from './hooks/useAuthMonitoring'
 import SimpleLoginPage from './pages/SimpleLoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import RegisterPage from './pages/RegisterPage'
@@ -59,6 +60,14 @@ function App() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Use auth monitoring hook for automatic logout scenarios
+  useAuthMonitoring({
+    user,
+    profile,
+    onProfileUpdate: setProfile,
+    onUserUpdate: setUser
+  })
+
   useEffect(() => {
     // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -69,21 +78,6 @@ function App() {
         setLoading(false)
       }
     })
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchProfile(session.user.id)
-      } else {
-        setProfile(null)
-        setLoading(false)
-      }
-    })
-
-    return () => subscription.unsubscribe()
   }, [])
 
   const fetchProfile = async (userId: string) => {
