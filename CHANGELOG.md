@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.3.4] - 2026-04-22 - Bugfix: useNavigate Router Context
+
+### Naprawiono
+
+- **Critical Bug**: `useNavigate() may be used only in the context of a <Router> component`
+  - Przeniesiono `useAuthMonitoring` hook do `AppContent` (wewnątrz `<BrowserRouter>`)
+  - Hook używał `useNavigate()` przed zainicjalizowaniem Router context
+  - Aplikacja teraz poprawnie się ładuje po deploy
+
 ## [0.3.3] - 2026-04-22 - Automatyczne Wylogowanie i Strefa Sekcji
 
 ### Dodano

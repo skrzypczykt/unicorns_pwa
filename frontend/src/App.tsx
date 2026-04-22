@@ -60,14 +60,6 @@ function App() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Use auth monitoring hook for automatic logout scenarios
-  useAuthMonitoring({
-    user,
-    profile,
-    onProfileUpdate: setProfile,
-    onUserUpdate: setUser
-  })
-
   useEffect(() => {
     // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -138,13 +130,33 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <AppContent user={user} profile={profile} handleSignOut={handleSignOut} />
+      <AppContent
+        user={user}
+        profile={profile}
+        handleSignOut={handleSignOut}
+        onProfileUpdate={setProfile}
+        onUserUpdate={setUser}
+      />
     </BrowserRouter>
   )
 }
 
-const AppContent = ({ user, profile, handleSignOut }: { user: any, profile: any, handleSignOut: () => void }) => {
+const AppContent = ({ user, profile, handleSignOut, onProfileUpdate, onUserUpdate }: {
+  user: any,
+  profile: any,
+  handleSignOut: () => void,
+  onProfileUpdate: (profile: UserProfile | null) => void,
+  onUserUpdate: (user: any) => void
+}) => {
   const location = useLocation()
+
+  // Use auth monitoring hook for automatic logout scenarios
+  useAuthMonitoring({
+    user,
+    profile,
+    onProfileUpdate,
+    onUserUpdate
+  })
 
   return (
     <>
