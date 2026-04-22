@@ -20,6 +20,11 @@ interface RecurringActivity {
   recurrence_time: string | null
   recurrence_pattern: string
   recurrence_end_date: string | null
+  description: string
+  duration_minutes: number
+  location: string
+  cost: number
+  max_participants: number | null
 }
 
 interface Trainer {
@@ -36,12 +41,25 @@ const AdminSectionsPage = () => {
   const [loading, setLoading] = useState(true)
   const [editingSection, setEditingSection] = useState<ActivityType | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [editingActivity, setEditingActivity] = useState<RecurringActivity | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     image_url: '',
     default_trainer_id: '',
     whatsapp_group_url: ''
+  })
+  const [activityFormData, setActivityFormData] = useState({
+    name: '',
+    description: '',
+    recurrence_day_of_week: '',
+    recurrence_time: '',
+    recurrence_end_date: '',
+    infinite_recurrence: false,
+    duration_minutes: 60,
+    location: '',
+    cost: 30,
+    max_participants: 15
   })
 
   useEffect(() => {
@@ -111,11 +129,12 @@ const AdminSectionsPage = () => {
     try {
       const { data, error } = await supabase
         .from('activities')
-        .select('id, name, recurrence_day_of_week, recurrence_time, recurrence_pattern, recurrence_end_date')
+        .select('id, name, description, recurrence_day_of_week, recurrence_time, recurrence_pattern, recurrence_end_date, duration_minutes, location, cost, max_participants')
         .eq('activity_type_id', sectionId)
         .eq('is_recurring', true)
         .is('parent_activity_id', null)
-        .order('name', { ascending: true })
+        .order('recurrence_day_of_week', { ascending: true, nullsFirst: false })
+        .order('recurrence_time', { ascending: true })
 
       if (error) throw error
       setRecurringActivities(data || [])
@@ -344,18 +363,217 @@ const AdminSectionsPage = () => {
               </p>
             </div>
 
-            {editingSection && recurringActivities.length > 0 && (
-              <div className="mt-6 pt-6 border-t-2 border-purple-200">
-                <h3 className="text-lg font-bold text-purple-600 mb-4">
-                  🔄 Wydarzenia cykliczne dla tej sekcji
-                </h3>
+            <div className="flex gap-2 mt-6">
+              <button
+                type="submit"
+                className="flex-1 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all"
+              >
+                {editingSection ? 'Zapisz zmiany' : 'Dodaj sekcję'}
+              </button>
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
+              >
+                Anuluj
+              </button>
+            </div>
+          </form>
+
+          {/* Recurring Activities Section - After Save Button */}
+          {editingSection && recurringActivities.length > 0 && (
+            <div className="mt-6 pt-6 border-t-2 border-purple-200">
+              <h3 className="text-lg font-bold text-purple-600 mb-4">
+                🔄 Wydarzenia cykliczne dla tej sekcji
+              </h3>
+
+              {editingActivity ? (
+                <div className="bg-white p-6 rounded-lg border-2 border-purple-300 mb-4">
+                  <h4 className="text-lg font-semibold text-purple-600 mb-4">Edytuj wydarzenie cykliczne</h4>
+                  <form onSubmit={async (e) => {
+                    e.preventDefault()
+                    try {
+                      const { error } = await supabase
+                        .from('activities')
+                        .update({
+                          name: activityFormData.name,
+                          description: activityFormData.description,
+                          recurrence_day_of_week: activityFormData.recurrence_day_of_week,
+                          recurrence_time: activityFormData.recurrence_time,
+                          recurrence_end_date: activityFormData.infinite_recurrence ? null : activityFormData.recurrence_end_date || null,
+                          duration_minutes: activityFormData.duration_minutes,
+                          location: activityFormData.location,
+                          cost: activityFormData.cost,
+                          max_participants: activityFormData.max_participants
+                        })
+                        .eq('id', editingActivity.id)
+
+                      if (error) throw error
+                      alert('✅ Wydarzenie zaktualizowane')
+                      setEditingActivity(null)
+                      fetchRecurringActivities(editingSection.id)
+                    } catch (error: any) {
+                      console.error('Error updating activity:', error)
+                      alert(`Błąd: ${error.message}`)
+                    }
+                  }} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Nazwa</label>
+                      <input
+                        type="text"
+                        value={activityFormData.name}
+                        onChange={(e) => setActivityFormData({ ...activityFormData, name: e.target.value })}
+                        required
+                        className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Opis</label>
+                      <textarea
+                        value={activityFormData.description}
+                        onChange={(e) => setActivityFormData({ ...activityFormData, description: e.target.value })}
+                        rows={3}
+                        className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Dzień tygodnia *</label>
+                        <select
+                          value={activityFormData.recurrence_day_of_week}
+                          onChange={(e) => setActivityFormData({ ...activityFormData, recurrence_day_of_week: e.target.value })}
+                          required
+                          className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        >
+                          <option value="">Wybierz dzień</option>
+                          <option value="Monday">Poniedziałek</option>
+                          <option value="Tuesday">Wtorek</option>
+                          <option value="Wednesday">Środa</option>
+                          <option value="Thursday">Czwartek</option>
+                          <option value="Friday">Piątek</option>
+                          <option value="Saturday">Sobota</option>
+                          <option value="Sunday">Niedziela</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Godzina *</label>
+                        <input
+                          type="time"
+                          value={activityFormData.recurrence_time}
+                          onChange={(e) => setActivityFormData({ ...activityFormData, recurrence_time: e.target.value })}
+                          required
+                          className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Czas trwania (min)</label>
+                        <input
+                          type="number"
+                          value={activityFormData.duration_minutes}
+                          onChange={(e) => setActivityFormData({ ...activityFormData, duration_minutes: parseInt(e.target.value) })}
+                          className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Koszt (zł)</label>
+                        <input
+                          type="number"
+                          value={activityFormData.cost}
+                          onChange={(e) => setActivityFormData({ ...activityFormData, cost: parseInt(e.target.value) })}
+                          className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Max. uczestników</label>
+                        <input
+                          type="number"
+                          value={activityFormData.max_participants}
+                          onChange={(e) => setActivityFormData({ ...activityFormData, max_participants: parseInt(e.target.value) })}
+                          className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Lokalizacja</label>
+                      <input
+                        type="text"
+                        value={activityFormData.location}
+                        onChange={(e) => setActivityFormData({ ...activityFormData, location: e.target.value })}
+                        className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={activityFormData.infinite_recurrence}
+                          onChange={(e) => setActivityFormData({ ...activityFormData, infinite_recurrence: e.target.checked })}
+                          className="h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm font-semibold text-gray-700">Nieskończone powtarzanie</span>
+                      </label>
+                    </div>
+
+                    {!activityFormData.infinite_recurrence && (
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Data końcowa</label>
+                        <input
+                          type="date"
+                          value={activityFormData.recurrence_end_date}
+                          onChange={(e) => setActivityFormData({ ...activityFormData, recurrence_end_date: e.target.value })}
+                          className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        className="flex-1 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-2 px-4 rounded-lg"
+                      >
+                        Zapisz zmiany
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingActivity(null)}
+                        className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
+                      >
+                        Anuluj
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              ) : (
                 <div className="space-y-2">
                   {recurringActivities.map(activity => {
                     const dayOfWeek = activity.recurrence_day_of_week
-                    const time = activity.recurrence_time?.slice(0, 5) // "HH:MM" format
-                    const displayTime = dayOfWeek && time
-                      ? `${dayOfWeek} o ${time}`
-                      : `Co ${activity.recurrence_pattern === 'weekly' ? 'tydzień' : 'miesiąc'}`
+                    const time = activity.recurrence_time?.slice(0, 5)
+
+                    // Translate day to Polish
+                    const dayTranslations: { [key: string]: string } = {
+                      'Monday': 'Poniedziałek',
+                      'Tuesday': 'Wtorek',
+                      'Wednesday': 'Środa',
+                      'Thursday': 'Czwartek',
+                      'Friday': 'Piątek',
+                      'Saturday': 'Sobota',
+                      'Sunday': 'Niedziela'
+                    }
+
+                    const displayDay = dayOfWeek ? dayTranslations[dayOfWeek] || dayOfWeek : null
+                    const displayTime = displayDay && time
+                      ? `${displayDay} o ${time}`
+                      : '⚠️ Brak danych - kliknij Edytuj aby zaktualizować'
 
                     return (
                       <div
@@ -367,8 +585,8 @@ const AdminSectionsPage = () => {
                           <p className="text-sm text-gray-600">
                             {displayTime}
                             {activity.recurrence_end_date
-                              ? ` do ${new Date(activity.recurrence_end_date).toLocaleDateString()}`
-                              : ' (nieskończone)'}
+                              ? ` • do ${new Date(activity.recurrence_end_date).toLocaleDateString('pl-PL')}`
+                              : ' • nieskończone'}
                           </p>
                         </div>
                         <div className="flex gap-2">
@@ -397,7 +615,21 @@ const AdminSectionsPage = () => {
                           </button>
                           <button
                             type="button"
-                            onClick={() => window.location.href = `/admin/sections?edit=${activity.id}`}
+                            onClick={() => {
+                              setEditingActivity(activity)
+                              setActivityFormData({
+                                name: activity.name,
+                                description: activity.description,
+                                recurrence_day_of_week: activity.recurrence_day_of_week || '',
+                                recurrence_time: activity.recurrence_time?.slice(0, 5) || '',
+                                recurrence_end_date: activity.recurrence_end_date || '',
+                                infinite_recurrence: !activity.recurrence_end_date,
+                                duration_minutes: activity.duration_minutes,
+                                location: activity.location,
+                                cost: activity.cost,
+                                max_participants: activity.max_participants || 15
+                              })
+                            }}
                             className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all"
                           >
                             ✏️ Edytuj
@@ -407,25 +639,9 @@ const AdminSectionsPage = () => {
                     )
                   })}
                 </div>
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                className="flex-1 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all"
-              >
-                {editingSection ? 'Zapisz zmiany' : 'Dodaj sekcję'}
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="px-6 py-3 bg-gray-200 hover:bg-gray-300 rounded-lg transition-all"
-              >
-                Anuluj
-              </button>
+              )}
             </div>
-          </form>
+          )}
         </div>
       )}
 
