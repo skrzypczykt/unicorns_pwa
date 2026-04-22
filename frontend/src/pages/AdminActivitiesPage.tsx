@@ -658,7 +658,8 @@ const AdminActivitiesPage = () => {
         alert('Trener jest wymagany')
         return
       }
-      if (!formData.date_time) {
+      // Data i godzina - tylko dla single i special, nie dla recurring
+      if (!formData.date_time && activityMode !== 'recurring') {
         alert('Data i godzina są wymagane')
         return
       }
