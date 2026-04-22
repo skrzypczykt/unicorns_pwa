@@ -29,7 +29,16 @@ Kompleksowy system zarządzania zajęciami sportowo-kulturalnymi dla organizacji
 
 ### ⚙️ Panel Administratora
 - 🎯 **Zarządzanie zajęciami** - tworzenie, edycja, usuwanie aktywności
+  - Wydarzenia cykliczne z szablonem (dzień tygodnia + godzina)
+  - Nieskończone powtarzanie wydarzeń
+  - Automatyczne generowanie instancji (8 tygodni do przodu)
+- 🏷️ **Zarządzanie sekcjami** - konfiguracja sekcji sportowych
+  - Link do grupy WhatsApp dla każdej sekcji
+  - Zarządzanie wydarzeniami cyklicznymi z poziomu sekcji
+  - Usuwanie i edycja szablonów cyklicznych
 - 👤 **Zarządzanie użytkownikami** - role (admin/trainer/user), edycja profili
+  - Automatyczne wylogowanie przy zmianie roli
+  - Automatyczne wylogowanie przy usunięciu konta
 - 💳 **Aktualizacja sald** - ręczne doładowania per użytkownik per sekcja
 - 📊 **Raporty księgowe** - eksport do CSV z rozliczeniem per sekcja
   - Saldo otwarcia/zamknięcia miesiąca
@@ -79,6 +88,11 @@ Kompleksowy system zarządzania zajęciami sportowo-kulturalnymi dla organizacji
 - **Role-based access** - admin/trainer/user z różnymi uprawnieniami
 - **JWT tokens** - bezpieczna autoryzacja z Supabase Auth
 - **Email verification** - potwierdzenie rejestracji przed dostępem
+- **Automatyczne wylogowanie**:
+  - Zmiana hasła → wylogowanie innych sesji (natywne Supabase)
+  - Zmiana roli → wymuszenie ponownego logowania
+  - Usunięcie konta → natychmiastowe wylogowanie
+  - Polling co 5 minut → sprawdzanie ważności sesji
 
 ### 💸 System Płatności Per-Sekcja
 Każda sekcja aktywności (Badminton, Taniec, Siatkówka) ma **osobne saldo**:
@@ -107,6 +121,7 @@ users                    -- Użytkownicy (auth.users sync)
 ├── email
 ├── display_name
 ├── role (admin/trainer/user)
+├── role_changed_at      -- Timestamp ostatniej zmiany roli
 └── balance (deprecated - suma z user_section_balances)
 
 user_section_balances    -- Salda per sekcja (NOWE)
@@ -125,14 +140,21 @@ balance_transactions     -- Immutable audit log
 activities               -- Zajęcia
 ├── activity_type_id     -- Sekcja (Badminton, etc.)
 ├── trainer_id
-├── date_time
+├── date_time            -- NULL dla szablonów cyklicznych
 ├── cost
 ├── capacity
-└── image_url
+├── image_url
+├── is_recurring         -- Czy wydarzenie cykliczne
+├── recurrence_day_of_week  -- Dzień tygodnia (Monday-Sunday)
+├── recurrence_time      -- Godzina (HH:MM:SS)
+├── recurrence_end_date  -- NULL = nieskończone
+├── status               -- scheduled/completed/cancelled/template
+└── parent_activity_id   -- Dla instancji wydarzenia cyklicznego
 
 activity_types           -- Kategorie sekcji
 ├── name (Badminton, Taniec, Siatkówka, Squash)
-└── description
+├── description
+└── whatsapp_group_url   -- Link do grupy WhatsApp sekcji
 
 registrations            -- Rezerwacje
 ├── user_id
@@ -144,6 +166,18 @@ registrations            -- Rezerwacje
 ### 🔄 Database Triggers
 - **`handle_new_user()`** - automatyczne tworzenie profilu w `users` po rejestracji
 - **`on_auth_user_created`** - trigger na `auth.users` wywołujący `handle_new_user()`
+- **`track_role_change()`** - tracking zmiany roli (ustawia `role_changed_at`)
+- **`on_user_role_change`** - trigger na `users` przy UPDATE roli
+
+### 🔄 Recurring Activities System
+- **Szablony wydarzeń** - parent activities z `status='template'`
+- **Dzień tygodnia + czas** - `recurrence_day_of_week` + `recurrence_time`
+- **Nieskończone powtarzanie** - `recurrence_end_date` NULL
+- **Generowanie instancji** - Edge Function `generate-recurring-activities`
+  - 8-tygodniowe okno generowania
+  - Cron job codziennie o 3:00 UTC
+  - Maksymalnie 52 instancje na szablon
+- **Zarządzanie** - tylko z poziomu Zarządzania Sekcjami
 
 ---
 
