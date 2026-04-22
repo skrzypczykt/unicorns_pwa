@@ -851,53 +851,6 @@ const AdminActivitiesPage = () => {
         </div>
       </div>
 
-      {!showForm && (
-        <div className="mb-6 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-4">
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setStatusFilter(['scheduled'])}
-              className={`px-4 py-2 rounded-lg transition-all ${
-                statusFilter.includes('scheduled') && statusFilter.length === 1
-                  ? 'bg-green-500 text-white font-semibold'
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-              }`}
-            >
-              ✅ Aktywne
-            </button>
-            <button
-              onClick={() => setStatusFilter(['completed'])}
-              className={`px-4 py-2 rounded-lg transition-all ${
-                statusFilter.includes('completed') && statusFilter.length === 1
-                  ? 'bg-blue-500 text-white font-semibold'
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-              }`}
-            >
-              🏁 Minione
-            </button>
-            <button
-              onClick={() => setStatusFilter(['cancelled'])}
-              className={`px-4 py-2 rounded-lg transition-all ${
-                statusFilter.includes('cancelled') && statusFilter.length === 1
-                  ? 'bg-red-500 text-white font-semibold'
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-              }`}
-            >
-              ❌ Anulowane
-            </button>
-            <button
-              onClick={() => setStatusFilter(['scheduled', 'completed', 'cancelled'])}
-              className={`px-4 py-2 rounded-lg transition-all ${
-                statusFilter.length === 3
-                  ? 'bg-purple-500 text-white font-semibold'
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-              }`}
-            >
-              🔍 Wszystkie
-            </button>
-          </div>
-
-        </div>
-      )}
 
       {showForm && (
         <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6 mb-6">
@@ -1907,125 +1860,273 @@ const AdminActivitiesPage = () => {
         </div>
       )}
 
-      {/* Activities List */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold text-purple-600">
-          {(() => {
-            if (statusFilter.length === 3) return `Wszystkie zajęcia (${activities.length})`
-            if (statusFilter.includes('scheduled') && statusFilter.length === 1) return `Aktywne zajęcia (${activities.length})`
-            if (statusFilter.includes('completed') && statusFilter.length === 1) return `Minione zajęcia (${activities.length})`
-            if (statusFilter.includes('cancelled') && statusFilter.length === 1) return `Anulowane zajęcia (${activities.length})`
-            return `Zajęcia (${activities.length})`
-          })()}
-        </h2>
+      {/* Special Events Section */}
+      {!showForm && (() => {
+        const specialEvents = activities.filter(a => a.is_special_event)
+        if (specialEvents.length === 0) return null
 
-        {activities.length === 0 ? (
-          <div className="text-center py-12">
-            <span className="text-6xl mb-4 block">📅</span>
-            <p className="text-gray-600">Brak zajęć w systemie</p>
-          </div>
-        ) : (
-          activities.map((activity) => (
-            <div
-              key={activity.id}
-              className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6"
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-xl font-bold text-purple-600">{activity.name}</h3>
-
-                {activity.is_recurring && activity.parent_activity_id === null && (
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
-                    🔄 Szablon
-                  </span>
-                )}
-
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  activity.status === 'scheduled' ? 'bg-green-100 text-green-700' :
-                  activity.status === 'completed' ? 'bg-blue-100 text-blue-700' :
-                  'bg-red-100 text-red-700'
-                }`}>
-                  {activity.status === 'scheduled' ? 'Zaplanowane' :
-                   activity.status === 'completed' ? 'Zakończone' :
-                   'Anulowane'}
-                </span>
-              </div>
-
-              <p className="text-gray-600 mb-4 text-sm">{activity.description}</p>
-
-              <div className="grid md:grid-cols-3 gap-2 text-sm mb-4">
-                <div className="flex items-center gap-2">
-                  <span>📅</span>
-                  <span>
-                    {activity.date_time
-                      ? formatDate(activity.date_time)
-                      : activity.recurrence_day_of_week
-                        ? `${activity.recurrence_day_of_week} o ${activity.recurrence_time}`
-                        : 'Brak daty'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>⏱️</span>
-                  <span>{formatDuration(activity.duration_minutes)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>👥</span>
-                  <span>Max {activity.max_participants} osób</span>
-                </div>
-                {activity.is_online ? (
-                  <div className="flex items-center gap-2">
-                    <span>🌐</span>
-                    <a
-                      href={activity.meeting_link || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-purple-600 hover:underline"
+        return (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-yellow-600 mb-4 flex items-center gap-2">
+              🏆 Wydarzenia specjalne ({specialEvents.length})
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {specialEvents.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="bg-gradient-to-br from-yellow-50 to-white backdrop-blur-sm rounded-xl shadow-lg border-2 border-yellow-200 p-4"
+                >
+                  <h3 className="text-lg font-bold text-yellow-700 mb-2">{activity.name}</h3>
+                  <div className="space-y-2 text-sm mb-4">
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <span>📅</span>
+                      <span>{activity.date_time ? formatDate(activity.date_time) : 'Brak daty'}</span>
+                    </div>
+                    {activity.is_online ? (
+                      <div className="flex items-center gap-2 text-gray-700">
+                        <span>🌐</span>
+                        <span>Online</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-gray-700">
+                        <span>📍</span>
+                        <span className="truncate">{activity.location}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 font-bold text-yellow-700">
+                      <span>💰</span>
+                      <span>{activity.cost.toFixed(0)} zł</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => navigate(`/admin/activities/${activity.id}/participants`)}
+                      className="flex-1 px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-xs font-semibold"
                     >
-                      Spotkanie online
-                    </a>
+                      👥 Lista ({activity.registered_count || 0})
+                    </button>
+                    <button
+                      onClick={() => handleEdit(activity)}
+                      className="flex-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-semibold"
+                    >
+                      ✏️ Edytuj
+                    </button>
                   </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span>📍</span>
-                    <span>{activity.location}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2 font-bold text-purple-600">
-                  <span>💰</span>
-                  <span>{activity.cost.toFixed(2)} zł</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-500">
-                  <span>⚠️</span>
-                  <span>Anulowanie: {activity.cancellation_hours}h</span>
+              ))}
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Regular Activities - Week View */}
+      {!showForm && (() => {
+        const regularActivities = activities.filter(a => !a.is_special_event)
+        const weekRange = getWeekRange(weekOffset)
+        const weekLabel = formatWeekRange(weekRange)
+        const activityGroups = groupActivitiesByDay(regularActivities)
+
+        return (
+          <div className="space-y-4">
+            {/* Week Navigation */}
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-4">
+              <div className="flex items-center justify-between gap-4">
+                <button
+                  onClick={() => setWeekOffset(Math.max(0, weekOffset - 1))}
+                  disabled={weekOffset === 0}
+                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 rounded-lg transition-all font-semibold"
+                >
+                  ← Poprzedni tydzień
+                </button>
+
+                <div className="text-center">
+                  <h2 className="text-xl font-bold text-purple-600">
+                    {weekOffset === 0 ? 'Ten tydzień' : `Za ${weekOffset} ${weekOffset === 1 ? 'tydzień' : 'tygodnie'}`}
+                  </h2>
+                  <p className="text-sm text-gray-600">{weekLabel}</p>
                 </div>
+
+                <button
+                  onClick={() => setWeekOffset(Math.min(6, weekOffset + 1))}
+                  disabled={weekOffset === 6}
+                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 rounded-lg transition-all font-semibold"
+                >
+                  Następny tydzień →
+                </button>
               </div>
 
-              {/* Przyciski na dole */}
-              <div className="border-t-2 border-purple-100 pt-4 flex flex-wrap gap-2">
+              {/* View Mode Toggle */}
+              <div className="flex items-center justify-center gap-2 mt-4">
                 <button
-                  onClick={() => navigate(`/admin/activities/${activity.id}/participants`)}
-                  className="flex-1 min-w-[140px] px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all text-sm font-semibold"
+                  onClick={() => setViewMode('calendar')}
+                  className={`px-4 py-2 rounded-lg transition-all font-semibold ${
+                    viewMode === 'calendar'
+                      ? 'bg-purple-500 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
                 >
-                  👥 Lista ({activity.registered_count || 0})
+                  📅 Kalendarz
                 </button>
                 <button
-                  onClick={() => handleEdit(activity)}
-                  className="flex-1 min-w-[140px] px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all text-sm font-semibold"
+                  onClick={() => setViewMode('grid')}
+                  className={`px-4 py-2 rounded-lg transition-all font-semibold ${
+                    viewMode === 'grid'
+                      ? 'bg-purple-500 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
                 >
-                  ✏️ Edytuj
+                  🔲 Kafelki
                 </button>
-                {activity.status === 'scheduled' && (
-                  <button
-                    onClick={() => handleCancel(activity.id)}
-                    className="flex-1 min-w-[140px] px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all text-sm font-semibold"
-                  >
-                    ✗ Anuluj
-                  </button>
-                )}
               </div>
             </div>
-          ))
-        )}
-      </div>
+
+            {/* Calendar View */}
+            {viewMode === 'calendar' && (
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 overflow-hidden">
+                {/* Day Headers */}
+                <div className="grid grid-cols-7 border-b-2 border-purple-200">
+                  {[1, 2, 3, 4, 5, 6, 7].map(dayIndex => {
+                    const date = new Date(weekRange.start)
+                    date.setDate(weekRange.start.getDate() + (dayIndex - 1))
+                    const dayName = getShortDayName(dayIndex)
+                    const dayDate = date.getDate()
+
+                    return (
+                      <div key={dayIndex} className="p-3 text-center border-r border-purple-100 last:border-r-0">
+                        <div className="font-bold text-purple-600">{dayName}</div>
+                        <div className="text-sm text-gray-600">{dayDate}</div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Activity Cells */}
+                <div className="grid grid-cols-7 min-h-[400px]">
+                  {[1, 2, 3, 4, 5, 6, 7].map(dayIndex => {
+                    const dayActivities = activityGroups.get(dayIndex) || []
+
+                    return (
+                      <div key={dayIndex} className="border-r border-purple-100 last:border-r-0 p-2 space-y-2">
+                        {dayActivities.length === 0 ? (
+                          <div className="text-center text-gray-400 text-xs mt-4">Brak zajęć</div>
+                        ) : (
+                          dayActivities.map(activity => (
+                            <div
+                              key={activity.id}
+                              className="bg-purple-50 hover:bg-purple-100 rounded-lg p-2 border border-purple-200 cursor-pointer transition-all"
+                              onClick={() => handleEdit(activity)}
+                            >
+                              <div className="text-xs font-bold text-purple-700 mb-1">
+                                {activity.date_time ? new Date(activity.date_time).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) : ''}
+                              </div>
+                              <div className="text-xs font-semibold text-gray-800 mb-1 line-clamp-2">
+                                {activity.name}
+                              </div>
+                              <div className="flex items-center justify-between text-xs text-gray-600">
+                                <span>👥 {activity.registered_count || 0}/{activity.max_participants || '∞'}</span>
+                                <span className="font-bold text-purple-600">{activity.cost.toFixed(0)} zł</span>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Grid View */}
+            {viewMode === 'grid' && (
+              <div className="space-y-4">
+                {regularActivities.length === 0 ? (
+                  <div className="text-center py-12 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200">
+                    <span className="text-6xl mb-4 block">📅</span>
+                    <p className="text-gray-600">Brak zajęć w tym tygodniu</p>
+                  </div>
+                ) : (
+                  regularActivities.map((activity) => (
+                    <div
+                      key={activity.id}
+                      className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 border-purple-200 p-6"
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-bold text-purple-600">{activity.name}</h3>
+
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          activity.status === 'scheduled' ? 'bg-green-100 text-green-700' :
+                          activity.status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {activity.status === 'scheduled' ? 'Zaplanowane' :
+                           activity.status === 'completed' ? 'Zakończone' :
+                           'Anulowane'}
+                        </span>
+                      </div>
+
+                      <p className="text-gray-600 mb-4 text-sm line-clamp-2">{activity.description}</p>
+
+                      <div className="grid md:grid-cols-3 gap-2 text-sm mb-4">
+                        <div className="flex items-center gap-2">
+                          <span>📅</span>
+                          <span>{activity.date_time ? formatDate(activity.date_time) : 'Brak daty'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span>⏱️</span>
+                          <span>{formatDuration(activity.duration_minutes)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span>👥</span>
+                          <span>{activity.registered_count || 0}/{activity.max_participants || '∞'}</span>
+                        </div>
+                        {activity.is_online ? (
+                          <div className="flex items-center gap-2">
+                            <span>🌐</span>
+                            <span className="text-purple-600">Online</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <span>📍</span>
+                            <span className="truncate">{activity.location}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 font-bold text-purple-600">
+                          <span>💰</span>
+                          <span>{activity.cost.toFixed(0)} zł</span>
+                        </div>
+                      </div>
+
+                      {/* Przyciski */}
+                      <div className="border-t-2 border-purple-100 pt-4 flex flex-wrap gap-2">
+                        <button
+                          onClick={() => navigate(`/admin/activities/${activity.id}/participants`)}
+                          className="flex-1 min-w-[140px] px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all text-sm font-semibold"
+                        >
+                          👥 Lista ({activity.registered_count || 0})
+                        </button>
+                        <button
+                          onClick={() => handleEdit(activity)}
+                          className="flex-1 min-w-[140px] px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all text-sm font-semibold"
+                        >
+                          ✏️ Edytuj
+                        </button>
+                        {activity.status === 'scheduled' && (
+                          <button
+                            onClick={() => handleCancel(activity.id)}
+                            className="flex-1 min-w-[140px] px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all text-sm font-semibold"
+                          >
+                            ✗ Anuluj
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Modal powiadomień o edycji */}
       {showEditNotificationModal && (
