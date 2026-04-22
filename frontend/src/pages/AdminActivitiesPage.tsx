@@ -228,9 +228,16 @@ const AdminActivitiesPage = () => {
         date_time: (formData.is_recurring && activityMode === 'recurring')
           ? null
           : toISOWithTimezone(formData.date_time),
-        // Wydarzenia specjalne nie mają registration_opens_at - zapisy od razu
-        registration_opens_at: formData.is_special_event ? null : toISOWithTimezone(formData.registration_opens_at),
-        registration_closes_at: toISOWithTimezone(formData.registration_closes_at),
+        // Registration windows handling:
+        // - For recurring: store as NULL (hours-before values are not stored in DB for templates)
+        // - For special events: NULL (open immediately)
+        // - For single/regular: convert datetime-local to ISO
+        registration_opens_at: (formData.is_recurring && activityMode === 'recurring')
+          ? null
+          : (formData.is_special_event ? null : toISOWithTimezone(formData.registration_opens_at)),
+        registration_closes_at: (formData.is_recurring && activityMode === 'recurring')
+          ? null
+          : toISOWithTimezone(formData.registration_closes_at),
         recurrence_end_date: toISOWithTimezone(formData.recurrence_end_date) || null,
         recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : 'none',
         recurrence_day_of_week: (formData.is_recurring && activityMode === 'recurring')
