@@ -45,6 +45,7 @@ import LegalNoticePage from './pages/LegalNoticePage'
 import PaymentSuccessPage from './pages/PaymentSuccessPage'
 import PaymentCancelPage from './pages/PaymentCancelPage'
 import AdminPaymentsPage from './pages/AdminPaymentsPage'
+import AdminRefundsPage from './pages/AdminRefundsPage'
 
 interface UserProfile {
   id: string
@@ -247,6 +248,7 @@ const AppContent = ({ user, profile, handleSignOut, onProfileUpdate, onUserUpdat
           <Route path="/admin/member-polls" element={<AdminMemberPollsPage />} />
           <Route path="/admin/member-fees" element={<AdminMemberFeesPage />} />
           <Route path="/admin/payments" element={<AdminPaymentsPage />} />
+          <Route path="/admin/refunds" element={<AdminRefundsPage />} />
           <Route path="/member-zone" element={<MemberZonePage />} />
           <Route path="/member-zone/news" element={<MemberNewsPage />} />
           <Route path="/member-zone/documents" element={<MemberDocumentsPage />} />

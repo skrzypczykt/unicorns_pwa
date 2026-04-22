@@ -4,6 +4,44 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.3.6] - 2026-04-22 - System zwrotów i anulowania zajęć
+
+### Dodano
+
+- **System śledzenia zwrotów płatności**
+  - Nowa tabela `registrations.refund_status` ('none' | 'pending' | 'processed' | 'failed')
+  - Pola: `refund_date`, `refund_amount` dla pełnej historii zwrotów
+  - Indeks dla oczekujących zwrotów
+  
+- **Strona zarządzania zwrotami** (`/admin/refunds`)
+  - Lista wszystkich zwrotów z filtrowaniem (oczekujące/wykonane/błędy)
+  - Statystyki: liczba oczekujących, kwota do zwrotu
+  - Przyciski "Wykonano" / "Błąd" do ręcznego oznaczania statusu
+  - Instrukcja obsługi zwrotów przez panel bramki płatniczej
+  - Link w menu admin: 💸 Zwroty
+
+- **Modal anulowania zajęć**
+  - Pytanie czy powiadomić użytkowników (email + push)
+  - Edytowalny temat i treść emaila
+  - Ostrzeżenie o konieczności zwrotu dla opłaconych rezerwacji
+  - Instrukcja procedury zwrotów
+  - Automatyczne oznaczanie opłaconych rezerwacji jako `refund_status='pending'`
+
+- **Nawigacja po edycji**
+  - Po zapisaniu edycji zajęć automatyczny powrót do `/admin/activities`
+
+### Zmieniono
+
+- **CancelActivityModal zamiast confirm()**
+  - Zastąpiono prosty `confirm()` dedykowanym modałem
+  - Sprawdzanie liczby uczestników i opłaconych rezerwacji
+  - Opcjonalne wysyłanie powiadomień push i email
+  - Podgląd liczby uczestników przed anulowaniem
+
+### Naprawiono
+
+- Brak mechanizmu obsługi zwrotów przy anulowaniu opłaconych zajęć
+
 ## [0.3.5] - 2026-04-22 - Ulepszenia formularzy i sekcji
 
 ### Dodano

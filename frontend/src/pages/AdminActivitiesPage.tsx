@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { formatDuration } from '../utils/formatDuration'
 import { ACTIVITY_TYPE_IMAGES } from '../data/activityImages'
 import EditEventNotificationModal from '../components/EditEventNotificationModal'
+import CancelActivityModal from '../components/CancelActivityModal'
 import ActivityTypeSelector from '../components/ActivityTypeSelector'
 import ActivityCreationBreadcrumbs from '../components/ActivityCreationBreadcrumbs'
 import { getWeekRange, formatWeekRange, groupActivitiesByDay, getShortDayName } from '../utils/weekHelpers'
@@ -67,6 +68,12 @@ const AdminActivitiesPage = () => {
   const [showEditNotificationModal, setShowEditNotificationModal] = useState(false)
   const [participantCount, setParticipantCount] = useState(0)
   const [pendingFormData, setPendingFormData] = useState<any>(null)
+
+  // Cancel activity modal
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [activityToCancel, setActivityToCancel] = useState<Activity | null>(null)
+  const [cancelParticipantsCount, setCancelParticipantsCount] = useState(0)
+  const [cancelHasPaidParticipants, setCancelHasPaidParticipants] = useState(false)
 
   // Wieloetapowy flow dodawania wydarzenia
   const [creationStep, setCreationStep] = useState<number>(1)
@@ -484,6 +491,11 @@ const AdminActivitiesPage = () => {
       console.log('[Admin] Resetting form and refreshing activities list')
       resetForm()
       await fetchActivities()
+
+      // Po edycji wracamy do listy zajęć
+      if (editingId) {
+        navigate('/admin/activities')
+      }
     } catch (error) {
       console.error('[Admin] ❌ ERROR saving activity:', error)
       console.error('[Admin] Error details:', {
@@ -622,21 +634,139 @@ const AdminActivitiesPage = () => {
   }
 
   const handleCancel = async (activityId: string) => {
-    if (!confirm('Czy na pewno chcesz anulować te zajęcia?')) return
+    // Znajdź aktywność
+    const activity = activities.find(a => a.id === activityId)
+    if (!activity) return
+
+    // Pobierz liczbę uczestników i sprawdź czy są opłacone rezerwacje
+    try {
+      const { count: participantsCount, error: countError } = await supabase
+        .from('registrations')
+        .select('*', { count: 'exact', head: true })
+        .eq('activity_id', activityId)
+        .eq('status', 'registered')
+
+      if (countError) throw countError
+
+      // Sprawdź czy są opłacone rezerwacje
+      const { count: paidCount, error: paidError } = await supabase
+        .from('registrations')
+        .select('*', { count: 'exact', head: true })
+        .eq('activity_id', activityId)
+        .eq('payment_status', 'paid')
+
+      if (paidError) throw paidError
+
+      setActivityToCancel(activity)
+      setCancelParticipantsCount(participantsCount || 0)
+      setCancelHasPaidParticipants((paidCount || 0) > 0)
+      setShowCancelModal(true)
+    } catch (error) {
+      console.error('Error checking participants:', error)
+      alert('Wystąpił błąd podczas sprawdzania uczestników')
+    }
+  }
+
+  const handleConfirmCancel = async (
+    sendNotification: boolean,
+    emailSubject: string,
+    emailBody: string
+  ) => {
+    if (!activityToCancel) return
 
     try {
+      // Anuluj zajęcia
       const { error } = await supabase
         .from('activities')
         .update({ status: 'cancelled' })
-        .eq('id', activityId)
+        .eq('id', activityToCancel.id)
 
       if (error) throw error
-      alert('✅ Zajęcia anulowane')
+
+      // Jeśli są opłacone rezerwacje, oznacz je jako wymagające zwrotu
+      if (cancelHasPaidParticipants) {
+        const { error: refundError } = await supabase
+          .from('registrations')
+          .update({ refund_status: 'pending' })
+          .eq('activity_id', activityToCancel.id)
+          .eq('payment_status', 'paid')
+
+        if (refundError) {
+          console.error('Error marking refunds as pending:', refundError)
+          // Kontynuuj mimo błędu - zajęcia są anulowane
+        }
+      }
+
+      // Wyślij powiadomienia jeśli użytkownik wybrał
+      if (sendNotification && cancelParticipantsCount > 0) {
+        try {
+          const { data: { session } } = await supabase.auth.getSession()
+
+          // Wyślij powiadomienia push
+          const pushResponse = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-push-notifications`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${session?.access_token}`
+              },
+              body: JSON.stringify({
+                activityId: activityToCancel.id,
+                activityName: activityToCancel.name,
+                dateTime: activityToCancel.date_time,
+                isCancellation: true
+              })
+            }
+          )
+
+          const pushData = await pushResponse.json()
+
+          // Wyślij email
+          const emailResponse = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${session?.access_token}`
+              },
+              body: JSON.stringify({
+                subject: emailSubject,
+                body: emailBody,
+                activityId: activityToCancel.id,
+                notificationType: 'event_cancelled'
+              })
+            }
+          )
+
+          const emailData = await emailResponse.json()
+
+          alert(
+            `✅ Zajęcia anulowane!\n\nWysłano powiadomienia:\n📱 Push: ${pushData.sent || 0}\n📧 Email: ${emailData.sent || 0}`
+          )
+        } catch (notificationError) {
+          console.error('Error sending notifications:', notificationError)
+          alert('✅ Zajęcia anulowane, ale wystąpił błąd przy wysyłaniu powiadomień')
+        }
+      } else {
+        alert('✅ Zajęcia anulowane')
+      }
+
+      setShowCancelModal(false)
+      setActivityToCancel(null)
       await fetchActivities()
     } catch (error) {
       console.error('Error cancelling activity:', error)
       alert('Wystąpił błąd podczas anulowania')
     }
+  }
+
+  const handleCancelCancellation = () => {
+    setShowCancelModal(false)
+    setActivityToCancel(null)
   }
 
   const handleModeSelection = async (mode: 'single' | 'recurring' | 'special') => {
@@ -2133,6 +2263,17 @@ const AdminActivitiesPage = () => {
           onConfirm={handleConfirmNotifications}
           onSkip={handleSkipNotifications}
           onCancel={handleCancelEdit}
+        />
+      )}
+
+      {/* Modal anulowania zajęć */}
+      {showCancelModal && activityToCancel && (
+        <CancelActivityModal
+          activityName={activityToCancel.name}
+          participantsCount={cancelParticipantsCount}
+          hasPaidParticipants={cancelHasPaidParticipants}
+          onConfirm={handleConfirmCancel}
+          onCancel={handleCancelCancellation}
         />
       )}
     </div>

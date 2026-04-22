@@ -225,6 +225,14 @@ const HamburgerMenu = ({ profile, onSignOut }: HamburgerMenuProps) => {
                     <span>💳</span>
                     <span className="text-sm">Płatności</span>
                   </button>
+
+                  <button
+                    onClick={() => handleNavigate('/admin/refunds')}
+                    className="w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2"
+                  >
+                    <span>💸</span>
+                    <span className="text-sm">Zwroty</span>
+                  </button>
                 </>
               )}
 
