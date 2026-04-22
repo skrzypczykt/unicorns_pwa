@@ -147,8 +147,6 @@ const AdminActivitiesPage = () => {
       // Combine both
       const activitiesData = [...(regularActivitiesData || []), ...(specialActivitiesData || [])]
 
-      if (activitiesError) throw activitiesError
-
       // Fetch registration counts for each activity
       const { data: registrationCounts, error: countsError } = await supabase
         .from('registrations')
