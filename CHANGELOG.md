@@ -4,6 +4,20 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.3.11] - 2026-04-23
+
+### Naprawiono
+
+- **Weryfikacja JWT w payment-initiate Edge Function**
+  - Użycie `supabase.auth.getUser(token)` z Service Role Key
+  - Obsługa ES256 algorytmu (Elliptic Curve) używanego przez Supabase Auth
+  - Naprawiono błąd UNAUTHORIZED_UNSUPPORTED_TOKEN_ALGORITHM
+  - Token użytkownika przekazywany przez Authorization header
+
+- **Konfiguracja Autopay secrets**
+  - Dodano AUTOPAY_SERVICE_ID, AUTOPAY_SHARED_KEY, AUTOPAY_GATEWAY_URL
+  - Utworzono SUPABASE_SECRETS.md z instrukcją konfiguracji
+
 ## [0.3.10] - 2026-04-23
 
 ### Naprawiono
