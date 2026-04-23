@@ -45,7 +45,7 @@
     # In production, inline styles are bundled into CSS files
     Content-Security-Policy = '''
       default-src 'none';
-      script-src 'self' https://*.supabase.co 'sha256-SFm72eGsn5uXqwjBTs8EJk7sKkf8luX/DmJfkornz/c=';
+      script-src 'self' https://*.supabase.co 'sha256-SFm72eGsn5uXqwjBTs8EJk7sKkf8luX/DmJfkornz/c=' 'sha256-nUq5ggnoRuLTC5Qi+NyYgNoaJ3OQqgW/Ea2RtEdYLEo=';
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com;
       img-src 'self' data: https://*.supabase.co https://www.unicorns.org.pl https://images.unsplash.com https://lh3.googleusercontent.com https://www.goandance.com blob:;

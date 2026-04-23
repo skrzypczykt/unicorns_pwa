@@ -110,8 +110,9 @@ serve(async (req) => {
       throw txError
     }
 
-    // 6. Wygeneruj OrderID dla Autopay
-    const orderId = `REG-${registrationId}-${transaction.id}`
+    // 6. Wygeneruj OrderID dla Autopay (max 32 znaki alfanumeryczne)
+    // Użyj tylko transaction.id (UUID bez kresek = 32 znaki)
+    const orderId = transaction.id.replace(/-/g, '')
 
     // 7. Przygotuj parametry płatności Autopay
     const serviceId = Deno.env.get('AUTOPAY_SERVICE_ID') ?? ''
@@ -143,6 +144,17 @@ serve(async (req) => {
 
     // 10. Generuj hash - TYLKO obowiązkowe parametry: ServiceID|OrderID|Amount|SharedKey
     const hashInput = `${serviceId}|${orderId}|${amountFormatted}|${sharedKey}`
+
+    console.log('Payment params:', {
+      serviceId,
+      orderId,
+      amount: amountFormatted,
+      currency,
+      customerEmail,
+      returnUrl,
+      hashInput: `${serviceId}|${orderId}|${amountFormatted}|***`
+    })
+
     const hashBuffer = await crypto.subtle.digest(
       'SHA-256',
       new TextEncoder().encode(hashInput)
