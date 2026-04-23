@@ -30,6 +30,7 @@ import BackButton from './components/BackButton'
 import ScrollToTop from './components/ScrollToTop'
 import HamburgerMenu from './components/HamburgerMenu'
 import WelcomeNotificationModal from './components/WelcomeNotificationModal'
+import VersionBanner from './components/VersionBanner'
 import MemberZonePage from './pages/MemberZonePage'
 import MemberNewsPage from './pages/MemberNewsPage'
 import MemberDocumentsPage from './pages/MemberDocumentsPage'
@@ -164,10 +165,12 @@ const AppContent = ({ user, profile, handleSignOut, onProfileUpdate, onUserUpdat
       <BackButton />
       <InstallPWAPrompt />
       <WelcomeNotificationModal />
+      {/* Version banner - pokazuje się tylko dla zalogowanych */}
+      {user && <VersionBanner />}
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 overflow-x-hidden">
         {/* Header - Responsywny - zawsze widoczny dla zalogowanych */}
         {profile && (
-          <header className="bg-gradient-to-r from-gray-900 via-black to-gray-900 backdrop-blur-sm shadow-lg border-b-4 border-purple-500 sticky top-0 z-50">
+          <header className="bg-gradient-to-r from-gray-900 via-black to-gray-900 backdrop-blur-sm shadow-lg border-b-4 border-purple-500 sticky top-[40px] z-50">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
             <div className="flex items-center justify-between gap-2">
               {/* Logo + Tytuł - Responsywne */}
