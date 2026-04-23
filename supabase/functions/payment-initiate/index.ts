@@ -150,13 +150,19 @@ serve(async (req) => {
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
-    // 11. Zbuduj URL przekierowania
+    // 11. Zbuduj parametry - usuń polskie znaki z Description
+    const cleanDescription = (description || `Oplata za ${registration.activities.name}`)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Usuń znaki diakrytyczne
+      .replace(/[^\x00-\x7F]/g, '') // Usuń non-ASCII
+      .substring(0, 255) // Max 255 znaków
+
     const params: Record<string, string> = {
       ServiceID: serviceId,
       OrderID: orderId,
       Amount: amountFormatted,
       Currency: currency,
-      Description: description || `Opłata za ${registration.activities.name}`,
+      Description: cleanDescription,
       CustomerEmail: customerEmail,
       ReturnURL: returnUrl,
       Hash: hash

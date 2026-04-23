@@ -45,8 +45,6 @@ const ActivitiesPage = () => {
   const [loading, setLoading] = useState(true)
   const [registering, setRegistering] = useState<string | null>(null)
   const [cancelling, setCancelling] = useState<string | null>(null)
-  const [showCancelModal, setShowCancelModal] = useState(false)
-  const [activityToCancel, setActivityToCancel] = useState<string | null>(null)
   const [userRegistrations, setUserRegistrations] = useState<Record<string, {
     registrationId: string
     canCancelUntil: string
@@ -466,9 +464,11 @@ const ActivitiesPage = () => {
       await fetchUserRegistrations()
       await fetchParticipantCounts()
 
-      // Show calendar prompt
-      setRegisteredActivity(activity)
-      setShowCalendarPrompt(true)
+      // Show calendar prompt TYLKO dla bezpłatnych (skip dla płatnych - pokazać po powrocie z płatności)
+      if (!skipMessages && cost === 0) {
+        setRegisteredActivity(activity)
+        setShowCalendarPrompt(true)
+      }
 
       return registrationId
     } catch (error) {
@@ -601,19 +601,20 @@ const ActivitiesPage = () => {
       return
     }
 
-    // Pokaż modal potwierdzenia
-    setActivityToCancel(activityId)
-    setShowCancelModal(true)
+    // Flip karty do potwierdzenia anulowania
+    const card = document.getElementById(`card-${activityId}`)
+    card?.classList.add('flipped')
   }
 
-  const confirmCancellation = async () => {
-    if (!activityToCancel) return
-
-    const registration = userRegistrations[activityToCancel]
+  const confirmCancellation = async (activityId: string) => {
+    const registration = userRegistrations[activityId]
     if (!registration) return
 
-    setShowCancelModal(false)
-    setCancelling(activityToCancel)
+    // Flip z powrotem
+    const card = document.getElementById(`card-${activityId}`)
+    card?.classList.remove('flipped')
+
+    setCancelling(activityId)
 
     try {
       const { error } = await supabase
@@ -634,7 +635,6 @@ const ActivitiesPage = () => {
       alert('Wystąpił błąd podczas anulowania')
     } finally {
       setCancelling(null)
-      setActivityToCancel(null)
     }
   }
 
@@ -936,7 +936,7 @@ const ActivitiesPage = () => {
                   </div>
                 </div>
 
-                {/* BACK SIDE - Potwierdzenie zapisu */}
+                {/* BACK SIDE - Potwierdzenie zapisu lub anulowania */}
                 <div
                   className="absolute inset-0 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-xl border-4 border-purple-400 p-6 backface-hidden"
                   style={{
@@ -945,35 +945,71 @@ const ActivitiesPage = () => {
                   }}
                 >
                   <div className="h-full flex flex-col items-center justify-center text-center">
-                    {/* Szczęśliwy jednorożec */}
-                    <div className="mb-4 text-8xl animate-bounce">
-                      🦄✨
-                    </div>
+                    {isRegistered ? (
+                      <>
+                        {/* Smutny jednorożec dla anulowania */}
+                        <div className="mb-4 text-8xl animate-spin-slow">
+                          😢🦄
+                        </div>
 
-                    <h3 className="text-2xl font-bold text-purple-600 mb-3">
-                      Wspaniale! 🎉
-                    </h3>
-                    <p className="text-gray-700 mb-6 max-w-sm">
-                      Czy na pewno chcesz zapisać się na<br/>
-                      <strong className="text-purple-600">{activity.name}</strong>?
-                    </p>
+                        <h3 className="text-2xl font-bold text-red-600 mb-3">
+                          Anulować zapis?
+                        </h3>
+                        <p className="text-gray-700 mb-6 max-w-sm">
+                          Czy na pewno chcesz anulować swój zapis na<br/>
+                          <strong className="text-red-600">{activity.name}</strong>?
+                        </p>
 
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => handleConfirmRegister(activity.id, activity.cost, activity.cancellation_hours)}
-                        disabled={isProcessing}
-                        className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-                      >
-                        {isProcessing ? '⏳ Zapisuję...' : 'Tak, zapisz mnie!'}
-                      </button>
-                      <button
-                        onClick={handleCancelRegister}
-                        disabled={isProcessing}
-                        className="px-6 py-3 bg-gray-400 hover:bg-gray-500 text-white font-semibold rounded-lg transition-all shadow-lg"
-                      >
-                        Nie, powrót
-                      </button>
-                    </div>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => confirmCancellation(activity.id)}
+                            disabled={isCancelling}
+                            className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                          >
+                            {isCancelling ? '⏳ Anulowanie...' : 'Tak, anuluj zapis'}
+                          </button>
+                          <button
+                            onClick={handleCancelRegister}
+                            disabled={isCancelling}
+                            className="px-6 py-3 bg-gray-400 hover:bg-gray-500 text-white font-semibold rounded-lg transition-all shadow-lg"
+                          >
+                            Nie, zostaw zapis
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* Szczęśliwy jednorożec dla zapisu */}
+                        <div className="mb-4 text-8xl animate-bounce">
+                          🦄✨
+                        </div>
+
+                        <h3 className="text-2xl font-bold text-purple-600 mb-3">
+                          Wspaniale! 🎉
+                        </h3>
+                        <p className="text-gray-700 mb-6 max-w-sm">
+                          Czy na pewno chcesz zapisać się na<br/>
+                          <strong className="text-purple-600">{activity.name}</strong>?
+                        </p>
+
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => handleConfirmRegister(activity.id, activity.cost, activity.cancellation_hours)}
+                            disabled={isProcessing}
+                            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                          >
+                            {isProcessing ? '⏳ Zapisuję...' : 'Tak, zapisz mnie!'}
+                          </button>
+                          <button
+                            onClick={handleCancelRegister}
+                            disabled={isProcessing}
+                            className="px-6 py-3 bg-gray-400 hover:bg-gray-500 text-white font-semibold rounded-lg transition-all shadow-lg"
+                          >
+                            Nie, powrót
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1316,39 +1352,6 @@ const ActivitiesPage = () => {
           onPayLater={handlePayLater}
           onCancel={handleCancelPayment}
         />
-      )}
-
-      {/* Cancel Confirmation Modal */}
-      {showCancelModal && activityToCancel && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 animate-bounce-in">
-            <div className="text-center mb-6">
-              <div className="text-8xl mb-4 animate-spin-slow">😢🦄</div>
-              <h3 className="text-2xl font-bold text-red-600 mb-2">Anulować zapis?</h3>
-              <p className="text-gray-600">
-                Czy na pewno chcesz anulować swój zapis na te zajęcia?
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <button
-                onClick={confirmCancellation}
-                className="w-full px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all"
-              >
-                Tak, anuluj zapis
-              </button>
-              <button
-                onClick={() => {
-                  setShowCancelModal(false)
-                  setActivityToCancel(null)
-                }}
-                className="w-full px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all"
-              >
-                Nie, zostaw zapis
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* Google Calendar Prompt Modal */}
