@@ -4,6 +4,25 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.3.14] - 2026-04-23
+
+### Zmieniono
+
+- **Modal anulowania jako flip karty**
+  - Odwracający się kafelek zamiast osobnego okna
+  - Smutny obracający się jednorożec 😢🦄 dla anulowania
+  - Szczęśliwy jednorożec 🦄✨ dla zapisu
+  
+- **Pytanie o kalendarz Google**
+  - Pokazuje się tylko dla bezpłatnych zajęć
+  - Nie pojawia się przed przekierowaniem do płatności
+
+### Naprawiono
+
+- **Autopay Description**
+  - Usunięte polskie znaki (normalizacja NFD)
+  - Maksymalnie 255 znaków
+
 ## [0.3.13] - 2026-04-23
 
 ### Naprawiono
