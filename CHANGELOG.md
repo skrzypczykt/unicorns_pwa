@@ -4,6 +4,22 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.4.0] - 2026-04-23 - Bezpieczeństwo
+
+### Bezpieczeństwo
+
+- **Usunięto unsafe-inline z CSP**
+  - Przepisano autopay-redirect.html → React component AutopayRedirectPage
+  - Przepisano payment-return.html → React component PaymentReturnPage
+  - Wszystkie skrypty teraz przez bundler Vite
+  - Pełne bezpieczeństwo CSP bez kompromisów
+
+### Zmieniono
+
+- Przekierowanie płatności: `/autopay-redirect.html` → `/autopay-redirect`
+- Powrót z płatności: `/payment-return.html` → `/payment-return`
+- **UWAGA**: Zaktualizuj adres powrotu w panelu Autopay na `/payment-success`
+
 ## [0.3.15] - 2026-04-23
 
 ### Naprawiono

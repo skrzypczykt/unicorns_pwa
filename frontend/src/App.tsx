@@ -45,6 +45,8 @@ import DonationsPage from './pages/DonationsPage'
 import LegalNoticePage from './pages/LegalNoticePage'
 import PaymentSuccessPage from './pages/PaymentSuccessPage'
 import PaymentCancelPage from './pages/PaymentCancelPage'
+import AutopayRedirectPage from './pages/AutopayRedirectPage'
+import PaymentReturnPage from './pages/PaymentReturnPage'
 import AdminPaymentsPage from './pages/AdminPaymentsPage'
 import AdminRefundsPage from './pages/AdminRefundsPage'
 
@@ -258,6 +260,8 @@ const AppContent = ({ user, profile, handleSignOut, onProfileUpdate, onUserUpdat
           <Route path="/member-zone/polls" element={<MemberPollsPage />} />
           <Route path="/member-zone/fees" element={<MemberBalancePage />} />
           <Route path="/donations" element={<DonationsPage user={user} profile={profile} />} />
+          <Route path="/autopay-redirect" element={<AutopayRedirectPage />} />
+          <Route path="/payment-return" element={<PaymentReturnPage />} />
           <Route path="/payment-success" element={<PaymentSuccessPage />} />
           <Route path="/payment-cancel" element={<PaymentCancelPage />} />
           <Route path="/admin/*" element={

@@ -194,9 +194,9 @@ serve(async (req) => {
       params.GatewayID = '106'
     }
 
-    // Zbuduj URL do strony pośredniej która wykona POST do Autopay
+    // Zbuduj URL do React route która wykona POST do Autopay
     params.gatewayUrl = gatewayUrl
-    const redirectUrl = `${frontendUrl}/autopay-redirect.html?${new URLSearchParams(params).toString()}`
+    const redirectUrl = `${frontendUrl}/autopay-redirect?${new URLSearchParams(params).toString()}`
 
     return new Response(
       JSON.stringify({

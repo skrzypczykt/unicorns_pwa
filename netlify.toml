@@ -67,17 +67,6 @@
     Service-Worker-Allowed = "/"
 
 # Cache static assets
-# CSP dla stron płatności - unsafe-inline dla prostoty
-[[headers]]
-  for = "/autopay-redirect.html"
-  [headers.values]
-    Content-Security-Policy = "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self'; form-action https://testpay.autopay.eu https://autopay.pl;"
-
-[[headers]]
-  for = "/payment-return.html"
-  [headers.values]
-    Content-Security-Policy = "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self';"
-
 [[headers]]
   for = "/assets/*"
   [headers.values]
