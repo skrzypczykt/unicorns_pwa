@@ -760,6 +760,7 @@ const ActivitiesPage = () => {
                   style={{ perspective: '1000px' }}
                 >
                   <div
+                    id={`card-${activity.id}`}
                     className={`relative transition-transform duration-700 transform-style-3d ${
                       isFlipped ? 'rotate-y-180' : ''
                     }`}
@@ -1090,6 +1091,7 @@ const ActivitiesPage = () => {
                 style={{ perspective: '1000px' }}
               >
                 <div
+                  id={`card-${activity.id}`}
                   className={`relative transition-transform duration-700 transform-style-3d ${
                     isFlipped ? 'rotate-y-180' : ''
                   }`}
