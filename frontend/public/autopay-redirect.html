@@ -58,11 +58,10 @@
     <input type="hidden" name="ServiceID" value="">
     <input type="hidden" name="OrderID" value="">
     <input type="hidden" name="Amount" value="">
+    <input type="hidden" name="CustomerEmail" value="">
+    <input type="hidden" name="Hash" value="">
     <input type="hidden" name="Currency" value="">
     <input type="hidden" name="Description" value="">
-    <input type="hidden" name="CustomerEmail" value="">
-    <input type="hidden" name="ReturnURL" value="">
-    <input type="hidden" name="Hash" value="">
   </form>
 
   <script>
@@ -73,15 +72,18 @@
     // Ustaw action formularza
     form.action = params.get('gatewayUrl') || 'https://testpay.autopay.eu/payment';
 
-    // Wypełnij pola formularza
-    const fields = ['ServiceID', 'OrderID', 'Amount', 'Currency', 'Description', 'CustomerEmail', 'ReturnURL', 'Hash'];
+    // Wypełnij pola formularza - tylko te które są ustawione
+    const fields = ['ServiceID', 'OrderID', 'Amount', 'CustomerEmail', 'Hash', 'Currency', 'Description'];
     const debugData = { gatewayUrl: form.action };
 
     fields.forEach(field => {
-      const input = form.querySelector(`[name="${field}"]`);
-      if (input && params.get(field)) {
-        input.value = params.get(field);
-        debugData[field] = params.get(field);
+      const value = params.get(field);
+      if (value) {
+        const input = form.querySelector(`[name="${field}"]`);
+        if (input) {
+          input.value = value;
+          debugData[field] = value;
+        }
       }
     });
 
