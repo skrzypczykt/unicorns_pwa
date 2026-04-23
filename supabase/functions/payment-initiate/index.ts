@@ -138,7 +138,7 @@ serve(async (req) => {
       .single()
 
     const customerEmail = userData?.email || ''
-    const returnUrl = `${frontendUrl}/payment-success`
+    const returnUrl = `${frontendUrl}/payment-return.html`
     const currency = 'PLN'
 
     // 10. Generuj hash - TYLKO obowiązkowe parametry: ServiceID|OrderID|Amount|SharedKey
