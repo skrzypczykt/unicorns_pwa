@@ -28,7 +28,7 @@ FRONTEND_URL=http://localhost:5173
 
 W panelu administracyjnym Autopay skonfiguruj:
 - **ITN URL**: `https://your-supabase-project.supabase.co/functions/v1/autopay-webhook`
-- **Return URL**: `https://your-frontend-url.com/payment/success` (opcjonalnie)
+- **Return URL**: `https://your-frontend-url.com/payment-success`
 
 ## Testowanie różnych scenariuszy
 

@@ -4,6 +4,29 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.3.9] - 2026-04-23 - Integracja płatności w Harmonogramie
+
+### Naprawiono
+
+- **Płatność Autopay w Harmonogramie zajęć**
+  - Usunięto testowy alert "Moduł płatności BLIK jest w wersji testowej"
+  - Dodano prawdziwą integrację z payment-initiate Edge Function
+  - Po kliknięciu "Opłać teraz" użytkownik jest przekierowywany do bramki Autopay
+  - Rezerwacja tworzona z `payment_status='unpaid'` przed przekierowaniem
+  - Webhook ITN zaktualizuje status po udanej płatności
+
+- **performRegistration zwraca registration ID**
+  - Funkcja teraz zwraca UUID rezerwacji potrzebne dla payment-initiate
+  - Dodano obsługę `payment_status='unpaid'` (oprócz 'paid' i 'pending')
+  - Poprawiono type signature: `Promise<string | null>`
+
+- **UX - zamykanie slide panel**
+  - Panel slidePanel automatycznie zamyka się po kliknięciu "Zapisz się"
+  - Modal płatności widoczny na czystym tle bez nakładających się elementów
+
+- **Dokumentacja PAYMENT_TESTING.md**
+  - Poprawiono Return URL: `/payment-success` (zamiast `/payment/success`)
+
 ## [0.3.8] - 2026-04-23 - Moduł płatności Autopay
 
 ### Dodano

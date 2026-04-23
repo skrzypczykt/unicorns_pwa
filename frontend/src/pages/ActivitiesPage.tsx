@@ -271,6 +271,10 @@ const ActivitiesPage = () => {
       return
     }
 
+    // Zamknij panel slidePanel przed pokazaniem modala płatności
+    setShowSlidePanel(false)
+    setSelectedActivity(null)
+
     await handleRegister(selectedActivity.id, selectedActivity.cost, selectedActivity.cancellation_hours)
     // Odśwież dane po zapisaniu
     refreshAllData()
@@ -350,15 +354,15 @@ const ActivitiesPage = () => {
     activityId: string,
     cost: number,
     cancellationHours: number,
-    paymentStatus: 'paid' | 'pending'
-  ) => {
+    paymentStatus: 'paid' | 'pending' | 'unpaid'
+  ): Promise<string | null> => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) return null
 
       const allActivities = [...activities, ...specialEvents]
       const activity = allActivities.find(a => a.id === activityId)
-      if (!activity) return
+      if (!activity) return null
 
       const activityDate = new Date(activity.date_time)
       const cancellationDeadline = new Date(activityDate.getTime() - (cancellationHours * 60 * 60 * 1000))
@@ -380,10 +384,12 @@ const ActivitiesPage = () => {
 
       if (checkError) throw checkError
 
+      let registrationId: string | null = null
+
       if (existingReg) {
         if (existingReg.status === 'registered' || existingReg.status === 'attended') {
           alert('Już jesteś zapisany na te zajęcia!')
-          return
+          return null
         }
 
         // Reaktywuj anulowany zapis
@@ -401,10 +407,11 @@ const ActivitiesPage = () => {
             .eq('id', existingReg.id)
 
           if (updateError) throw updateError
+          registrationId = existingReg.id
         }
       } else {
         // Create new registration
-        const { error: insertError } = await supabase
+        const { data: newReg, error: insertError } = await supabase
           .from('registrations')
           .insert({
             activity_id: activityId,
@@ -415,8 +422,11 @@ const ActivitiesPage = () => {
             payment_due_date: paymentDueDate,
             paid_at: paymentStatus === 'paid' ? new Date().toISOString() : null
           })
+          .select('id')
+          .single()
 
         if (insertError) throw insertError
+        registrationId = newReg?.id || null
       }
 
       // Różne komunikaty w zależności od typu wydarzenia i kosztu
@@ -453,9 +463,12 @@ const ActivitiesPage = () => {
       // Show calendar prompt
       setRegisteredActivity(activity)
       setShowCalendarPrompt(true)
+
+      return registrationId
     } catch (error) {
       console.error('Error registering:', error)
       alert('Wystąpił błąd podczas zapisu')
+      return null
     } finally {
       setRegistering(null)
     }
@@ -467,15 +480,57 @@ const ActivitiesPage = () => {
     setShowPaymentModal(false)
     setRegistering(pendingRegistration.activityId)
 
-    // Symulacja płatności BLIK (na razie disabled)
-    alert('💳 Moduł płatności BLIK jest w wersji testowej.\n\nW pełnej wersji aplikacji tutaj pojawi się formularz płatności.\n\nTeraz zapiszemy Cię z statusem "opłacone".')
+    try {
+      // 1. Najpierw utwórz rezerwację z payment_status='unpaid'
+      const registrationId = await performRegistration(
+        pendingRegistration.activityId,
+        pendingRegistration.cost,
+        pendingRegistration.cancellationHours,
+        'unpaid'
+      )
 
-    await performRegistration(
-      pendingRegistration.activityId,
-      pendingRegistration.cost,
-      pendingRegistration.cancellationHours,
-      'paid'
-    )
+      if (!registrationId) {
+        throw new Error('Failed to create registration')
+      }
+
+      // 2. Inicjuj płatność przez Edge Function
+      const { data: { session } } = await supabase.auth.getSession()
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/payment-initiate`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify({
+            registrationId: registrationId,
+            amount: pendingRegistration.cost,
+            description: `Opłata za ${pendingRegistration.activityName}`,
+            paymentMethod: 'default' // Użytkownik wybierze na bramce
+          })
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Payment initiation failed')
+      }
+
+      // 3. Przekieruj do Autopay
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl
+      } else {
+        throw new Error('No redirect URL received')
+      }
+    } catch (error) {
+      console.error('Payment error:', error)
+      alert(`❌ Błąd płatności: ${error instanceof Error ? error.message : 'Nieznany błąd'}`)
+      setRegistering(null)
+    }
 
     setPendingRegistration(null)
   }
