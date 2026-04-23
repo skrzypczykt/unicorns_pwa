@@ -194,6 +194,7 @@ const ActivitiesPage = () => {
         .select('id, activity_id, can_cancel_until, payment_status')
         .eq('user_id', user.id)
         .in('status', ['registered', 'attended'])  // Include attended status
+        .neq('payment_status', 'pending')  // Don't show pending payments as registered
 
       if (error) throw error
 

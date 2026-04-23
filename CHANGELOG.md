@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.4.1] - 2026-04-23
+
+### Naprawiono
+
+- **Rejestracje ze statusem pending nie wyświetlają się jako potwierdzone**
+  - fetchUserRegistrations wyklucza payment_status='pending'
+  - Użytkownik nie widzi się jako zapisany gdy płatność nieudana/niezakończona
+  - Usuwa mylące UI pokazujące zapis przed potwierdzeniem płatności
+
 ## [0.4.0] - 2026-04-23 - Bezpieczeństwo
 
 ### Bezpieczeństwo
