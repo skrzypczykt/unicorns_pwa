@@ -160,27 +160,13 @@ serve(async (req) => {
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
-    // 11. Zbuduj parametry - usuń polskie znaki z Description (max 79 znaków!)
-    const cleanDescription = (description || `Oplata za ${registration.activities.name}`)
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Usuń znaki diakrytyczne
-      .replace(/[^\x00-\x7F]/g, '') // Usuń non-ASCII
-      .substring(0, 79) // Max 79 znaków (nie 255!)
-
+    // 11. Zbuduj parametry - TYLKO obowiązkowe (bez Currency i Description)
     const params: Record<string, string> = {
       ServiceID: serviceId,
       OrderID: orderId,
       Amount: amountFormatted,
       CustomerEmail: customerEmail,
       Hash: hash
-    }
-
-    // Dodaj opcjonalne parametry tylko jeśli są ustawione
-    if (cleanDescription) {
-      params.Description = cleanDescription
-    }
-    if (currency) {
-      params.Currency = currency
     }
 
     // BLIK - wymaga WhiteLabel mode (GatewayID=509)

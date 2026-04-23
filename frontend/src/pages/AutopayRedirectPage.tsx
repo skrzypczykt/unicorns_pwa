@@ -6,6 +6,16 @@ export default function AutopayRedirectPage() {
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
+    // Debug - wypisz wszystkie parametry przed submit
+    console.log('Autopay redirect params:', {
+      gatewayUrl,
+      serviceId,
+      orderId,
+      amount,
+      customerEmail,
+      hash
+    })
+
     // Auto-submit po załadowaniu
     const timer = setTimeout(() => {
       if (formRef.current) {
