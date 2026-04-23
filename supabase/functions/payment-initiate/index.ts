@@ -2,17 +2,6 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getCorsHeaders } from '../_shared/cors.ts'
 
-// Decode JWT without verification
-function decodeJWT(token: string): any {
-  const parts = token.split('.')
-  if (parts.length !== 3) {
-    throw new Error('Invalid JWT format')
-  }
-  const payload = parts[1]
-  const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
-  return JSON.parse(decoded)
-}
-
 serve(async (req) => {
   const origin = req.headers.get('origin')
   const corsHeaders = getCorsHeaders(origin)
@@ -22,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    // 1. Weryfikuj autoryzację
+    // 1. Weryfikuj autoryzację używając Supabase client
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       return new Response(
@@ -31,19 +20,28 @@ serve(async (req) => {
       )
     }
 
-    const token = authHeader.replace('Bearer ', '')
-    let userId: string
+    // Utwórz klienta Supabase z tokenem użytkownika do weryfikacji
+    const supabaseAuth = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: authHeader }
+        }
+      }
+    )
 
-    try {
-      const payload = decodeJWT(token)
-      userId = payload.sub
-      if (!userId) throw new Error('Missing user ID in token')
-    } catch (err) {
+    // Weryfikuj token i pobierz użytkownika
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
+
+    if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
+        JSON.stringify({ error: 'Invalid or expired token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    const userId = user.id
 
     // 2. Parsuj request body
     const {
