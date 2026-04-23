@@ -78,9 +78,9 @@ export default function AutopayRedirectPage() {
         <input type="hidden" name="Amount" value={amount} />
         <input type="hidden" name="CustomerEmail" value={customerEmail} />
         <input type="hidden" name="Hash" value={hash} />
-        <input type="hidden" name="GatewayID" value="106" />
         {currency && <input type="hidden" name="Currency" value={currency} />}
         {description && <input type="hidden" name="Description" value={description} />}
+        {/* GatewayID opcjonalne - bez tego pokazuje stronę wyboru metody */}
       </form>
 
       <style>{`
