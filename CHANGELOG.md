@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.3.12] - 2026-04-23
+
+### Naprawiono
+
+- **Porównywanie wersji w VersionBanner**
+  - Użycie semver (0.3.12 > 0.3.11 > 0.3.10)
+  - Banner nie wyświetla się dla starszych wersji
+  - Zmieniono "nowa" na "nowsza"
+
 ## [0.3.11] - 2026-04-23
 
 ### Naprawiono
