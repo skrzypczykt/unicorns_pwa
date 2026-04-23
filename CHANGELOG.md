@@ -4,6 +4,23 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.3.15] - 2026-04-23
+
+### Naprawiono
+
+- **Autopay OrderID limit**
+  - Skrócono OrderID z 81 do 32 znaków (bez kresek UUID)
+  - Autopay wymaga max 32 znaki alfanumeryczne
+  - OrderID = transaction.id bez kresek
+
+- **Flip karty dla anulowania**
+  - Użyto setFlippedCard() zamiast manipulacji DOM
+  - Przycisk "Anuluj zapis" teraz działa
+
+- **Payment return handling**
+  - Dodano payment-return.html dla POST redirect z Autopay
+  - Debug mode (?debug=1) dla diagnostyki parametrów
+
 ## [0.3.14] - 2026-04-23
 
 ### Zmieniono
