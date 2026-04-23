@@ -131,14 +131,23 @@ serve(async (req) => {
       .update({ provider_transaction_id: orderId })
       .eq('id', transaction.id)
 
-    // 9. Pobierz email użytkownika
+    // 9. Pobierz email użytkownika - WYMAGANE przez Autopay
     const { data: userData } = await supabase
       .from('users')
       .select('email')
       .eq('id', userId)
       .single()
 
-    const customerEmail = userData?.email || ''
+    const customerEmail = userData?.email || user.email || ''
+
+    // Autopay wymaga email - jeśli nie ma, błąd
+    if (!customerEmail) {
+      return new Response(
+        JSON.stringify({ error: 'Customer email is required for payment' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const currency = 'PLN'
 
     // 10. Generuj hash - TYLKO obowiązkowe parametry: ServiceID|OrderID|Amount|SharedKey
@@ -160,13 +169,14 @@ serve(async (req) => {
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
-    // 11. Zbuduj parametry - TYLKO obowiązkowe (bez Currency i Description)
+    // 11. Zbuduj parametry - dokumentacja wymaga CustomerEmail jako OBOWIĄZKOWE
     const params: Record<string, string> = {
       ServiceID: serviceId,
       OrderID: orderId,
       Amount: amountFormatted,
-      CustomerEmail: customerEmail,
-      Hash: hash
+      CustomerEmail: customerEmail,  // OBOWIĄZKOWE
+      Hash: hash,
+      GatewayID: '106'  // Domyślnie test PBL (środowisko testowe wymaga)
     }
 
     // BLIK - wymaga WhiteLabel mode (GatewayID=509)
@@ -175,7 +185,7 @@ serve(async (req) => {
       params.AuthorizationCode = blikCode
     }
 
-    // PBL - TEST 106 (test PayByLink)
+    // PBL - TEST 106 już ustawione domyślnie
     if (paymentMethod === 'pbl') {
       params.GatewayID = '106'
     }

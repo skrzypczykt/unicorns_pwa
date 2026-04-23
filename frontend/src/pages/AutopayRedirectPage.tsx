@@ -15,14 +15,18 @@ export default function AutopayRedirectPage() {
     console.log('CustomerEmail:', customerEmail)
     console.log('Hash:', hash)
     console.log('Form exists:', !!formRef.current)
+    console.log('FULL FORM ACTION URL:', formRef.current?.action)
 
     // Auto-submit po załadowaniu
     const timer = setTimeout(() => {
       console.log('Attempting form submit...')
       if (formRef.current) {
-        console.log('Form action:', formRef.current.action)
-        console.log('Form method:', formRef.current.method)
-        console.log('Submitting form NOW!')
+        console.log('Final form.action before submit:', formRef.current.action)
+        console.log('All form inputs:')
+        const formData = new FormData(formRef.current)
+        for (const [key, value] of formData.entries()) {
+          console.log(`  ${key}: ${value}`)
+        }
         formRef.current.submit()
         console.log('Form submitted!')
       } else {
@@ -95,9 +99,7 @@ export default function AutopayRedirectPage() {
         <input type="hidden" name="Amount" value={amount} />
         <input type="hidden" name="CustomerEmail" value={customerEmail} />
         <input type="hidden" name="Hash" value={hash} />
-        {currency && <input type="hidden" name="Currency" value={currency} />}
-        {description && <input type="hidden" name="Description" value={description} />}
-        {/* GatewayID opcjonalne - bez tego pokazuje stronę wyboru metody */}
+        {/* CustomerEmail jest OBOWIĄZKOWE według dokumentacji */}
       </form>
 
       <style>{`
