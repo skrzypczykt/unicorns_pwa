@@ -118,8 +118,8 @@ serve(async (req) => {
     const sharedKey = Deno.env.get('AUTOPAY_SHARED_KEY') ?? ''
     const frontendUrl = Deno.env.get('FRONTEND_URL') ?? 'http://localhost:5173'
 
-    // Gateway URL: https://pay-accept.bm.pl/paygw/{ServiceID}/NewPayment (środowisko testowe)
-    const gatewayUrl = `https://pay-accept.bm.pl/paygw/${serviceId}/NewPayment`
+    // Gateway URL - środowisko testowe Autopay
+    const gatewayUrl = 'https://testpay.autopay.eu/payment'
 
     const amountInGrosze = Math.round(amount * 100).toString()
 
@@ -138,12 +138,21 @@ serve(async (req) => {
       .update({ provider_transaction_id: orderId })
       .eq('id', transaction.id)
 
-    // 9. Zbuduj URL przekierowania
+    // 9. Pobierz email użytkownika
+    const { data: userData } = await supabase
+      .from('users')
+      .select('email')
+      .eq('id', userId)
+      .single()
+
+    // 10. Zbuduj URL przekierowania
     const params: Record<string, string> = {
       ServiceID: serviceId,
       OrderID: orderId,
       Amount: amountInGrosze,
       Description: description || `Opłata za ${registration.activities.name}`,
+      CustomerEmail: userData?.email || '',
+      ReturnURL: `${frontendUrl}/payment-success`,
       Hash: hash
     }
 
