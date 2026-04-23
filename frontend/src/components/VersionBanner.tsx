@@ -8,7 +8,15 @@ const VersionBanner = () => {
   const [showBanner, setShowBanner] = useState(true)
 
   useEffect(() => {
+    // Sprawdź wersję od razu
     checkVersion()
+
+    // Sprawdzaj co 1h czy nie ma nowszej wersji
+    const interval = setInterval(() => {
+      checkVersion()
+    }, 60 * 60 * 1000) // 1 godzina
+
+    return () => clearInterval(interval)
   }, [])
 
   const checkVersion = async () => {
@@ -72,6 +80,10 @@ const VersionBanner = () => {
     const dismissed = localStorage.getItem('dismissed-version-banner')
     if (dismissed === APP_VERSION && !isOutdated) {
       setShowBanner(false)
+    }
+    // Jeśli wykryto nowszą wersję, zawsze pokaż banner
+    if (isOutdated) {
+      setShowBanner(true)
     }
   }, [isOutdated])
 

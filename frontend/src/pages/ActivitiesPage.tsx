@@ -354,7 +354,8 @@ const ActivitiesPage = () => {
     activityId: string,
     cost: number,
     cancellationHours: number,
-    paymentStatus: 'paid' | 'pending'
+    paymentStatus: 'paid' | 'pending',
+    skipMessages: boolean = false
   ): Promise<string | null> => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -432,13 +433,14 @@ const ActivitiesPage = () => {
       // Różne komunikaty w zależności od typu wydarzenia i kosztu
       const isSpecialEvent = specialEvents.some(e => e.id === activityId)
 
-      // Buduj komunikat
+      // Buduj komunikat (PRE-PAID model)
       let message = ''
       if (cost > 0) {
+        // Nie pokazuj komunikatu o płatności - zostanie pokazany modal płatności
         if (isSpecialEvent) {
-          message = `✅ Zapisano na wydarzenie!\n\nKoszt ${cost.toFixed(2)} zł zostanie pobrany po uczestnictwie. Masz 40 dni na uzupełnienie salda.`
+          message = '✅ Zapisano na wydarzenie!'
         } else {
-          message = `✅ Zapisano na zajęcia!\n\nKoszt ${cost.toFixed(2)} zł zostanie pobrany po oznaczeniu obecności przez trenera. Masz 40 dni na uzupełnienie salda.`
+          message = '✅ Zapisano na zajęcia!'
         }
       } else {
         if (isSpecialEvent) {
