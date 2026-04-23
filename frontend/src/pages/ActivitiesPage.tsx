@@ -430,33 +430,35 @@ const ActivitiesPage = () => {
         registrationId = newReg?.id || null
       }
 
-      // Różne komunikaty w zależności od typu wydarzenia i kosztu
-      const isSpecialEvent = specialEvents.some(e => e.id === activityId)
+      // Różne komunikaty w zależności od typu wydarzenia i kosztu (tylko jeśli nie pominięto)
+      if (!skipMessages) {
+        const isSpecialEvent = specialEvents.some(e => e.id === activityId)
 
-      // Buduj komunikat (PRE-PAID model)
-      let message = ''
-      if (cost > 0) {
-        // Nie pokazuj komunikatu o płatności - zostanie pokazany modal płatności
-        if (isSpecialEvent) {
-          message = '✅ Zapisano na wydarzenie!'
+        // Buduj komunikat (PRE-PAID model)
+        let message = ''
+        if (cost > 0) {
+          // Nie pokazuj komunikatu o płatności - zostanie pokazany modal płatności
+          if (isSpecialEvent) {
+            message = '✅ Zapisano na wydarzenie!'
+          } else {
+            message = '✅ Zapisano na zajęcia!'
+          }
         } else {
-          message = '✅ Zapisano na zajęcia!'
+          if (isSpecialEvent) {
+            message = '✅ Zapisano na wydarzenie!\n\nUdział jest bezpłatny.'
+          } else {
+            message = '✅ Zapisano na zajęcia!\n\nUdział jest bezpłatny.'
+          }
         }
-      } else {
-        if (isSpecialEvent) {
-          message = '✅ Zapisano na wydarzenie!\n\nUdział jest bezpłatny.'
-        } else {
-          message = '✅ Zapisano na zajęcia!\n\nUdział jest bezpłatny.'
+
+        // Dodaj info o WhatsApp jeśli istnieje (z fallbackiem do activity_type)
+        const whatsappLink = getWhatsAppLink(activity)
+        if (whatsappLink) {
+          message += '\n\n💬 Dołącz do grupy WhatsApp! Poznaj innych uczestników, zadawaj pytania i bądź na bieżąco.'
         }
-      }
 
-      // Dodaj info o WhatsApp jeśli istnieje (z fallbackiem do activity_type)
-      const whatsappLink = getWhatsAppLink(activity)
-      if (whatsappLink) {
-        message += '\n\n💬 Dołącz do grupy WhatsApp! Poznaj innych uczestników, zadawaj pytania i bądź na bieżąco.'
+        alert(message)
       }
-
-      alert(message)
 
       // Refresh registrations and participant counts
       await fetchUserRegistrations()
@@ -483,12 +485,13 @@ const ActivitiesPage = () => {
     setRegistering(pendingRegistration.activityId)
 
     try {
-      // 1. Najpierw utwórz rezerwację z payment_status='pending'
+      // 1. Najpierw utwórz rezerwację z payment_status='pending' (bez komunikatu)
       const registrationId = await performRegistration(
         pendingRegistration.activityId,
         pendingRegistration.cost,
         pendingRegistration.cancellationHours,
-        'pending'
+        'pending',
+        true // skipMessages - nie pokazuj alertu, bo zaraz przekierujemy do płatności
       )
 
       if (!registrationId) {
@@ -498,6 +501,10 @@ const ActivitiesPage = () => {
       // 2. Inicjuj płatność przez Edge Function
       const { data: { session } } = await supabase.auth.getSession()
 
+      if (!session?.access_token) {
+        throw new Error('Brak sesji użytkownika - zaloguj się ponownie')
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/payment-initiate`,
         {
@@ -505,7 +512,7 @@ const ActivitiesPage = () => {
           headers: {
             'Content-Type': 'application/json',
             'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${session?.access_token}`
+            'Authorization': `Bearer ${session.access_token}`
           },
           body: JSON.stringify({
             registrationId: registrationId,
