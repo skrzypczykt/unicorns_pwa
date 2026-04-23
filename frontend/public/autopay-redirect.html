@@ -48,6 +48,10 @@
     <div class="spinner">🦄</div>
     <h1>Przekierowanie do płatności...</h1>
     <p>Za chwilę zostaniesz przekierowany do bramki płatności Autopay</p>
+    <div id="debug" style="margin-top: 20px; text-align: left; font-size: 12px; color: #666; max-height: 200px; overflow-y: auto; display: none;">
+      <strong>Debug parametry:</strong>
+      <pre id="debugParams" style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-top: 10px;"></pre>
+    </div>
   </div>
 
   <form id="autopayForm" method="POST" action="" style="display:none;">
@@ -71,17 +75,28 @@
 
     // Wypełnij pola formularza
     const fields = ['ServiceID', 'OrderID', 'Amount', 'Currency', 'Description', 'CustomerEmail', 'ReturnURL', 'Hash'];
+    const debugData = { gatewayUrl: form.action };
+
     fields.forEach(field => {
       const input = form.querySelector(`[name="${field}"]`);
       if (input && params.get(field)) {
         input.value = params.get(field);
+        debugData[field] = params.get(field);
       }
     });
 
-    // Auto-submit po 500ms
+    // Pokaż debug info (tylko w dev - sprawdź w URL czy jest ?debug=1)
+    if (window.location.search.includes('debug=1')) {
+      document.getElementById('debug').style.display = 'block';
+      document.getElementById('debugParams').textContent = JSON.stringify(debugData, null, 2);
+    }
+
+    // Auto-submit po 2 sekundach (dłużej dla debug)
     setTimeout(() => {
-      form.submit();
-    }, 500);
+      if (!window.location.search.includes('debug=1')) {
+        form.submit();
+      }
+    }, 2000);
   </script>
 </body>
 </html>
