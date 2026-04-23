@@ -489,7 +489,19 @@ const ActivitiesPage = () => {
     let registrationId: string | null = null
 
     try {
-      // 1. Najpierw utwórz rezerwację z payment_status='pending' (bez komunikatu)
+      // 0. Usuń stare niepotwierdzone rejestracje dla tego użytkownika i aktywności
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase
+          .from('registrations')
+          .delete()
+          .eq('activity_id', pendingRegistration.activityId)
+          .eq('user_id', user.id)
+          .eq('payment_status', 'pending')
+          .lt('created_at', new Date(Date.now() - 10 * 60 * 1000).toISOString()) // Starsze niż 10 min
+      }
+
+      // 1. Utwórz rezerwację z payment_status='pending' (bez komunikatu)
       registrationId = await performRegistration(
         pendingRegistration.activityId,
         pendingRegistration.cost,
@@ -947,7 +959,7 @@ const ActivitiesPage = () => {
                     {isRegistered ? (
                       <>
                         {/* Smutny jednorożec dla anulowania */}
-                        <div className="mb-4 text-8xl animate-spin-slow">
+                        <div className="mb-4 text-8xl">
                           😢🦄
                         </div>
 
