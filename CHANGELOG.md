@@ -4,6 +4,16 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.3.13] - 2026-04-23
+
+### Naprawiono
+
+- **Autopay POST redirect**
+  - Utworzono stronę pośrednią autopay-redirect.html
+  - Formularz POST zamiast GET query params
+  - Hash: ServiceID|OrderID|Amount|SharedKey
+  - Kwota: format 1.50 (nie grosze)
+
 ## [0.3.12] - 2026-04-23
 
 ### Naprawiono

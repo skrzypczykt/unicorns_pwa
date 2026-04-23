@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Przekierowanie do płatności...</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      text-align: center;
+      max-width: 400px;
+    }
+    .spinner {
+      font-size: 60px;
+      animation: spin 2s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    h1 {
+      color: #667eea;
+      margin: 0 0 10px 0;
+      font-size: 24px;
+    }
+    p {
+      color: #666;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner">🦄</div>
+    <h1>Przekierowanie do płatności...</h1>
+    <p>Za chwilę zostaniesz przekierowany do bramki płatności Autopay</p>
+  </div>
+
+  <form id="autopayForm" method="POST" action="" style="display:none;">
+    <input type="hidden" name="ServiceID" value="">
+    <input type="hidden" name="OrderID" value="">
+    <input type="hidden" name="Amount" value="">
+    <input type="hidden" name="Currency" value="">
+    <input type="hidden" name="Description" value="">
+    <input type="hidden" name="CustomerEmail" value="">
+    <input type="hidden" name="ReturnURL" value="">
+    <input type="hidden" name="Hash" value="">
+  </form>
+
+  <script>
+    // Odczytaj parametry z URL
+    const params = new URLSearchParams(window.location.search);
+    const form = document.getElementById('autopayForm');
+
+    // Ustaw action formularza
+    form.action = params.get('gatewayUrl') || 'https://testpay.autopay.eu/payment';
+
+    // Wypełnij pola formularza
+    const fields = ['ServiceID', 'OrderID', 'Amount', 'Currency', 'Description', 'CustomerEmail', 'ReturnURL', 'Hash'];
+    fields.forEach(field => {
+      const input = form.querySelector(`[name="${field}"]`);
+      if (input && params.get(field)) {
+        input.value = params.get(field);
+      }
+    });
+
+    // Auto-submit po 500ms
+    setTimeout(() => {
+      form.submit();
+    }, 500);
+  </script>
+</body>
+</html>
