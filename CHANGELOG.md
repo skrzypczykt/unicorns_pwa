@@ -4,6 +4,22 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.3.10] - 2026-04-23
+
+### Naprawiono
+
+- **Usunięto POST-PAID komunikaty**
+  - Usunięto komunikaty o pobieraniu kosztów po uczestnictwie
+  - Aplikacja działa w modelu 100% PRE-PAID
+  - Komunikat po zapisie na płatne wydarzenie: tylko "✅ Zapisano" bez zmyłek o późniejszych płatnościach
+
+### Zmieniono
+
+- **Automatyczne sprawdzanie wersji**
+  - Banner wersji sprawdza GitHub co 1h zamiast tylko przy załadowaniu
+  - Komunikat o nowszej wersji pojawia się automatycznie gdy zostanie wykryta
+  - Banner z informacją o aktualizacji zawsze widoczny (nie można go odrzucić dla nowszej wersji)
+
 ## [0.3.9] - 2026-04-23 - Integracja płatności w Harmonogramie
 
 ### Naprawiono
