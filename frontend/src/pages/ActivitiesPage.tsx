@@ -602,8 +602,7 @@ const ActivitiesPage = () => {
     }
 
     // Flip karty do potwierdzenia anulowania
-    const card = document.getElementById(`card-${activityId}`)
-    card?.classList.add('flipped')
+    setFlippedCard(activityId)
   }
 
   const confirmCancellation = async (activityId: string) => {
@@ -611,8 +610,7 @@ const ActivitiesPage = () => {
     if (!registration) return
 
     // Flip z powrotem
-    const card = document.getElementById(`card-${activityId}`)
-    card?.classList.remove('flipped')
+    setFlippedCard(null)
 
     setCancelling(activityId)
 
