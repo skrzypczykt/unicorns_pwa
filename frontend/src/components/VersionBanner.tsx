@@ -1,6 +1,18 @@
 import { useState, useEffect } from 'react'
 import { APP_VERSION } from '../version'
 
+// Porównaj wersje semver (np. 0.3.11 > 0.3.10)
+const isNewerVersion = (remote: string, local: string): boolean => {
+  const remoteParts = remote.split('.').map(Number)
+  const localParts = local.split('.').map(Number)
+
+  for (let i = 0; i < 3; i++) {
+    if (remoteParts[i] > localParts[i]) return true
+    if (remoteParts[i] < localParts[i]) return false
+  }
+  return false // Identyczne wersje
+}
+
 const VersionBanner = () => {
   const [latestVersion, setLatestVersion] = useState<string | null>(null)
   const [isOutdated, setIsOutdated] = useState(false)
@@ -42,8 +54,8 @@ const VersionBanner = () => {
         const remoteVersion = match[1]
         setLatestVersion(remoteVersion)
 
-        // Porównaj wersje
-        if (remoteVersion !== APP_VERSION) {
+        // Porównaj wersje semver (0.3.11 > 0.3.10)
+        if (isNewerVersion(remoteVersion, APP_VERSION)) {
           setIsOutdated(true)
         }
       }
@@ -117,7 +129,7 @@ const VersionBanner = () => {
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-sm">
               <span className="text-xl">🔄</span>
-              <span className="font-semibold">Dostępna nowa wersja!</span>
+              <span className="font-semibold">Dostępna nowsza wersja!</span>
               <span className="text-xs opacity-90">
                 Twoja wersja: v{APP_VERSION} → Najnowsza: v{latestVersion}
               </span>
