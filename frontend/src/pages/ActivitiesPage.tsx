@@ -354,7 +354,7 @@ const ActivitiesPage = () => {
     activityId: string,
     cost: number,
     cancellationHours: number,
-    paymentStatus: 'paid' | 'pending' | 'unpaid'
+    paymentStatus: 'paid' | 'pending'
   ): Promise<string | null> => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -481,12 +481,12 @@ const ActivitiesPage = () => {
     setRegistering(pendingRegistration.activityId)
 
     try {
-      // 1. Najpierw utwórz rezerwację z payment_status='unpaid'
+      // 1. Najpierw utwórz rezerwację z payment_status='pending'
       const registrationId = await performRegistration(
         pendingRegistration.activityId,
         pendingRegistration.cost,
         pendingRegistration.cancellationHours,
-        'unpaid'
+        'pending'
       )
 
       if (!registrationId) {
