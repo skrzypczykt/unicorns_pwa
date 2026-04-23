@@ -4,6 +4,59 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.3.8] - 2026-04-23 - Moduł płatności Autopay
+
+### Dodano
+
+- **Generyczny moduł płatności** (Strategy Pattern)
+  - Interfejs `PaymentProvider` - łatwa zmiana dostawcy płatności
+  - `AutopayProvider` - implementacja dla Autopay (Blue Media)
+  - `PaymentService` - fasada używająca providera
+  - Typy TypeScript dla płatności (`PaymentRequest`, `PaymentResponse`, `PaymentStatus`)
+  - Struktura katalogów: `frontend/src/payment/`
+
+- **Edge Functions płatności**
+  - `payment-initiate` - inicjacja płatności (BLIK, PBL, karty)
+  - `autopay-webhook` - webhook ITN od Autopay (weryfikacja hash, aktualizacja statusu)
+  - Obsługa metod płatności: default, BLIK, PBL (PayByLink), karty
+
+- **Tabela transactions** (migracja 044)
+  - Pola: `type`, `amount`, `currency`, `status`, `provider`, `provider_transaction_id`
+  - Powiązanie z `registrations` przez `registration_id`
+  - RLS policies: użytkownicy widzą tylko swoje, admini wszystkie
+  - Indeksy dla wydajności (user_id, provider_transaction_id, status)
+  - Tylko Edge Functions mogą tworzyć/aktualizować transakcje (bezpieczeństwo)
+
+- **Autopay - obsługa metod płatności**
+  - **BLIK** (WhiteLabel mode): `GatewayID=509`, kody testowe (111112 = sukces, 111121 = błąd, etc.)
+  - **PBL** (PayByLink): `GatewayID=106` (TEST), kanał "TEST 106"
+  - **Karty**: domyślna bramka, karty testowe Visa/Mastercard
+  - Walidacja kodu BLIK (6 cyfr)
+  - Hash SHA256 dla bezpieczeństwa
+
+- **Dokumentacja płatności**
+  - `PAYMENT_TESTING.md` - kompletny guide testowania (kody BLIK, PBL, karty)
+  - Przykłady użycia w Frontend (TypeScript)
+  - Request examples (JSON)
+  - FAQ i debugowanie
+  - Aktualizacja `CLAUDE.md` o Payment Flow i testy
+
+- **Walidacja hasła w rejestracji**
+  - Live validation przy wpisywaniu hasła
+  - Inline komunikat "❌ Hasła nie są identyczne" nad polem "Potwierdź hasło"
+  - Czerwona ramka pola gdy hasła się nie zgadzają
+  - Zielony checkmark "✓ Hasła są identyczne" gdy OK
+  - Komunikat tylko gdy pole nie jest puste
+
+### Zmieniono
+
+- **CLAUDE.md** - przepisany w stylu minimalistycznym (Andrej Karpathy)
+  - Dodano Tech Stack, Project Structure, Common Tasks
+  - Dodano Key Concepts (Activities, Registrations, Transactions, Roles)
+  - Dodano Payment Flow (ASCII diagram)
+  - Dodano Testing Payments (quick reference)
+  - Usunięto "Model Płatności (POST-PAID)" - przeniesiono do Balance Display
+
 ## [0.3.7] - 2026-04-22 - Ujednolicenie kalendarza i Panel Trenera
 
 ### Zmieniono

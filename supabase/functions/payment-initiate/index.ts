@@ -1,0 +1,194 @@
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { getCorsHeaders } from '../_shared/cors.ts'
+
+// Decode JWT without verification
+function decodeJWT(token: string): any {
+  const parts = token.split('.')
+  if (parts.length !== 3) {
+    throw new Error('Invalid JWT format')
+  }
+  const payload = parts[1]
+  const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
+  return JSON.parse(decoded)
+}
+
+serve(async (req) => {
+  const origin = req.headers.get('origin')
+  const corsHeaders = getCorsHeaders(origin)
+
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders })
+  }
+
+  try {
+    // 1. Weryfikuj autoryzację
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing Authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    let userId: string
+
+    try {
+      const payload = decodeJWT(token)
+      userId = payload.sub
+      if (!userId) throw new Error('Missing user ID in token')
+    } catch (err) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // 2. Parsuj request body
+    const {
+      registrationId,
+      amount,
+      description,
+      paymentMethod = 'default', // 'default', 'blik', 'pbl', 'card'
+      blikCode // Dla BLIK (6 cyfr)
+    } = await req.json()
+
+    if (!registrationId || !amount) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields: registrationId, amount' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Walidacja BLIK
+    if (paymentMethod === 'blik') {
+      if (!blikCode || !/^\d{6}$/.test(blikCode)) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid BLIK code (must be 6 digits)' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+
+    // 3. Utwórz klienta Supabase
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false } }
+    )
+
+    // 4. Sprawdź czy registration istnieje i należy do użytkownika
+    const { data: registration, error: regError } = await supabase
+      .from('registrations')
+      .select('*, activities(name, cost)')
+      .eq('id', registrationId)
+      .eq('user_id', userId)
+      .single()
+
+    if (regError || !registration) {
+      return new Response(
+        JSON.stringify({ error: 'Registration not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Sprawdź czy już nie opłacone
+    if (registration.payment_status === 'paid') {
+      return new Response(
+        JSON.stringify({ error: 'Already paid' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // 5. Utwórz rekord transakcji w bazie
+    const { data: transaction, error: txError } = await supabase
+      .from('transactions')
+      .insert({
+        user_id: userId,
+        type: 'payment',
+        amount: amount,
+        description: description || `Opłata za ${registration.activities.name}`,
+        status: 'pending',
+        provider: 'autopay',
+        registration_id: registrationId
+      })
+      .select()
+      .single()
+
+    if (txError) {
+      console.error('Transaction creation error:', txError)
+      throw txError
+    }
+
+    // 6. Wygeneruj OrderID dla Autopay
+    const orderId = `REG-${registrationId}-${transaction.id}`
+
+    // 7. Przygotuj parametry płatności Autopay
+    const serviceId = Deno.env.get('AUTOPAY_SERVICE_ID') ?? ''
+    const sharedKey = Deno.env.get('AUTOPAY_SHARED_KEY') ?? ''
+    const gatewayUrl = Deno.env.get('AUTOPAY_GATEWAY_URL') ?? 'https://pay-accept.bm.pl/payment'
+    const frontendUrl = Deno.env.get('FRONTEND_URL') ?? 'http://localhost:5173'
+
+    const amountInGrosze = Math.round(amount * 100).toString()
+
+    // Generuj hash: ServiceID|OrderID|Amount|SharedKey
+    const hashInput = `${serviceId}|${orderId}|${amountInGrosze}|${sharedKey}`
+    const hashBuffer = await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(hashInput)
+    )
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+
+    // 8. Zaktualizuj transakcję o provider_transaction_id
+    await supabase
+      .from('transactions')
+      .update({ provider_transaction_id: orderId })
+      .eq('id', transaction.id)
+
+    // 9. Zbuduj URL przekierowania
+    const params: Record<string, string> = {
+      ServiceID: serviceId,
+      OrderID: orderId,
+      Amount: amountInGrosze,
+      Description: description || `Opłata za ${registration.activities.name}`,
+      Hash: hash
+    }
+
+    // BLIK - wymaga WhiteLabel mode (GatewayID=509)
+    if (paymentMethod === 'blik' && blikCode) {
+      params.GatewayID = '509'
+      params.AuthorizationCode = blikCode
+    }
+
+    // PBL - TEST 106 (test PayByLink)
+    if (paymentMethod === 'pbl') {
+      params.GatewayID = '106'
+    }
+
+    const redirectUrl = `${gatewayUrl}?${new URLSearchParams(params).toString()}`
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        redirectUrl,
+        transactionId: transaction.id,
+        orderId
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    )
+  } catch (error) {
+    console.error('Payment initiation error:', error)
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    )
+  }
+})

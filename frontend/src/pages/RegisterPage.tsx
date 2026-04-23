@@ -16,6 +16,7 @@ const RegisterPage = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [passwordsMatch, setPasswordsMatch] = useState(true)
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -199,15 +200,28 @@ const RegisterPage = () => {
               <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
                 Potwierdź hasło *
               </label>
+              {!passwordsMatch && formData.confirmPassword && (
+                <div className="mb-2 p-2 bg-red-50 border border-red-300 rounded-lg text-red-700 text-sm">
+                  ❌ Hasła nie są identyczne
+                </div>
+              )}
               <div className="relative">
                 <input
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, confirmPassword: e.target.value })
+                    // Sprawdzaj na bieżąco czy hasła się zgadzają
+                    setPasswordsMatch(formData.password === e.target.value)
+                  }}
                   required
                   minLength={6}
-                  className="w-full px-4 py-3 pr-12 border-2 border-purple-200 rounded-lg focus:border-purple-500 focus:outline-none transition-all"
+                  className={`w-full px-4 py-3 pr-12 border-2 rounded-lg focus:outline-none transition-all ${
+                    !passwordsMatch && formData.confirmPassword
+                      ? 'border-red-300 focus:border-red-500'
+                      : 'border-purple-200 focus:border-purple-500'
+                  }`}
                   placeholder="••••••••"
                 />
                 <button
@@ -219,6 +233,9 @@ const RegisterPage = () => {
                   {showConfirmPassword ? '🙈' : '👁️'}
                 </button>
               </div>
+              {passwordsMatch && formData.confirmPassword && (
+                <p className="text-xs text-green-600 mt-1">✓ Hasła są identyczne</p>
+              )}
             </div>
 
             {/* GDPR Consent Checkbox */}
