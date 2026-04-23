@@ -45,6 +45,8 @@ const ActivitiesPage = () => {
   const [loading, setLoading] = useState(true)
   const [registering, setRegistering] = useState<string | null>(null)
   const [cancelling, setCancelling] = useState<string | null>(null)
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [activityToCancel, setActivityToCancel] = useState<string | null>(null)
   const [userRegistrations, setUserRegistrations] = useState<Record<string, {
     registrationId: string
     canCancelUntil: string
@@ -484,9 +486,11 @@ const ActivitiesPage = () => {
     setShowPaymentModal(false)
     setRegistering(pendingRegistration.activityId)
 
+    let registrationId: string | null = null
+
     try {
       // 1. Najpierw utwórz rezerwację z payment_status='pending' (bez komunikatu)
-      const registrationId = await performRegistration(
+      registrationId = await performRegistration(
         pendingRegistration.activityId,
         pendingRegistration.cost,
         pendingRegistration.cancellationHours,
@@ -537,7 +541,20 @@ const ActivitiesPage = () => {
       }
     } catch (error) {
       console.error('Payment error:', error)
-      alert(`❌ Błąd płatności: ${error instanceof Error ? error.message : 'Nieznany błąd'}`)
+
+      // Cofnij rejestrację jeśli płatność nie powiodła się
+      if (registrationId) {
+        try {
+          await supabase
+            .from('registrations')
+            .delete()
+            .eq('id', registrationId)
+        } catch (deleteError) {
+          console.error('Failed to rollback registration:', deleteError)
+        }
+      }
+
+      alert(`❌ Błąd płatności: ${error instanceof Error ? error.message : 'Nieznany błąd'}\n\nRejestracja została anulowana.`)
       setRegistering(null)
     }
 
@@ -584,11 +601,20 @@ const ActivitiesPage = () => {
       return
     }
 
-    if (!confirm('Czy na pewno chcesz anulować te zajęcia?')) {
-      return
-    }
+    // Pokaż modal potwierdzenia
+    setActivityToCancel(activityId)
+    setShowCancelModal(true)
+  }
 
-    setCancelling(activityId)
+  const confirmCancellation = async () => {
+    if (!activityToCancel) return
+
+    const registration = userRegistrations[activityToCancel]
+    if (!registration) return
+
+    setShowCancelModal(false)
+    setCancelling(activityToCancel)
+
     try {
       const { error } = await supabase
         .from('registrations')
@@ -608,6 +634,7 @@ const ActivitiesPage = () => {
       alert('Wystąpił błąd podczas anulowania')
     } finally {
       setCancelling(null)
+      setActivityToCancel(null)
     }
   }
 
@@ -1289,6 +1316,39 @@ const ActivitiesPage = () => {
           onPayLater={handlePayLater}
           onCancel={handleCancelPayment}
         />
+      )}
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelModal && activityToCancel && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 animate-bounce-in">
+            <div className="text-center mb-6">
+              <div className="text-8xl mb-4 animate-spin-slow">😢🦄</div>
+              <h3 className="text-2xl font-bold text-red-600 mb-2">Anulować zapis?</h3>
+              <p className="text-gray-600">
+                Czy na pewno chcesz anulować swój zapis na te zajęcia?
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={confirmCancellation}
+                className="w-full px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all"
+              >
+                Tak, anuluj zapis
+              </button>
+              <button
+                onClick={() => {
+                  setShowCancelModal(false)
+                  setActivityToCancel(null)
+                }}
+                className="w-full px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all"
+              >
+                Nie, zostaw zapis
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Google Calendar Prompt Modal */}
