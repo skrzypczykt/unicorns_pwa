@@ -121,7 +121,8 @@ serve(async (req) => {
     // Gateway URL - środowisko testowe Autopay
     const gatewayUrl = 'https://testpay.autopay.eu/payment'
 
-    const amountInGrosze = Math.round(amount * 100).toString()
+    // Format kwoty: 1.50 (nie grosze!)
+    const amountFormatted = amount.toFixed(2)
 
     // 8. Zaktualizuj transakcję o provider_transaction_id
     await supabase
@@ -140,8 +141,8 @@ serve(async (req) => {
     const returnUrl = `${frontendUrl}/payment-success`
     const currency = 'PLN'
 
-    // 10. Generuj hash WEDŁUG DOKUMENTACJI: ServiceID|OrderID|Amount|Currency|CustomerEmail|ReturnURL|SharedKey
-    const hashInput = `${serviceId}|${orderId}|${amountInGrosze}|${currency}|${customerEmail}|${returnUrl}|${sharedKey}`
+    // 10. Generuj hash - TYLKO obowiązkowe parametry: ServiceID|OrderID|Amount|SharedKey
+    const hashInput = `${serviceId}|${orderId}|${amountFormatted}|${sharedKey}`
     const hashBuffer = await crypto.subtle.digest(
       'SHA-256',
       new TextEncoder().encode(hashInput)
@@ -153,7 +154,7 @@ serve(async (req) => {
     const params: Record<string, string> = {
       ServiceID: serviceId,
       OrderID: orderId,
-      Amount: amountInGrosze,
+      Amount: amountFormatted,
       Currency: currency,
       Description: description || `Opłata za ${registration.activities.name}`,
       CustomerEmail: customerEmail,
