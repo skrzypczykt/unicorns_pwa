@@ -11,7 +11,14 @@ serve(async (req) => {
   }
 
   try {
-    // 1. Weryfikuj autoryzację używając Supabase client
+    // 1. Utwórz klienta Supabase ze Service Role Key
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false } }
+    )
+
+    // 2. Weryfikuj autoryzację - pobierz token z headera
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       return new Response(
@@ -20,19 +27,10 @@ serve(async (req) => {
       )
     }
 
-    // Utwórz klienta Supabase z tokenem użytkownika do weryfikacji
-    const supabaseAuth = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: authHeader }
-        }
-      }
-    )
+    const token = authHeader.replace('Bearer ', '')
 
-    // Weryfikuj token i pobierz użytkownika
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
+    // Weryfikuj token używając getUser z jawnym tokenem
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
     if (authError || !user) {
       return new Response(
@@ -69,14 +67,7 @@ serve(async (req) => {
       }
     }
 
-    // 3. Utwórz klienta Supabase
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { auth: { persistSession: false } }
-    )
-
-    // 4. Sprawdź czy registration istnieje i należy do użytkownika
+    // 3. Sprawdź czy registration istnieje i należy do użytkownika
     const { data: registration, error: regError } = await supabase
       .from('registrations')
       .select('*, activities(name, cost)')
