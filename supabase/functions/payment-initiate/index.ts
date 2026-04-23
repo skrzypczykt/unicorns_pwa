@@ -123,15 +123,6 @@ serve(async (req) => {
 
     const amountInGrosze = Math.round(amount * 100).toString()
 
-    // Generuj hash: ServiceID|OrderID|Amount|SharedKey
-    const hashInput = `${serviceId}|${orderId}|${amountInGrosze}|${sharedKey}`
-    const hashBuffer = await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(hashInput)
-    )
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-
     // 8. Zaktualizuj transakcję o provider_transaction_id
     await supabase
       .from('transactions')
@@ -145,14 +136,28 @@ serve(async (req) => {
       .eq('id', userId)
       .single()
 
-    // 10. Zbuduj URL przekierowania
+    const customerEmail = userData?.email || ''
+    const returnUrl = `${frontendUrl}/payment-success`
+    const currency = 'PLN'
+
+    // 10. Generuj hash WEDŁUG DOKUMENTACJI: ServiceID|OrderID|Amount|Currency|CustomerEmail|ReturnURL|SharedKey
+    const hashInput = `${serviceId}|${orderId}|${amountInGrosze}|${currency}|${customerEmail}|${returnUrl}|${sharedKey}`
+    const hashBuffer = await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(hashInput)
+    )
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+
+    // 11. Zbuduj URL przekierowania
     const params: Record<string, string> = {
       ServiceID: serviceId,
       OrderID: orderId,
       Amount: amountInGrosze,
+      Currency: currency,
       Description: description || `Opłata za ${registration.activities.name}`,
-      CustomerEmail: userData?.email || '',
-      ReturnURL: `${frontendUrl}/payment-success`,
+      CustomerEmail: customerEmail,
+      ReturnURL: returnUrl,
       Hash: hash
     }
 
