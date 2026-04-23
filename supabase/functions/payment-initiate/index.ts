@@ -116,8 +116,10 @@ serve(async (req) => {
     // 7. Przygotuj parametry płatności Autopay
     const serviceId = Deno.env.get('AUTOPAY_SERVICE_ID') ?? ''
     const sharedKey = Deno.env.get('AUTOPAY_SHARED_KEY') ?? ''
-    const gatewayUrl = Deno.env.get('AUTOPAY_GATEWAY_URL') ?? 'https://pay-accept.bm.pl/payment'
     const frontendUrl = Deno.env.get('FRONTEND_URL') ?? 'http://localhost:5173'
+
+    // Gateway URL: https://pay-accept.bm.pl/paygw/{ServiceID}/NewPayment (środowisko testowe)
+    const gatewayUrl = `https://pay-accept.bm.pl/paygw/${serviceId}/NewPayment`
 
     const amountInGrosze = Math.round(amount * 100).toString()
 
