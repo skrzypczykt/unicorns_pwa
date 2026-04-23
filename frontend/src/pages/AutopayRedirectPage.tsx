@@ -66,12 +66,19 @@ export default function AutopayRedirectPage() {
         </p>
       </div>
 
-      <form ref={formRef} method="POST" action={gatewayUrl} style={{ display: 'none' }}>
+      <form
+        ref={formRef}
+        method="POST"
+        action={gatewayUrl}
+        encType="application/x-www-form-urlencoded"
+        style={{ display: 'none' }}
+      >
         <input type="hidden" name="ServiceID" value={serviceId} />
         <input type="hidden" name="OrderID" value={orderId} />
         <input type="hidden" name="Amount" value={amount} />
         <input type="hidden" name="CustomerEmail" value={customerEmail} />
         <input type="hidden" name="Hash" value={hash} />
+        <input type="hidden" name="GatewayID" value="106" />
         {currency && <input type="hidden" name="Currency" value={currency} />}
         {description && <input type="hidden" name="Description" value={description} />}
       </form>
