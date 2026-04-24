@@ -60,6 +60,24 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     )
 
+    // 4a. Zapisz webhook event do tabeli webhook_events (audit log) - na początku
+    const webhookEventId = crypto.randomUUID()
+    await supabase.from('webhook_events').insert({
+      id: webhookEventId,
+      provider: 'autopay',
+      event_type: data.paymentStatus,
+      raw_payload: { ...data, xmlDecoded },
+      order_id: data.orderId,
+      amount: parseFloat(data.amount),
+      currency: data.currency,
+      payment_status: data.paymentStatus.toLowerCase() === 'success' ? 'success' :
+                      data.paymentStatus.toLowerCase() === 'failure' ? 'failed' :
+                      data.paymentStatus.toLowerCase() === 'pending' ? 'pending' : 'pending',
+      signature_valid: true, // Hash już zweryfikowany
+      processed_status: 'processing',
+      created_at: new Date().toISOString()
+    })
+
     // 5. Znajdź transakcję po provider_transaction_id (OrderID)
     const { data: transaction, error: txError } = await supabase
       .from('transactions')
@@ -69,6 +87,14 @@ serve(async (req) => {
 
     if (txError || !transaction) {
       console.error('[Autopay Webhook] Transaction not found:', data.orderId, txError)
+      await supabase
+        .from('webhook_events')
+        .update({
+          processed_status: 'failed',
+          processed_at: new Date().toISOString(),
+          error_message: `Transaction not found: ${txError?.message || 'Unknown error'}`
+        })
+        .eq('id', webhookEventId)
       return new Response('NOTOK', {
         status: 200,
         headers: { 'Content-Type': 'text/plain' }
@@ -76,6 +102,15 @@ serve(async (req) => {
     }
 
     console.log('[Autopay Webhook] Transaction found:', transaction.id, 'current status:', transaction.status)
+
+    // 5a. Zaktualizuj webhook event o registration_id i user_id
+    await supabase
+      .from('webhook_events')
+      .update({
+        registration_id: transaction.registration_id,
+        user_id: transaction.registrations?.user_id
+      })
+      .eq('id', webhookEventId)
 
     // 6. Mapuj status Autopay na nasz status
     const status = mapAutopayStatus(data.paymentStatus)
@@ -85,6 +120,13 @@ serve(async (req) => {
     // To zapobiega wielokrotnej aktualizacji gdy Autopay retry'uje ITN
     if ((transaction.status === 'completed' || transaction.status === 'failed') && transaction.status === status) {
       console.log('[Autopay Webhook] Transaction already processed with same status, returning OK (deduplication)')
+      await supabase
+        .from('webhook_events')
+        .update({
+          processed_status: 'duplicate',
+          processed_at: new Date().toISOString()
+        })
+        .eq('id', webhookEventId)
       return new Response('OK', {
         status: 200,
         headers: { 'Content-Type': 'text/plain' }
@@ -111,7 +153,16 @@ serve(async (req) => {
 
     console.log('[Autopay Webhook] Transaction processed successfully')
 
-    // 9. Zwróć "OK" do Autopay
+    // 9. Zaktualizuj webhook event na success
+    await supabase
+      .from('webhook_events')
+      .update({
+        processed_status: 'success',
+        processed_at: new Date().toISOString()
+      })
+      .eq('id', webhookEventId)
+
+    // 10. Zwróć "OK" do Autopay
     return new Response('OK', {
       status: 200,
       headers: { 'Content-Type': 'text/plain' }
