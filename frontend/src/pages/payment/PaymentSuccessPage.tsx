@@ -16,6 +16,7 @@ export default function PaymentSuccessPage() {
   const [loading, setLoading] = useState(true)
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [pendingStartTime, setPendingStartTime] = useState<number | null>(null)
 
   useEffect(() => {
     verifyPayment()
@@ -24,6 +25,22 @@ export default function PaymentSuccessPage() {
   // Auto-refresh co 3s gdy status pending (webhook może przyjść później)
   useEffect(() => {
     if (paymentDetails?.status === 'pending' && !loading) {
+      // Zapisz czas rozpoczęcia pending (jeśli jeszcze nie zapisany)
+      if (!pendingStartTime) {
+        setPendingStartTime(Date.now())
+      }
+
+      // Timeout: jeśli pending >60s, uznaj za failed
+      const elapsed = Date.now() - (pendingStartTime || Date.now())
+      if (elapsed > 60000) { // 60 sekund
+        console.log('Payment timeout - pending for >60s, treating as failed')
+        setPaymentDetails({
+          ...paymentDetails,
+          status: 'failed'
+        })
+        return
+      }
+
       const interval = setInterval(() => {
         console.log('Auto-refreshing payment status...')
         verifyPayment()
@@ -31,7 +48,7 @@ export default function PaymentSuccessPage() {
 
       return () => clearInterval(interval)
     }
-  }, [paymentDetails?.status, loading])
+  }, [paymentDetails?.status, loading, pendingStartTime])
 
   const verifyPayment = async () => {
     try {
