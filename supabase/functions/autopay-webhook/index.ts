@@ -79,45 +79,38 @@ serve(async (req) => {
       return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } })
     }
 
-    // 6a. INSERT webhook event i UPDATE transaction/registration RÓWNOLEGLE
+    // 6a. Zwróć OK NATYCHMIAST - Autopay ma timeout ~500ms
+    const okResponse = new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } })
+
+    // 7. Wykonaj wszystkie UPDATE w tle (fire-and-forget)
+    // Autopay już dostał OK więc nie retry'uje, a my dokańczamy przetwarzanie
     const webhookEventId = crypto.randomUUID()
 
-    const webhookInsert = supabase.from('webhook_events').insert({
-      id: webhookEventId,
-      provider: 'autopay',
-      event_type: data.paymentStatus,
-      raw_payload: { ...data, xmlDecoded },
-      order_id: data.orderId,
-      amount: parseFloat(data.amount),
-      currency: data.currency,
-      payment_status: data.paymentStatus.toLowerCase() === 'success' ? 'success' :
-                      data.paymentStatus.toLowerCase() === 'failure' ? 'failed' : 'pending',
-      signature_valid: true,
-      registration_id: transaction.registration_id,
-      processed_status: 'processing'
-    })
+    Promise.all([
+      supabase.from('webhook_events').insert({
+        id: webhookEventId,
+        provider: 'autopay',
+        event_type: data.paymentStatus,
+        raw_payload: { ...data, xmlDecoded },
+        order_id: data.orderId,
+        amount: parseFloat(data.amount),
+        currency: data.currency,
+        payment_status: data.paymentStatus.toLowerCase() === 'success' ? 'success' :
+                        data.paymentStatus.toLowerCase() === 'failure' ? 'failed' : 'pending',
+        signature_valid: true,
+        registration_id: transaction.registration_id,
+        processed_status: 'success'
+      }),
+      supabase
+        .from('transactions')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', transaction.id),
+      status === 'completed' && transaction.registration_id
+        ? supabase.from('registrations').update({ payment_status: 'paid' }).eq('id', transaction.registration_id)
+        : Promise.resolve()
+    ]).catch(err => console.error('[Autopay Webhook] Background update error:', err))
 
-    const transactionUpdate = supabase
-      .from('transactions')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', transaction.id)
-
-    const registrationUpdate = status === 'completed' && transaction.registration_id
-      ? supabase.from('registrations').update({ payment_status: 'paid' }).eq('id', transaction.registration_id)
-      : Promise.resolve()
-
-    // 7. Wykonaj wszystkie operacje RÓWNOLEGLE
-    await Promise.all([webhookInsert, transactionUpdate, registrationUpdate])
-
-    // 8. UPDATE webhook_events na success (fire-and-forget - nie czekamy)
-    supabase
-      .from('webhook_events')
-      .update({ processed_status: 'success', processed_at: new Date().toISOString() })
-      .eq('id', webhookEventId)
-      .then() // fire-and-forget
-
-    // 9. Zwróć "OK" NATYCHMIAST (nie czekamy na webhook_events update)
-    return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } })
+    return okResponse
   } catch (error) {
     console.error('[Autopay Webhook] Error:', error)
     return new Response('NOTOK', {
