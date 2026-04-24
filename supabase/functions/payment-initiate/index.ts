@@ -150,8 +150,8 @@ serve(async (req) => {
 
     const currency = 'PLN'
 
-    // 10. Generuj hash - TYLKO obowiązkowe parametry: ServiceID|OrderID|Amount|SharedKey
-    const hashInput = `${serviceId}|${orderId}|${amountFormatted}|${sharedKey}`
+    // 10. Generuj hash - kolejność według dokumentacji: ServiceID|OrderID|Amount|CustomerEmail|SharedKey
+    const hashInput = `${serviceId}|${orderId}|${amountFormatted}|${customerEmail}|${sharedKey}`
 
     console.log('Payment params:', {
       serviceId,
@@ -159,7 +159,7 @@ serve(async (req) => {
       amount: amountFormatted,
       currency,
       customerEmail,
-      hashInput: `${serviceId}|${orderId}|${amountFormatted}|***`
+      hashInput: `${serviceId}|${orderId}|${amountFormatted}|${customerEmail}|***`
     })
 
     const hashBuffer = await crypto.subtle.digest(
@@ -175,8 +175,8 @@ serve(async (req) => {
       OrderID: orderId,
       Amount: amountFormatted,
       CustomerEmail: customerEmail,  // OBOWIĄZKOWE
-      Hash: hash,
-      GatewayID: '106'  // Domyślnie test PBL (środowisko testowe wymaga)
+      Hash: hash
+      // NIE dodajemy GatewayID domyślnie - Autopay pokaże wybór metody
     }
 
     // BLIK - wymaga WhiteLabel mode (GatewayID=509)
@@ -185,7 +185,7 @@ serve(async (req) => {
       params.AuthorizationCode = blikCode
     }
 
-    // PBL - TEST 106 już ustawione domyślnie
+    // PBL - tylko jeśli explicite wybrane
     if (paymentMethod === 'pbl') {
       params.GatewayID = '106'
     }

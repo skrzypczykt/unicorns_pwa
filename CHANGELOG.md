@@ -4,6 +4,24 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.4.4] - 2026-04-24
+
+### Naprawiono
+
+- **Autopay hash invalid - CustomerEmail musi być w hashu**
+  - Hash zmieniony z `ServiceID|OrderID|Amount|SharedKey`
+  - Na: `ServiceID|OrderID|Amount|CustomerEmail|SharedKey`
+  - Zgodnie z dokumentacją Autopay (CustomerEmail na pozycji 7)
+
+- **Constraint unique_active_registration blokował retry płatności**
+  - Migration 046: Dodano wykluczenie `payment_status != 'pending'`
+  - Pozwala na ponowne próby zapisu gdy poprzednia ma pending payment
+  - Rozwiązuje błąd 409 duplicate key przy powtórnych próbach
+
+- **Usunięto domyślne GatewayID=106**
+  - Autopay teraz pokazuje wybór metody płatności
+  - GatewayID dodawane tylko dla BLIK i PBL explicite
+
 ## [0.4.3] - 2026-04-24
 
 ### Naprawiono
