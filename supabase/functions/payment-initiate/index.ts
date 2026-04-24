@@ -171,17 +171,34 @@ serve(async (req) => {
       gatewayId = '106'
     }
 
-    // 11. Generuj hash - dla BLIK WhiteLabel uwzględnij GatewayID
-    // Według dokumentacji Autopay dla BLIK WhiteLabel:
-    // Hash = SHA256(ServiceID|OrderID|Amount|CustomerEmail|GatewayID|SharedKey)
-    let hashInput: string
+    // 11. Generuj hash - zgodnie z dokumentacją Autopay
+    // Hash musi uwzględniać WSZYSTKIE wysyłane parametry w kolejności:
+    // ServiceID|OrderID|Amount|[Description]|GatewayID|[Currency]|CustomerEmail|AuthorizationCode|SharedKey
+    // Pomijamy puste parametry (nie dodajemy separatora)
+
+    const hashParts: string[] = [serviceId, orderId, amountFormatted]
+
+    // Description - nie wysyłamy, pomijamy
+
+    // GatewayID - jeśli ustawione
     if (gatewayId) {
-      // Z GatewayID (BLIK lub PBL)
-      hashInput = `${serviceId}|${orderId}|${amountFormatted}|${customerEmail}|${gatewayId}|${sharedKey}`
-    } else {
-      // Bez GatewayID (standard)
-      hashInput = `${serviceId}|${orderId}|${amountFormatted}|${customerEmail}|${sharedKey}`
+      hashParts.push(gatewayId)
     }
+
+    // Currency - nie wysyłamy, pomijamy
+
+    // CustomerEmail - zawsze
+    hashParts.push(customerEmail)
+
+    // AuthorizationCode - tylko dla BLIK
+    if (authorizationCode) {
+      hashParts.push(authorizationCode)
+    }
+
+    // SharedKey na końcu
+    hashParts.push(sharedKey)
+
+    const hashInput = hashParts.join('|')
 
     console.log('Payment params:', {
       serviceId,
