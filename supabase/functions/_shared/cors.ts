@@ -21,7 +21,10 @@ export function getCorsHeaders(origin?: string | null) {
   const isAllowed = origin && ALLOWED_ORIGINS.some(allowedOrigin => {
     // Handle wildcard subdomains
     if (allowedOrigin.includes('*')) {
-      const pattern = allowedOrigin.replace('*', '.*')
+      // Escape special regex characters except *
+      const pattern = allowedOrigin
+        .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // Escape regex special chars
+        .replace(/\*/g, '.*')                   // Convert * to .*
       const regex = new RegExp(`^${pattern}$`)
       return regex.test(origin)
     }
