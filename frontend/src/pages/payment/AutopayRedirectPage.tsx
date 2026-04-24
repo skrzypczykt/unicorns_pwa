@@ -13,6 +13,8 @@ export default function AutopayRedirectPage() {
     console.log('OrderID:', orderId)
     console.log('Amount:', amount)
     console.log('CustomerEmail:', customerEmail)
+    console.log('GatewayID:', gatewayId || '(not set)')
+    console.log('AuthorizationCode:', authorizationCode ? `${authorizationCode.length} chars` : '(not set)')
     console.log('Hash:', hash)
     console.log('Form exists:', !!formRef.current)
     console.log('FULL FORM ACTION URL:', formRef.current?.action)
@@ -45,6 +47,8 @@ export default function AutopayRedirectPage() {
   const hash = searchParams.get('Hash') || ''
   const currency = searchParams.get('Currency') || ''
   const description = searchParams.get('Description') || ''
+  const gatewayId = searchParams.get('GatewayID') || ''
+  const authorizationCode = searchParams.get('AuthorizationCode') || ''
 
   return (
     <div style={{
@@ -99,7 +103,8 @@ export default function AutopayRedirectPage() {
         <input type="hidden" name="Amount" value={amount} />
         <input type="hidden" name="CustomerEmail" value={customerEmail} />
         <input type="hidden" name="Hash" value={hash} />
-        {/* CustomerEmail jest OBOWIĄZKOWE według dokumentacji */}
+        {gatewayId && <input type="hidden" name="GatewayID" value={gatewayId} />}
+        {authorizationCode && <input type="hidden" name="AuthorizationCode" value={authorizationCode} />}
       </form>
 
       <style>{`
