@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.4.6] - 2026-04-24
+
+### Naprawiono
+
+- **Błąd przy wielokrotnym kliknięciu "Zapisz się"**
+  - performRegistration usuwa WSZYSTKIE pending rejestracje na początku
+  - Rozwiązuje "Results contain 2 rows" gdy użytkownik kliknął wielokrotnie
+  - Constraint unique_active_registration pozwala na wiele pending, więc trzeba czyścić jawnie
+
 ## [0.4.5] - 2026-04-24
 
 ### Naprawiono

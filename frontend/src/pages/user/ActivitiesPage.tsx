@@ -376,12 +376,21 @@ const ActivitiesPage = () => {
         paymentDueDate = dueDate.toISOString()
       }
 
-      // Check if user already has a registration (including cancelled ones)
+      // NAJPIERW: Usuń WSZYSTKIE pending rejestracje (może być więcej niż 1 jeśli użytkownik klikał wielokrotnie)
+      await supabase
+        .from('registrations')
+        .delete()
+        .eq('activity_id', activityId)
+        .eq('user_id', user.id)
+        .eq('payment_status', 'pending')
+
+      // Check if user already has a confirmed registration (nie pending, nie cancelled)
       const { data: existingReg, error: checkError } = await supabase
         .from('registrations')
         .select('id, status, payment_status')
         .eq('activity_id', activityId)
         .eq('user_id', user.id)
+        .neq('payment_status', 'pending')  // Wyklucz pending (już usunięte)
         .maybeSingle()
 
       if (checkError) throw checkError
@@ -389,22 +398,12 @@ const ActivitiesPage = () => {
       let registrationId: string | null = null
 
       if (existingReg) {
-        // Sprawdź czy to potwierdzona rejestracja (nie pending)
-        if ((existingReg.status === 'registered' || existingReg.status === 'attended')
-            && existingReg.payment_status !== 'pending') {
+        // Sprawdź czy to potwierdzona rejestracja
+        if (existingReg.status === 'registered' || existingReg.status === 'attended') {
           alert('Już jesteś zapisany na te zajęcia!')
           return null
         }
 
-        // Jeśli istnieje pending registration - usuń ją i stwórz nową (poniżej)
-        if (existingReg.payment_status === 'pending') {
-          await supabase
-            .from('registrations')
-            .delete()
-            .eq('id', existingReg.id)
-
-          // Nie rób nic więcej - nowa rejestracja zostanie utworzona poniżej
-        }
         // Reaktywuj anulowany zapis
         else if (existingReg.status === 'cancelled' || existingReg.status === 'no_show') {
           const { error: updateError } = await supabase
