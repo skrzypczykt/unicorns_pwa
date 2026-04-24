@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 interface PaymentChoiceModalProps {
   activityName: string
   activityCost: number
@@ -5,6 +7,10 @@ interface PaymentChoiceModalProps {
   onPayNow: () => void
   onPayLater: () => void
   onCancel: () => void
+  paymentMethod: 'pbl' | 'blik' | 'card'
+  onPaymentMethodChange: (method: 'pbl' | 'blik' | 'card') => void
+  blikCode: string
+  onBlikCodeChange: (code: string) => void
 }
 
 const PaymentChoiceModal = ({
@@ -13,7 +19,11 @@ const PaymentChoiceModal = ({
   requiresImmediate,
   onPayNow,
   onPayLater,
-  onCancel
+  onCancel,
+  paymentMethod,
+  onPaymentMethodChange,
+  blikCode,
+  onBlikCodeChange
 }: PaymentChoiceModalProps) => {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -37,10 +47,90 @@ const PaymentChoiceModal = ({
               </p>
             </div>
 
+            {/* Wybór metody płatności */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Wybierz metodę płatności:
+              </label>
+              <div className="space-y-2">
+                <button
+                  onClick={() => onPaymentMethodChange('pbl')}
+                  className={`w-full p-4 rounded-lg border-2 transition-all flex items-center gap-3 ${
+                    paymentMethod === 'pbl'
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-200 hover:border-purple-300'
+                  }`}
+                >
+                  <div className="text-2xl">🏦</div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold">PayByLink</div>
+                    <div className="text-xs text-gray-600">Wybierz bank na bramce</div>
+                  </div>
+                  {paymentMethod === 'pbl' && <div className="text-purple-500">✓</div>}
+                </button>
+
+                <button
+                  onClick={() => onPaymentMethodChange('blik')}
+                  className={`w-full p-4 rounded-lg border-2 transition-all flex items-center gap-3 ${
+                    paymentMethod === 'blik'
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-200 hover:border-purple-300'
+                  }`}
+                >
+                  <div className="text-2xl">📱</div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold">BLIK</div>
+                    <div className="text-xs text-gray-600">Szybka płatność kodem</div>
+                  </div>
+                  {paymentMethod === 'blik' && <div className="text-purple-500">✓</div>}
+                </button>
+
+                <button
+                  onClick={() => onPaymentMethodChange('card')}
+                  className={`w-full p-4 rounded-lg border-2 transition-all flex items-center gap-3 ${
+                    paymentMethod === 'card'
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-200 hover:border-purple-300'
+                  }`}
+                >
+                  <div className="text-2xl">💳</div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold">Karta płatnicza</div>
+                    <div className="text-xs text-gray-600">Visa, Mastercard</div>
+                  </div>
+                  {paymentMethod === 'card' && <div className="text-purple-500">✓</div>}
+                </button>
+              </div>
+            </div>
+
+            {/* Kod BLIK jeśli wybrano BLIK */}
+            {paymentMethod === 'blik' && (
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Kod BLIK (6 cyfr):
+                </label>
+                <input
+                  type="text"
+                  value={blikCode}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 6)
+                    onBlikCodeChange(value)
+                  }}
+                  placeholder="123456"
+                  maxLength={6}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none text-center text-2xl font-mono tracking-widest"
+                />
+                <p className="text-xs text-gray-600 mt-2">
+                  💡 Wygeneruj kod w aplikacji bankowej przed kliknięciem "Opłać teraz"
+                </p>
+              </div>
+            )}
+
             <div className="space-y-3">
               <button
                 onClick={onPayNow}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-4 px-6 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg"
+                disabled={paymentMethod === 'blik' && blikCode.length !== 6}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-4 px-6 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 💳 Opłać teraz i zapisz się
               </button>
@@ -63,10 +153,87 @@ const PaymentChoiceModal = ({
               </p>
             </div>
 
+            {/* Wybór metody płatności */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Metoda płatności:
+              </label>
+              <div className="space-y-2">
+                <button
+                  onClick={() => onPaymentMethodChange('pbl')}
+                  className={`w-full p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${
+                    paymentMethod === 'pbl'
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-200 hover:border-purple-300'
+                  }`}
+                >
+                  <div className="text-xl">🏦</div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold text-sm">PayByLink</div>
+                  </div>
+                  {paymentMethod === 'pbl' && <div className="text-purple-500">✓</div>}
+                </button>
+
+                <button
+                  onClick={() => onPaymentMethodChange('blik')}
+                  className={`w-full p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${
+                    paymentMethod === 'blik'
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-200 hover:border-purple-300'
+                  }`}
+                >
+                  <div className="text-xl">📱</div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold text-sm">BLIK</div>
+                  </div>
+                  {paymentMethod === 'blik' && <div className="text-purple-500">✓</div>}
+                </button>
+
+                <button
+                  onClick={() => onPaymentMethodChange('card')}
+                  className={`w-full p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${
+                    paymentMethod === 'card'
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-200 hover:border-purple-300'
+                  }`}
+                >
+                  <div className="text-xl">💳</div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold text-sm">Karta płatnicza</div>
+                  </div>
+                  {paymentMethod === 'card' && <div className="text-purple-500">✓</div>}
+                </button>
+              </div>
+            </div>
+
+            {/* Kod BLIK jeśli wybrano BLIK */}
+            {paymentMethod === 'blik' && (
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Kod BLIK (6 cyfr):
+                </label>
+                <input
+                  type="text"
+                  value={blikCode}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 6)
+                    onBlikCodeChange(value)
+                  }}
+                  placeholder="123456"
+                  maxLength={6}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none text-center text-2xl font-mono tracking-widest"
+                />
+                <p className="text-xs text-gray-600 mt-2">
+                  💡 Wygeneruj kod w aplikacji bankowej
+                </p>
+              </div>
+            )}
+
             <div className="space-y-3">
               <button
                 onClick={onPayNow}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-4 px-6 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg flex items-center justify-center gap-2"
+                disabled={paymentMethod === 'blik' && blikCode.length !== 6}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-4 px-6 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="text-xl">💳</span>
                 <span>Opłać teraz</span>

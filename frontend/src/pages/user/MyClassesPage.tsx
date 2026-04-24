@@ -36,6 +36,14 @@ const MyClassesPage = () => {
   const [cancelling, setCancelling] = useState<string | null>(null)
   const [flippedCard, setFlippedCard] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string[]>(['registered', 'attended']) // Domyślnie aktywne i uczestniczone
+  const [paymentMethod, setPaymentMethod] = useState<'pbl' | 'blik' | 'card'>('pbl')
+  const [blikCode, setBlikCode] = useState('')
+  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false)
+  const [pendingPayment, setPendingPayment] = useState<{
+    registrationId: string
+    cost: number
+    activityName: string
+  } | null>(null)
 
   // Helper: Pobierz link WhatsApp z fallback do activity_type
   const getWhatsAppLink = (activity: Registration['activity']): string | null => {
@@ -132,7 +140,16 @@ const MyClassesPage = () => {
     }
   }
 
-  const handlePayNow = async (registrationId: string, cost: number, activityName: string) => {
+  const handlePayButtonClick = (registrationId: string, cost: number, activityName: string) => {
+    setPendingPayment({ registrationId, cost, activityName })
+    setShowPaymentMethodModal(true)
+  }
+
+  const handleConfirmPayment = async () => {
+    if (!pendingPayment) return
+
+    setShowPaymentMethodModal(false)
+
     try {
       // Pobierz sesję użytkownika
       const { data: { session } } = await supabase.auth.getSession()
@@ -142,6 +159,21 @@ const MyClassesPage = () => {
       }
 
       // Inicjuj płatność przez Edge Function
+      const paymentPayload: any = {
+        registrationId: pendingPayment.registrationId,
+        amount: pendingPayment.cost,
+        description: `Opłata za ${pendingPayment.activityName}`,
+        paymentMethod
+      }
+
+      // Dla BLIK dodaj kod
+      if (paymentMethod === 'blik') {
+        if (!blikCode || blikCode.length !== 6) {
+          throw new Error('Wprowadź 6-cyfrowy kod BLIK')
+        }
+        paymentPayload.blikCode = blikCode
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/payment-initiate`,
         {
@@ -151,12 +183,7 @@ const MyClassesPage = () => {
             'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
             'Authorization': `Bearer ${session.access_token}`
           },
-          body: JSON.stringify({
-            registrationId: registrationId,
-            amount: cost,
-            description: `Opłata za ${activityName}`,
-            paymentMethod: 'default'
-          })
+          body: JSON.stringify(paymentPayload)
         }
       )
 
@@ -175,6 +202,8 @@ const MyClassesPage = () => {
     } catch (error) {
       console.error('Payment error:', error)
       alert(`❌ Błąd płatności: ${error instanceof Error ? error.message : 'Nieznany błąd'}`)
+    } finally {
+      setPendingPayment(null)
     }
   }
 
@@ -481,7 +510,7 @@ const MyClassesPage = () => {
                           {/* Payment button */}
                           {reg.payment_status !== 'paid' && reg.payment_due_date && (
                             <button
-                              onClick={() => handlePayNow(reg.id, reg.activity.cost, reg.activity.name)}
+                              onClick={() => handlePayButtonClick(reg.id, reg.activity.cost, reg.activity.name)}
                               className="flex-1 min-w-[150px] px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all text-sm"
                             >
                               💳 Opłać teraz ({reg.activity.cost.toFixed(2)} zł)
@@ -577,6 +606,118 @@ const MyClassesPage = () => {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* Payment Method Modal */}
+      {showPaymentMethodModal && pendingPayment && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">💳</div>
+              <h3 className="text-2xl font-bold text-purple-600 mb-2">
+                Wybierz metodę płatności
+              </h3>
+              <p className="text-gray-600 mb-1">{pendingPayment.activityName}</p>
+              <p className="text-2xl font-bold text-purple-600">{pendingPayment.cost.toFixed(2)} zł</p>
+            </div>
+
+            {/* Wybór metody płatności */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Metoda płatności:
+              </label>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setPaymentMethod('pbl')}
+                  className={`w-full p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${
+                    paymentMethod === 'pbl'
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-200 hover:border-purple-300'
+                  }`}
+                >
+                  <div className="text-xl">🏦</div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold text-sm">PayByLink</div>
+                  </div>
+                  {paymentMethod === 'pbl' && <div className="text-purple-500">✓</div>}
+                </button>
+
+                <button
+                  onClick={() => setPaymentMethod('blik')}
+                  className={`w-full p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${
+                    paymentMethod === 'blik'
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-200 hover:border-purple-300'
+                  }`}
+                >
+                  <div className="text-xl">📱</div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold text-sm">BLIK</div>
+                  </div>
+                  {paymentMethod === 'blik' && <div className="text-purple-500">✓</div>}
+                </button>
+
+                <button
+                  onClick={() => setPaymentMethod('card')}
+                  className={`w-full p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${
+                    paymentMethod === 'card'
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-200 hover:border-purple-300'
+                  }`}
+                >
+                  <div className="text-xl">💳</div>
+                  <div className="text-left flex-1">
+                    <div className="font-semibold text-sm">Karta płatnicza</div>
+                  </div>
+                  {paymentMethod === 'card' && <div className="text-purple-500">✓</div>}
+                </button>
+              </div>
+            </div>
+
+            {/* Kod BLIK jeśli wybrano BLIK */}
+            {paymentMethod === 'blik' && (
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Kod BLIK (6 cyfr):
+                </label>
+                <input
+                  type="text"
+                  value={blikCode}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 6)
+                    setBlikCode(value)
+                  }}
+                  placeholder="123456"
+                  maxLength={6}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none text-center text-2xl font-mono tracking-widest"
+                />
+                <p className="text-xs text-gray-600 mt-2">
+                  💡 Wygeneruj kod w aplikacji bankowej
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <button
+                onClick={handleConfirmPayment}
+                disabled={paymentMethod === 'blik' && blikCode.length !== 6}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-4 px-6 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                💳 Opłać teraz
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowPaymentMethodModal(false)
+                  setPendingPayment(null)
+                }}
+                className="w-full bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-lg hover:bg-gray-300 transition-all"
+              >
+                Anuluj
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

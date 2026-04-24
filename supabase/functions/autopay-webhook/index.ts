@@ -10,7 +10,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 serve(async (req) => {
   try {
-    console.log('[Autopay Webhook] Received notification')
+    console.log('[Autopay Webhook] VERSION 2026-04-24-11:45 - Received notification')
 
     // 1. Odczytaj body (URL-encoded)
     const rawBody = await req.text()
@@ -36,7 +36,11 @@ serve(async (req) => {
     const data = parseITN(xmlDecoded)
 
     // 3. Weryfikuj hash
-    const sharedKey = Deno.env.get('AUTOPAY_SHARED_KEY') ?? ''
+    const sharedKeyRaw = Deno.env.get('AUTOPAY_SHARED_KEY') ?? ''
+    const sharedKey = sharedKeyRaw.trim() // Remove whitespace
+    console.log('[Autopay Webhook] SharedKey SHA256:',
+      Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(sharedKey))))
+        .map(b => b.toString(16).padStart(2, '0')).join(''))
     const isValid = await verifyHash(data, sharedKey)
 
     if (!isValid) {

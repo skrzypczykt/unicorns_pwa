@@ -67,6 +67,8 @@ const ActivitiesPage = () => {
   const [viewMode, setViewMode] = useState<'calendar' | 'grid'>('calendar')
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null)
   const [showSlidePanel, setShowSlidePanel] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<'pbl' | 'blik' | 'card'>('pbl')
+  const [blikCode, setBlikCode] = useState('')
 
   // Funkcja pomocnicza do odświeżania wszystkich danych
   const refreshAllData = () => {
@@ -534,6 +536,21 @@ const ActivitiesPage = () => {
         throw new Error('Brak sesji użytkownika - zaloguj się ponownie')
       }
 
+      const paymentPayload: any = {
+        registrationId: registrationId,
+        amount: pendingRegistration.cost,
+        description: `Opłata za ${pendingRegistration.activityName}`,
+        paymentMethod
+      }
+
+      // Dla BLIK dodaj kod
+      if (paymentMethod === 'blik') {
+        if (!blikCode || blikCode.length !== 6) {
+          throw new Error('Wprowadź 6-cyfrowy kod BLIK')
+        }
+        paymentPayload.blikCode = blikCode
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/payment-initiate`,
         {
@@ -543,12 +560,7 @@ const ActivitiesPage = () => {
             'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
             'Authorization': `Bearer ${session.access_token}`
           },
-          body: JSON.stringify({
-            registrationId: registrationId,
-            amount: pendingRegistration.cost,
-            description: `Opłata za ${pendingRegistration.activityName}`,
-            paymentMethod: 'default' // Użytkownik wybierze na bramce
-          })
+          body: JSON.stringify(paymentPayload)
         }
       )
 
@@ -1376,6 +1388,10 @@ const ActivitiesPage = () => {
           onPayNow={handlePayNow}
           onPayLater={handlePayLater}
           onCancel={handleCancelPayment}
+          paymentMethod={paymentMethod}
+          onPaymentMethodChange={setPaymentMethod}
+          blikCode={blikCode}
+          onBlikCodeChange={setBlikCode}
         />
       )}
 
