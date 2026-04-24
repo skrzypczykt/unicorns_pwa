@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.4.7] - 2026-04-24
+
+### Naprawiono
+
+- **PaymentSuccessPage timeout przy weryfikacji**
+  - Dodano 10s timeout dla query transactions
+  - Dodano console.log dla debugowania (transaction found, registration found)
+  - Lepsze error handling gdy brak registration_id w transaction
+
 ## [0.4.6] - 2026-04-24
 
 ### Naprawiono

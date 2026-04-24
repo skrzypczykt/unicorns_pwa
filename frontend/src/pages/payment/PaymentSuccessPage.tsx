@@ -38,15 +38,36 @@ export default function PaymentSuccessPage() {
       console.log('Verifying payment for orderId:', orderId)
 
       // OrderID is transaction.id (UUID without dashes)
-      // Find transaction and get registration_id
-      const { data: transaction, error: txError } = await supabase
+      // Find transaction and get registration_id with timeout
+      const txPromise = supabase
         .from('transactions')
-        .select('registration_id')
+        .select('registration_id, status')
         .eq('provider_transaction_id', orderId)
         .single()
 
-      if (txError || !transaction?.registration_id) {
-        console.error('Error fetching transaction:', txError)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Transaction lookup timeout')), 10000)
+      )
+
+      const { data: transaction, error: txError } = await Promise.race([
+        txPromise,
+        timeoutPromise
+      ]) as any
+
+      if (txError || !transaction) {
+        console.error('Error fetching transaction:', txError, 'orderId:', orderId)
+        setPaymentDetails({
+          orderId,
+          status: 'pending'
+        })
+        setLoading(false)
+        return
+      }
+
+      console.log('Transaction found:', transaction)
+
+      if (!transaction.registration_id) {
+        console.error('Transaction has no registration_id')
         setPaymentDetails({
           orderId,
           status: 'pending'
@@ -82,6 +103,8 @@ export default function PaymentSuccessPage() {
         setLoading(false)
         return
       }
+
+      console.log('Registration found:', registration)
 
       const activity = Array.isArray(registration.activities)
         ? registration.activities[0]
