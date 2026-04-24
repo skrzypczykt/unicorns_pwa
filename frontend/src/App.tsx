@@ -3,52 +3,67 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { supabase } from './supabase/client'
 import { APP_VERSION } from './version'
 import { useAuthMonitoring } from './hooks/useAuthMonitoring'
-import SimpleLoginPage from './pages/SimpleLoginPage'
-import ForgotPasswordPage from './pages/ForgotPasswordPage'
-import RegisterPage from './pages/RegisterPage'
-import PublicAboutPage from './pages/PublicAboutPage'
-import AboutAppPage from './pages/AboutAppPage'
-import NewsPage from './pages/NewsPage'
-import NewsArticlePage from './pages/NewsArticlePage'
-import AuthCallbackPage from './pages/AuthCallbackPage'
-import ActivitiesPage from './pages/ActivitiesPage'
-import MyClassesPage from './pages/MyClassesPage'
-import TrainerClassesPage from './pages/TrainerClassesPage'
-import AdminUsersPage from './pages/AdminUsersPage'
-import ProfilePage from './pages/ProfilePage'
-import AccountPage from './pages/AccountPage'
-import EditProfilePage from './pages/EditProfilePage'
-import NotificationsPage from './pages/NotificationsPage'
-import SettingsPage from './pages/SettingsPage'
-import AdminActivitiesPage from './pages/AdminActivitiesPage'
-import AdminSectionsPage from './pages/AdminSectionsPage'
-import AdminReportsPage from './pages/AdminReportsPage'
-import AdminAttendancePage from './pages/AdminAttendancePage'
-import ActivityParticipantsPage from './pages/ActivityParticipantsPage'
+// Auth
+import SimpleLoginPage from './pages/auth/SimpleLoginPage'
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+import RegisterPage from './pages/auth/RegisterPage'
+import AuthCallbackPage from './pages/auth/AuthCallbackPage'
+
+// Public
+import PublicAboutPage from './pages/public/PublicAboutPage'
+import AboutAppPage from './pages/public/AboutAppPage'
+import NewsPage from './pages/public/NewsPage'
+import NewsArticlePage from './pages/public/NewsArticlePage'
+import LegalNoticePage from './pages/public/LegalNoticePage'
+import DonationsPage from './pages/public/DonationsPage'
+
+// User
+import ActivitiesPage from './pages/user/ActivitiesPage'
+import MyClassesPage from './pages/user/MyClassesPage'
+import ProfilePage from './pages/user/ProfilePage'
+import AccountPage from './pages/user/AccountPage'
+import EditProfilePage from './pages/user/EditProfilePage'
+import NotificationsPage from './pages/user/NotificationsPage'
+import SettingsPage from './pages/user/SettingsPage'
+import ActivityParticipantsPage from './pages/user/ActivityParticipantsPage'
+
+// Member Zone
+import MemberZonePage from './pages/member-zone/MemberZonePage'
+import MemberNewsPage from './pages/member-zone/MemberNewsPage'
+import MemberDocumentsPage from './pages/member-zone/MemberDocumentsPage'
+import MemberPollsPage from './pages/member-zone/MemberPollsPage'
+import MemberBalancePage from './pages/member-zone/MemberBalancePage'
+
+// Trainer
+import TrainerClassesPage from './pages/trainer/TrainerClassesPage'
+
+// Admin
+import AdminUsersPage from './pages/admin/AdminUsersPage'
+import AdminActivitiesPage from './pages/admin/AdminActivitiesPage'
+import AdminSectionsPage from './pages/admin/AdminSectionsPage'
+import AdminReportsPage from './pages/admin/AdminReportsPage'
+import AdminAttendancePage from './pages/admin/AdminAttendancePage'
+import AdminPaymentsPage from './pages/admin/AdminPaymentsPage'
+import AdminRefundsPage from './pages/admin/AdminRefundsPage'
+import AdminMemberZoneManagementPage from './pages/admin/AdminMemberZoneManagementPage'
+import AdminMemberNewsPage from './pages/admin/AdminMemberNewsPage'
+import AdminMemberDocumentsPage from './pages/admin/AdminMemberDocumentsPage'
+import AdminMemberPollsPage from './pages/admin/AdminMemberPollsPage'
+import AdminMemberFeesPage from './pages/admin/AdminMemberFeesPage'
+
+// Payment
+import AutopayRedirectPage from './pages/payment/AutopayRedirectPage'
+import PaymentReturnPage from './pages/payment/PaymentReturnPage'
+import PaymentSuccessPage from './pages/payment/PaymentSuccessPage'
+import PaymentCancelPage from './pages/payment/PaymentCancelPage'
+
+// Components
 import InstallPWAPrompt from './components/InstallPWAPrompt'
 import BackButton from './components/BackButton'
 import ScrollToTop from './components/ScrollToTop'
 import HamburgerMenu from './components/HamburgerMenu'
 import WelcomeNotificationModal from './components/WelcomeNotificationModal'
 import VersionBanner from './components/VersionBanner'
-import MemberZonePage from './pages/MemberZonePage'
-import MemberNewsPage from './pages/MemberNewsPage'
-import MemberDocumentsPage from './pages/MemberDocumentsPage'
-import MemberPollsPage from './pages/MemberPollsPage'
-import MemberBalancePage from './pages/MemberBalancePage'
-import AdminMemberNewsPage from './pages/admin/AdminMemberNewsPage'
-import AdminMemberDocumentsPage from './pages/admin/AdminMemberDocumentsPage'
-import AdminMemberPollsPage from './pages/admin/AdminMemberPollsPage'
-import AdminMemberFeesPage from './pages/admin/AdminMemberFeesPage'
-import AdminMemberZoneManagementPage from './pages/AdminMemberZoneManagementPage'
-import DonationsPage from './pages/DonationsPage'
-import LegalNoticePage from './pages/LegalNoticePage'
-import PaymentSuccessPage from './pages/PaymentSuccessPage'
-import PaymentCancelPage from './pages/PaymentCancelPage'
-import AutopayRedirectPage from './pages/AutopayRedirectPage'
-import PaymentReturnPage from './pages/PaymentReturnPage'
-import AdminPaymentsPage from './pages/AdminPaymentsPage'
-import AdminRefundsPage from './pages/AdminRefundsPage'
 
 interface UserProfile {
   id: string
@@ -264,16 +279,6 @@ const AppContent = ({ user, profile, handleSignOut, onProfileUpdate, onUserUpdat
           <Route path="/payment-return" element={<PaymentReturnPage />} />
           <Route path="/payment-success" element={<PaymentSuccessPage />} />
           <Route path="/payment-cancel" element={<PaymentCancelPage />} />
-          <Route path="/admin/*" element={
-            <div className="p-8 text-center max-w-2xl mx-auto">
-              <div className="text-6xl mb-4">⚙️</div>
-              <h1 className="text-3xl font-bold text-purple-600 mb-4">Panel administratora</h1>
-              <p className="text-gray-600 mb-6">Ta funkcja będzie wkrótce dostępna!</p>
-              <button onClick={() => window.location.href = '/'} className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105">
-                ← Powrót do strony głównej
-              </button>
-            </div>
-          } />
           <Route path="/trainer/classes" element={<TrainerClassesPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

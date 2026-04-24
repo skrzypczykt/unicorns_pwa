@@ -4,6 +4,31 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.4.2] - 2026-04-24
+
+### Zmieniono
+
+- **Reorganizacja katalogów frontend/src/pages/**
+  - Utworzono podkatalogi: auth/, public/, user/, member-zone/, trainer/, admin/, payment/
+  - Wszystkie strony w odpowiednich kategoriach (40 plików)
+  - Zaktualizowano importy w App.tsx
+  - Dodano README.md z pełnym grafem połączeń
+
+- **Ujednolicono płatności w MyClassesPage**
+  - Usunięto stary placeholder BLIK testowy
+  - Dodano prawdziwą integrację z payment-initiate Edge Function
+  - Opłacanie rezerwacji przekierowuje do Autopay
+
+### Usunięto
+
+- **Nieużywane pliki:**
+  - AboutPage.tsx (nie było w routingu)
+  - DashboardPage.tsx (embedded w PublicAboutPage)
+
+- **Placeholder admin route**
+  - Usunięto `/admin/*` catch-all z komunikatem "Ta funkcja będzie wkrótce dostępna"
+  - Wszystkie prawdziwe strony admina już istnieją
+
 ## [0.4.1] - 2026-04-23
 
 ### Naprawiono
