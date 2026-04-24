@@ -154,19 +154,34 @@ async function verifyHash(
   data: ReturnType<typeof parseITN>,
   sharedKey: string
 ): Promise<boolean> {
-  // Hash ITN: ServiceID|OrderID|RemoteID|Amount|Currency|GatewayID|PaymentDate|PaymentStatus|PaymentStatusDetails|SharedKey
-  const hashInput = [
+  // Hash ITN: zgodnie z dokumentacją Autopay - pomijamy puste wartości
+  // Kolejność: ServiceID|OrderID|RemoteID|Amount|Currency|[GatewayID]|PaymentDate|PaymentStatus|[PaymentStatusDetails]|SharedKey
+  const hashParts: string[] = [
     data.serviceId,
     data.orderId,
     data.remoteId,
     data.amount,
-    data.currency,
-    data.gatewayId,
-    data.paymentDate,
-    data.paymentStatus,
-    data.paymentStatusDetails,
-    sharedKey
-  ].join('|')
+    data.currency
+  ]
+
+  // GatewayID - tylko jeśli niepuste
+  if (data.gatewayId) {
+    hashParts.push(data.gatewayId)
+  }
+
+  // PaymentDate i PaymentStatus - zawsze
+  hashParts.push(data.paymentDate)
+  hashParts.push(data.paymentStatus)
+
+  // PaymentStatusDetails - tylko jeśli niepuste
+  if (data.paymentStatusDetails) {
+    hashParts.push(data.paymentStatusDetails)
+  }
+
+  // SharedKey na końcu
+  hashParts.push(sharedKey)
+
+  const hashInput = hashParts.join('|')
 
   console.log('[Autopay Webhook] Hash input:', hashInput.replace(sharedKey, '***'))
   console.log('[Autopay Webhook] Parsed data:', JSON.stringify(data, null, 2))
