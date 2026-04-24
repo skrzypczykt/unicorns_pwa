@@ -152,8 +152,36 @@ serve(async (req) => {
 
     const currency = 'PLN'
 
-    // 10. Generuj hash - kolejność według dokumentacji: ServiceID|OrderID|Amount|CustomerEmail|SharedKey
-    const hashInput = `${serviceId}|${orderId}|${amountFormatted}|${customerEmail}|${sharedKey}`
+    // 10. Przygotuj dodatkowe parametry dla różnych metod płatności
+    let gatewayId: string | undefined
+    let authorizationCode: string | undefined
+
+    // BLIK - wymaga WhiteLabel mode (GatewayID=509)
+    if (paymentMethod === 'blik' && blikCode) {
+      console.log('[Payment Initiate] BLIK selected, setting GatewayID=509 and AuthorizationCode')
+      gatewayId = '509'
+      authorizationCode = blikCode
+    } else if (paymentMethod === 'blik' && !blikCode) {
+      console.warn('[Payment Initiate] BLIK selected but no blikCode provided!')
+    }
+
+    // PBL - tylko jeśli explicite wybrane
+    if (paymentMethod === 'pbl') {
+      console.log('[Payment Initiate] PBL selected, setting GatewayID=106')
+      gatewayId = '106'
+    }
+
+    // 11. Generuj hash - dla BLIK WhiteLabel uwzględnij GatewayID
+    // Według dokumentacji Autopay dla BLIK WhiteLabel:
+    // Hash = SHA256(ServiceID|OrderID|Amount|CustomerEmail|GatewayID|SharedKey)
+    let hashInput: string
+    if (gatewayId) {
+      // Z GatewayID (BLIK lub PBL)
+      hashInput = `${serviceId}|${orderId}|${amountFormatted}|${customerEmail}|${gatewayId}|${sharedKey}`
+    } else {
+      // Bez GatewayID (standard)
+      hashInput = `${serviceId}|${orderId}|${amountFormatted}|${customerEmail}|${sharedKey}`
+    }
 
     console.log('Payment params:', {
       serviceId,
@@ -161,7 +189,9 @@ serve(async (req) => {
       amount: amountFormatted,
       currency,
       customerEmail,
-      hashInput: `${serviceId}|${orderId}|${amountFormatted}|${customerEmail}|***`
+      gatewayId: gatewayId || 'none',
+      authorizationCode: authorizationCode ? `${authorizationCode.length} chars` : 'none',
+      hashInput: hashInput.replace(sharedKey, '***')
     })
 
     const hashBuffer = await crypto.subtle.digest(
@@ -171,29 +201,21 @@ serve(async (req) => {
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
-    // 11. Zbuduj parametry - dokumentacja wymaga CustomerEmail jako OBOWIĄZKOWE
+    // 12. Zbuduj parametry
     const params: Record<string, string> = {
       ServiceID: serviceId,
       OrderID: orderId,
       Amount: amountFormatted,
-      CustomerEmail: customerEmail,  // OBOWIĄZKOWE
+      CustomerEmail: customerEmail,
       Hash: hash
-      // NIE dodajemy GatewayID domyślnie - Autopay pokaże wybór metody
     }
 
-    // BLIK - wymaga WhiteLabel mode (GatewayID=509)
-    if (paymentMethod === 'blik' && blikCode) {
-      console.log('[Payment Initiate] BLIK selected, setting GatewayID=509 and AuthorizationCode')
-      params.GatewayID = '509'
-      params.AuthorizationCode = blikCode
-    } else if (paymentMethod === 'blik' && !blikCode) {
-      console.warn('[Payment Initiate] BLIK selected but no blikCode provided!')
+    // Dodaj opcjonalne parametry
+    if (gatewayId) {
+      params.GatewayID = gatewayId
     }
-
-    // PBL - tylko jeśli explicite wybrane
-    if (paymentMethod === 'pbl') {
-      console.log('[Payment Initiate] PBL selected, setting GatewayID=106')
-      params.GatewayID = '106'
+    if (authorizationCode) {
+      params.AuthorizationCode = authorizationCode
     }
 
     // Zbuduj URL do React route która wykona POST do Autopay
