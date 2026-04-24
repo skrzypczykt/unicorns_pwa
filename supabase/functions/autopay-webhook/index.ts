@@ -60,40 +60,29 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     )
 
-    // 5. Znajdź transakcję po provider_transaction_id (OrderID)
+    // 5. Znajdź transakcję - SELECT tylko potrzebne pola (szybciej niż JOIN)
     const { data: transaction, error: txError } = await supabase
       .from('transactions')
-      .select('*, registrations(id, user_id)')
+      .select('id, status, registration_id')
       .eq('provider_transaction_id', data.orderId)
       .single()
 
     if (txError || !transaction) {
-      console.error('[Autopay Webhook] Transaction not found:', data.orderId, txError)
-      return new Response('NOTOK', {
-        status: 200,
-        headers: { 'Content-Type': 'text/plain' }
-      })
+      return new Response('NOTOK', { status: 200, headers: { 'Content-Type': 'text/plain' } })
     }
 
-    console.log('[Autopay Webhook] Transaction found:', transaction.id, 'current status:', transaction.status)
-
-    // 6. Mapuj status Autopay na nasz status
+    // 6. Mapuj status i sprawdź deduplication
     const status = mapAutopayStatus(data.paymentStatus)
-    console.log('[Autopay Webhook] Mapped status:', data.paymentStatus, '→', status)
 
-    // DEDUPLICATION: Jeśli transaction już przetworzony (completed/failed), zwróć OK natychmiast
-    // Autopay retry'uje ITN więc wiele wywołań to normalne - nie przetwarzamy ponownie
+    // DEDUPLICATION: zwróć OK natychmiast
     if ((transaction.status === 'completed' || transaction.status === 'failed') && transaction.status === status) {
-      console.log('[Autopay Webhook] Transaction already processed, returning OK immediately (deduplication)')
-      return new Response('OK', {
-        status: 200,
-        headers: { 'Content-Type': 'text/plain' }
-      })
+      return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } })
     }
 
-    // 6a. Teraz zapisz webhook event (tylko dla nowych, nie duplicate)
+    // 6a. INSERT webhook event i UPDATE transaction/registration RÓWNOLEGLE
     const webhookEventId = crypto.randomUUID()
-    await supabase.from('webhook_events').insert({
+
+    const webhookInsert = supabase.from('webhook_events').insert({
       id: webhookEventId,
       provider: 'autopay',
       event_type: data.paymentStatus,
@@ -102,49 +91,33 @@ serve(async (req) => {
       amount: parseFloat(data.amount),
       currency: data.currency,
       payment_status: data.paymentStatus.toLowerCase() === 'success' ? 'success' :
-                      data.paymentStatus.toLowerCase() === 'failure' ? 'failed' :
-                      data.paymentStatus.toLowerCase() === 'pending' ? 'pending' : 'pending',
+                      data.paymentStatus.toLowerCase() === 'failure' ? 'failed' : 'pending',
       signature_valid: true,
       registration_id: transaction.registration_id,
-      user_id: transaction.registrations?.user_id,
-      processed_status: 'processing',
-      created_at: new Date().toISOString()
+      processed_status: 'processing'
     })
 
-    // 7. Aktualizuj transakcję
-    await supabase
+    const transactionUpdate = supabase
       .from('transactions')
-      .update({
-        status,
-        updated_at: new Date().toISOString()
-      })
+      .update({ status, updated_at: new Date().toISOString() })
       .eq('id', transaction.id)
 
-    // 8. Jeśli płatność zakończona sukcesem - zaktualizuj registration
-    if (status === 'completed' && transaction.registration_id) {
-      console.log('[Autopay Webhook] Updating registration payment status')
-      await supabase
-        .from('registrations')
-        .update({ payment_status: 'paid' })
-        .eq('id', transaction.registration_id)
-    }
+    const registrationUpdate = status === 'completed' && transaction.registration_id
+      ? supabase.from('registrations').update({ payment_status: 'paid' }).eq('id', transaction.registration_id)
+      : Promise.resolve()
 
-    console.log('[Autopay Webhook] Transaction processed successfully')
+    // 7. Wykonaj wszystkie operacje RÓWNOLEGLE
+    await Promise.all([webhookInsert, transactionUpdate, registrationUpdate])
 
-    // 9. Zaktualizuj webhook event na success
-    await supabase
+    // 8. UPDATE webhook_events na success (fire-and-forget - nie czekamy)
+    supabase
       .from('webhook_events')
-      .update({
-        processed_status: 'success',
-        processed_at: new Date().toISOString()
-      })
+      .update({ processed_status: 'success', processed_at: new Date().toISOString() })
       .eq('id', webhookEventId)
+      .then() // fire-and-forget
 
-    // 10. Zwróć "OK" do Autopay
-    return new Response('OK', {
-      status: 200,
-      headers: { 'Content-Type': 'text/plain' }
-    })
+    // 9. Zwróć "OK" NATYCHMIAST (nie czekamy na webhook_events update)
+    return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } })
   } catch (error) {
     console.error('[Autopay Webhook] Error:', error)
     return new Response('NOTOK', {
