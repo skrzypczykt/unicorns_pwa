@@ -60,7 +60,38 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     )
 
-    // 4a. Zapisz webhook event do tabeli webhook_events (audit log) - na początku
+    // 5. Znajdź transakcję po provider_transaction_id (OrderID)
+    const { data: transaction, error: txError } = await supabase
+      .from('transactions')
+      .select('*, registrations(id, user_id)')
+      .eq('provider_transaction_id', data.orderId)
+      .single()
+
+    if (txError || !transaction) {
+      console.error('[Autopay Webhook] Transaction not found:', data.orderId, txError)
+      return new Response('NOTOK', {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' }
+      })
+    }
+
+    console.log('[Autopay Webhook] Transaction found:', transaction.id, 'current status:', transaction.status)
+
+    // 6. Mapuj status Autopay na nasz status
+    const status = mapAutopayStatus(data.paymentStatus)
+    console.log('[Autopay Webhook] Mapped status:', data.paymentStatus, '→', status)
+
+    // DEDUPLICATION: Jeśli transaction już przetworzony (completed/failed), zwróć OK natychmiast
+    // Autopay retry'uje ITN więc wiele wywołań to normalne - nie przetwarzamy ponownie
+    if ((transaction.status === 'completed' || transaction.status === 'failed') && transaction.status === status) {
+      console.log('[Autopay Webhook] Transaction already processed, returning OK immediately (deduplication)')
+      return new Response('OK', {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' }
+      })
+    }
+
+    // 6a. Teraz zapisz webhook event (tylko dla nowych, nie duplicate)
     const webhookEventId = crypto.randomUUID()
     await supabase.from('webhook_events').insert({
       id: webhookEventId,
@@ -73,65 +104,12 @@ serve(async (req) => {
       payment_status: data.paymentStatus.toLowerCase() === 'success' ? 'success' :
                       data.paymentStatus.toLowerCase() === 'failure' ? 'failed' :
                       data.paymentStatus.toLowerCase() === 'pending' ? 'pending' : 'pending',
-      signature_valid: true, // Hash już zweryfikowany
+      signature_valid: true,
+      registration_id: transaction.registration_id,
+      user_id: transaction.registrations?.user_id,
       processed_status: 'processing',
       created_at: new Date().toISOString()
     })
-
-    // 5. Znajdź transakcję po provider_transaction_id (OrderID)
-    const { data: transaction, error: txError } = await supabase
-      .from('transactions')
-      .select('*, registrations(id, user_id)')
-      .eq('provider_transaction_id', data.orderId)
-      .single()
-
-    if (txError || !transaction) {
-      console.error('[Autopay Webhook] Transaction not found:', data.orderId, txError)
-      await supabase
-        .from('webhook_events')
-        .update({
-          processed_status: 'failed',
-          processed_at: new Date().toISOString(),
-          error_message: `Transaction not found: ${txError?.message || 'Unknown error'}`
-        })
-        .eq('id', webhookEventId)
-      return new Response('NOTOK', {
-        status: 200,
-        headers: { 'Content-Type': 'text/plain' }
-      })
-    }
-
-    console.log('[Autopay Webhook] Transaction found:', transaction.id, 'current status:', transaction.status)
-
-    // 5a. Zaktualizuj webhook event o registration_id i user_id
-    await supabase
-      .from('webhook_events')
-      .update({
-        registration_id: transaction.registration_id,
-        user_id: transaction.registrations?.user_id
-      })
-      .eq('id', webhookEventId)
-
-    // 6. Mapuj status Autopay na nasz status
-    const status = mapAutopayStatus(data.paymentStatus)
-    console.log('[Autopay Webhook] Mapped status:', data.paymentStatus, '→', status)
-
-    // DEDUPLICATION: Jeśli transaction już przetworzony (completed/failed), zwróć OK bez dalszego przetwarzania
-    // To zapobiega wielokrotnej aktualizacji gdy Autopay retry'uje ITN
-    if ((transaction.status === 'completed' || transaction.status === 'failed') && transaction.status === status) {
-      console.log('[Autopay Webhook] Transaction already processed with same status, returning OK (deduplication)')
-      await supabase
-        .from('webhook_events')
-        .update({
-          processed_status: 'duplicate',
-          processed_at: new Date().toISOString()
-        })
-        .eq('id', webhookEventId)
-      return new Response('OK', {
-        status: 200,
-        headers: { 'Content-Type': 'text/plain' }
-      })
-    }
 
     // 7. Aktualizuj transakcję
     await supabase
