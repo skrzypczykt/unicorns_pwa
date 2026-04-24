@@ -7,8 +7,8 @@ interface PaymentChoiceModalProps {
   onPayNow: () => void
   onPayLater: () => void
   onCancel: () => void
-  paymentMethod: 'pbl' | 'blik' | 'card'
-  onPaymentMethodChange: (method: 'pbl' | 'blik' | 'card') => void
+  paymentMethod: 'pbl' | 'blik'
+  onPaymentMethodChange: (method: 'pbl' | 'blik') => void
   blikCode: string
   onBlikCodeChange: (code: string) => void
 }

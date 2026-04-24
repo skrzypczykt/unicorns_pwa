@@ -36,7 +36,7 @@ const MyClassesPage = () => {
   const [cancelling, setCancelling] = useState<string | null>(null)
   const [flippedCard, setFlippedCard] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string[]>(['registered', 'attended']) // Domyślnie aktywne i uczestniczone
-  const [paymentMethod, setPaymentMethod] = useState<'pbl' | 'blik' | 'card'>('pbl')
+  const [paymentMethod, setPaymentMethod] = useState<'pbl' | 'blik'>('pbl')
   const [blikCode, setBlikCode] = useState('')
   const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false)
   const [pendingPayment, setPendingPayment] = useState<{

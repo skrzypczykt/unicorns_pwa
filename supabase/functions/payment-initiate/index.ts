@@ -46,9 +46,11 @@ serve(async (req) => {
       registrationId,
       amount,
       description,
-      paymentMethod = 'default', // 'default', 'blik', 'pbl', 'card'
+      paymentMethod = 'default', // 'default', 'blik', 'pbl'
       blikCode // Dla BLIK (6 cyfr)
     } = await req.json()
+
+    console.log('[Payment Initiate] Request:', { paymentMethod, blikCode: blikCode ? `${blikCode.length} chars` : 'none' })
 
     if (!registrationId || !amount) {
       return new Response(
@@ -181,12 +183,16 @@ serve(async (req) => {
 
     // BLIK - wymaga WhiteLabel mode (GatewayID=509)
     if (paymentMethod === 'blik' && blikCode) {
+      console.log('[Payment Initiate] BLIK selected, setting GatewayID=509 and AuthorizationCode')
       params.GatewayID = '509'
       params.AuthorizationCode = blikCode
+    } else if (paymentMethod === 'blik' && !blikCode) {
+      console.warn('[Payment Initiate] BLIK selected but no blikCode provided!')
     }
 
     // PBL - tylko jeśli explicite wybrane
     if (paymentMethod === 'pbl') {
+      console.log('[Payment Initiate] PBL selected, setting GatewayID=106')
       params.GatewayID = '106'
     }
 

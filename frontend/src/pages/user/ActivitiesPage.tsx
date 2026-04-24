@@ -67,7 +67,7 @@ const ActivitiesPage = () => {
   const [viewMode, setViewMode] = useState<'calendar' | 'grid'>('calendar')
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null)
   const [showSlidePanel, setShowSlidePanel] = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState<'pbl' | 'blik' | 'card'>('pbl')
+  const [paymentMethod, setPaymentMethod] = useState<'pbl' | 'blik'>('pbl')
   const [blikCode, setBlikCode] = useState('')
 
   // Funkcja pomocnicza do odświeżania wszystkich danych
