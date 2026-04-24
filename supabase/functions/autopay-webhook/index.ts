@@ -75,9 +75,21 @@ serve(async (req) => {
       })
     }
 
+    console.log('[Autopay Webhook] Transaction found:', transaction.id, 'current status:', transaction.status)
+
     // 6. Mapuj status Autopay na nasz status
     const status = mapAutopayStatus(data.paymentStatus)
     console.log('[Autopay Webhook] Mapped status:', data.paymentStatus, '→', status)
+
+    // DEDUPLICATION: Jeśli transaction już przetworzony (completed/failed), zwróć OK bez dalszego przetwarzania
+    // To zapobiega wielokrotnej aktualizacji gdy Autopay retry'uje ITN
+    if ((transaction.status === 'completed' || transaction.status === 'failed') && transaction.status === status) {
+      console.log('[Autopay Webhook] Transaction already processed with same status, returning OK (deduplication)')
+      return new Response('OK', {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' }
+      })
+    }
 
     // 7. Aktualizuj transakcję
     await supabase
