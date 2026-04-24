@@ -4,6 +4,28 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.4.9] - 2026-04-24
+
+### Dodano
+
+- **Wybór metody płatności w modalu**
+  - PBL (PayByLink) - wybór banku na bramce
+  - BLIK - input kodu 6-cyfrowego
+  - Karta płatnicza - dane karty na bramce
+  - Modal wyboru metody w ActivitiesPage i MyClassesPage
+  - Walidacja kodu BLIK (musi być 6 cyfr)
+
+### Zmieniono
+
+- **PaymentChoiceModal** - rozbudowano o wybór metody płatności
+- **Autopay webhook** - dodano debug logi dla weryfikacji hash (SHA256 klucza)
+
+**Kody BLIK testowe (środowisko testowe):**
+- `111112` → Success
+- `111121` → Invalid code
+- `111122` → Expired
+- `111123` → Already used
+
 ## [0.4.8] - 2026-04-24
 
 ### Zmieniono
