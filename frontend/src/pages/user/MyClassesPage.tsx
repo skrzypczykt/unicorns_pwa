@@ -638,7 +638,8 @@ const MyClassesPage = () => {
                 >
                   <div className="text-xl">🏦</div>
                   <div className="text-left flex-1">
-                    <div className="font-semibold text-sm">PayByLink</div>
+                    <div className="font-semibold text-sm">Szybki Przelew Online</div>
+                    <div className="text-xs text-gray-600">(rekomendowane)</div>
                   </div>
                   {paymentMethod === 'pbl' && <div className="text-purple-500">✓</div>}
                 </button>
@@ -654,23 +655,9 @@ const MyClassesPage = () => {
                   <div className="text-xl">📱</div>
                   <div className="text-left flex-1">
                     <div className="font-semibold text-sm">BLIK</div>
+                    <div className="text-xs text-gray-600">Szybka płatność kodem</div>
                   </div>
                   {paymentMethod === 'blik' && <div className="text-purple-500">✓</div>}
-                </button>
-
-                <button
-                  onClick={() => setPaymentMethod('card')}
-                  className={`w-full p-3 rounded-lg border-2 transition-all flex items-center gap-3 ${
-                    paymentMethod === 'card'
-                      ? 'border-purple-500 bg-purple-50'
-                      : 'border-gray-200 hover:border-purple-300'
-                  }`}
-                >
-                  <div className="text-xl">💳</div>
-                  <div className="text-left flex-1">
-                    <div className="font-semibold text-sm">Karta płatnicza</div>
-                  </div>
-                  {paymentMethod === 'card' && <div className="text-purple-500">✓</div>}
                 </button>
               </div>
             </div>
