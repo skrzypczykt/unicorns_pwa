@@ -379,7 +379,7 @@ const ActivitiesPage = () => {
       // Check if user already has a registration (including cancelled ones)
       const { data: existingReg, error: checkError } = await supabase
         .from('registrations')
-        .select('id, status')
+        .select('id, status, payment_status')
         .eq('activity_id', activityId)
         .eq('user_id', user.id)
         .maybeSingle()
@@ -389,13 +389,24 @@ const ActivitiesPage = () => {
       let registrationId: string | null = null
 
       if (existingReg) {
-        if (existingReg.status === 'registered' || existingReg.status === 'attended') {
+        // Sprawdź czy to potwierdzona rejestracja (nie pending)
+        if ((existingReg.status === 'registered' || existingReg.status === 'attended')
+            && existingReg.payment_status !== 'pending') {
           alert('Już jesteś zapisany na te zajęcia!')
           return null
         }
 
+        // Jeśli istnieje pending registration - usuń ją i stwórz nową (poniżej)
+        if (existingReg.payment_status === 'pending') {
+          await supabase
+            .from('registrations')
+            .delete()
+            .eq('id', existingReg.id)
+
+          // Nie rób nic więcej - nowa rejestracja zostanie utworzona poniżej
+        }
         // Reaktywuj anulowany zapis
-        if (existingReg.status === 'cancelled' || existingReg.status === 'no_show') {
+        else if (existingReg.status === 'cancelled' || existingReg.status === 'no_show') {
           const { error: updateError } = await supabase
             .from('registrations')
             .update({
@@ -411,8 +422,10 @@ const ActivitiesPage = () => {
           if (updateError) throw updateError
           registrationId = existingReg.id
         }
-      } else {
-        // Create new registration
+      }
+
+      // Create new registration (jeśli nie było existingReg LUB było pending które usunęliśmy)
+      if (!registrationId) {
         const { data: newReg, error: insertError } = await supabase
           .from('registrations')
           .insert({

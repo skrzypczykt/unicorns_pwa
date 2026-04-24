@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.4.3] - 2026-04-24
+
+### Naprawiono
+
+- **Błąd "Już jesteś zapisany!" przy płatnych wydarzeniach**
+  - performRegistration sprawdza payment_status przy wykrywaniu duplikatów
+  - Rejestracje z payment_status='pending' są usuwane i zastępowane nową próbą
+  - Rozwiązuje problem gdy użytkownik klika "Zapisz" ponownie przed opłaceniem
+
 ## [0.4.2] - 2026-04-24
 
 ### Zmieniono
