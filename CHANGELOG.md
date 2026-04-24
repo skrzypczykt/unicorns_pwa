@@ -4,6 +4,18 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.4.8] - 2026-04-24
+
+### Zmieniono
+
+- **Auto-refresh PaymentSuccessPage dla pending**
+  - Co 3s sprawdza status gdy payment_status='pending'
+  - Rozwiązuje race condition gdy redirect szybszy niż webhook ITN
+  - Użytkownik widzi automatyczną aktualizację gdy webhook zaktualizuje bazę
+
+**UWAGA:** Upewnij się że ITN URL jest ustawiony w panelu Autopay:
+`https://tezpojcudbjlkcilwwjr.supabase.co/functions/v1/autopay-webhook`
+
 ## [0.4.7] - 2026-04-24
 
 ### Naprawiono

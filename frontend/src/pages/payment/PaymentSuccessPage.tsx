@@ -21,6 +21,18 @@ export default function PaymentSuccessPage() {
     verifyPayment()
   }, [])
 
+  // Auto-refresh co 3s gdy status pending (webhook może przyjść później)
+  useEffect(() => {
+    if (paymentDetails?.status === 'pending' && !loading) {
+      const interval = setInterval(() => {
+        console.log('Auto-refreshing payment status...')
+        verifyPayment()
+      }, 3000)
+
+      return () => clearInterval(interval)
+    }
+  }, [paymentDetails?.status, loading])
+
   const verifyPayment = async () => {
     try {
       // Get parameters from URL (different providers use different param names)
