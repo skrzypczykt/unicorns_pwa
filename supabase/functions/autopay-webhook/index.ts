@@ -12,12 +12,28 @@ serve(async (req) => {
   try {
     console.log('[Autopay Webhook] Received notification')
 
-    // 1. Odczytaj body (XML)
+    // 1. Odczytaj body (URL-encoded)
     const rawBody = await req.text()
     console.log('[Autopay Webhook] Raw body:', rawBody)
 
-    // 2. Parsuj XML z ITN
-    const data = parseITN(rawBody)
+    // 2. Dekoduj URL-encoded body (format: transactions=BASE64_XML)
+    const urlParams = new URLSearchParams(rawBody)
+    const transactionsBase64 = urlParams.get('transactions')
+
+    if (!transactionsBase64) {
+      console.error('[Autopay Webhook] Missing transactions parameter')
+      return new Response('NOTOK', {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' }
+      })
+    }
+
+    // 3. Dekoduj Base64 → XML
+    const xmlDecoded = atob(transactionsBase64)
+    console.log('[Autopay Webhook] Decoded XML:', xmlDecoded)
+
+    // 4. Parsuj XML z ITN
+    const data = parseITN(xmlDecoded)
 
     // 3. Weryfikuj hash
     const sharedKey = Deno.env.get('AUTOPAY_SHARED_KEY') ?? ''
@@ -148,14 +164,20 @@ async function verifyHash(
     sharedKey
   ].join('|')
 
+  console.log('[Autopay Webhook] Hash input:', hashInput.replace(sharedKey, '***'))
+  console.log('[Autopay Webhook] Parsed data:', JSON.stringify(data, null, 2))
+
   const hashBuffer = await crypto.subtle.digest(
     'SHA-256',
     new TextEncoder().encode(hashInput)
   )
   const hashArray = Array.from(new Uint8Array(hashBuffer))
-  const expectedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+  const computedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
-  return expectedHash === data.hash.toLowerCase()
+  console.log('[Autopay Webhook] Expected hash:', data.hash.toLowerCase())
+  console.log('[Autopay Webhook] Computed hash:', computedHash)
+
+  return computedHash === data.hash.toLowerCase()
 }
 
 /**
