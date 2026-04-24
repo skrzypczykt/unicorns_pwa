@@ -4,6 +4,16 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.4.5] - 2026-04-24
+
+### Naprawiono
+
+- **PaymentSuccessPage nie znajdowało rejestracji**
+  - OrderID to transaction.id (UUID bez kresek), nie registration.id
+  - Poprawiono: najpierw szuka transaction po provider_transaction_id
+  - Potem pobiera registration po transaction.registration_id
+  - Rozwiązuje błąd 406 "Cannot coerce to single JSON object"
+
 ## [0.4.4] - 2026-04-24
 
 ### Naprawiono

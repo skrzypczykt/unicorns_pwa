@@ -37,8 +37,23 @@ export default function PaymentSuccessPage() {
 
       console.log('Verifying payment for orderId:', orderId)
 
-      // Extract registration ID from orderId (format: reg_{uuid})
-      const registrationId = orderId.replace('reg_', '').replace('fee_', '').replace('don_', '')
+      // OrderID is transaction.id (UUID without dashes)
+      // Find transaction and get registration_id
+      const { data: transaction, error: txError } = await supabase
+        .from('transactions')
+        .select('registration_id')
+        .eq('provider_transaction_id', orderId)
+        .single()
+
+      if (txError || !transaction?.registration_id) {
+        console.error('Error fetching transaction:', txError)
+        setPaymentDetails({
+          orderId,
+          status: 'pending'
+        })
+        setLoading(false)
+        return
+      }
 
       // Check registration status
       const { data: registration, error: regError } = await supabase
@@ -53,7 +68,7 @@ export default function PaymentSuccessPage() {
             cost
           )
         `)
-        .eq('id', registrationId)
+        .eq('id', transaction.registration_id)
         .single()
 
       if (regError) {
