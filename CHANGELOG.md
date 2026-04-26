@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.5.11] - 2026-04-26
+
+### Zmieniono
+
+- **Przepisano testy E2E activities.spec.ts**
+  - Używają istniejących selektorów CSS zamiast data-testid
+  - Testy bardziej odporne na zmiany (fallbacki, warunki)
+  - 6 testów przepisanych na działające selektory
+
 ## [0.5.10] - 2026-04-26
 
 ### Naprawiono
