@@ -36,7 +36,7 @@ Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
    - Jeśli błąd: zapisz co się stało + screenshot
 
 3. **Zgłaszanie problemów:**
-   - Email: unicorns.lodz@gmail.com
+   - Email: skrzypczykt@gmail.com
    - Tytuł: "[TEST] Nazwa scenariusza - krótki opis problemu"
    - Treść: Kroki które wykonałeś, urządzenie, co się stało, screenshot
 
@@ -224,11 +224,11 @@ Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
 **Cel:** Sprawdzić że jeden email = jedno konto.
 
 **Wymagania wstępne:**
-- Istniejące konto z emailem test@example.com
+- Istniejące konto (użyj tego samego emaila co w Scenariuszu 1)
 
 **Kroki:**
 1. Wejdź na formularz rejestracji
-2. Wpisz email który JUŻ ISTNIEJE: test@example.com
+2. Wpisz email który JUŻ ISTNIEJE (ten sam co użyłeś w Scenariuszu 1)
 3. Wpisz hasło: Test123!
 4. Wpisz imię: Anna
 5. Kliknij "Zarejestruj się"
@@ -966,7 +966,7 @@ Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
 **Cel:** Sprawdzić link do zajęć podczas trwania.
 
 **Wymagania wstępne:**
-- Zapisany na zajęcia online TERAZ (symulacja: zmień czas systemowy LUB poproś admina)
+- Zapisany na zajęcia online które trwają TERAZ (poproś Tomasz Skrzypczyk o utworzenie testowych zajęć online na odpowiednią godzinę)
 
 **Kroki:**
 1. Gdy zajęcia już się zaczęły (0-15 min przed lub w trakcie)
@@ -985,17 +985,17 @@ Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
 
 ## SEKCJA 6: Panel Admina (Scenariusze 39-46)
 
-**UWAGA:** Te scenariusze wymagają konta z rolą "admin". Skontaktuj się z zespołem aby otrzymać konto testowe.
+**UWAGA:** Te scenariusze wymagają konta z rolą "admin". Jeśli nie masz uprawnień administratora, skontaktuj się z **Tomasz Skrzypczyk** aby je otrzymać.
 
 ### Scenariusz 39: Logowanie jako Admin 💻
 
 **Cel:** Sprawdzić dostęp do panelu admina.
 
 **Wymagania wstępne:**
-- Konto admin (email: admin@unicorns.test, hasło: AdminTest123!)
+- Konto z uprawnieniami admin (skontaktuj się z Tomasz Skrzypczyk jeśli nie masz)
 
 **Kroki:**
-1. Zaloguj się kontem admin
+1. Zaloguj się swoim kontem (które ma uprawnienia admin)
 2. Sprawdź menu
 3. Kliknij "Panel Admina"
 
@@ -1318,19 +1318,21 @@ Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
 
 ---
 
-## Załącznik A: Konta Testowe
+## Załącznik A: Jak Uzyskać Dostęp
 
-**User (zwykły użytkownik):**
-- Email: user@unicorns.test
-- Hasło: UserTest123!
+**Konto użytkownika (user):**
+- Użyj własnego konta utworzonego podczas rejestracji (Scenariusz 1)
+- Każdy tester powinien stworzyć własne konto na własny email
 
-**Trainer:**
-- Email: trainer@unicorns.test
-- Hasło: TrainerTest123!
+**Uprawnienia trainera:**
+- Jeśli potrzebujesz uprawnień trenera do testowania scenariuszy związanych z zarządzaniem zajęciami, skontaktuj się z **Tomasz Skrzypczyk** (skrzypczykt@gmail.com)
 
-**Admin:**
-- Email: admin@unicorns.test
-- Hasło: AdminTest123!
+**Uprawnienia admina:**
+- Jeśli potrzebujesz uprawnień administratora do testowania scenariuszy z SEKCJI 6 (Panel Admina), skontaktuj się z **Tomasz Skrzypczyk** (skrzypczykt@gmail.com)
+
+**Kontakt w sprawie uprawnień:**
+- Email: skrzypczykt@gmail.com
+- W wiadomości napisz: który scenariusz testujesz i jakich uprawnień potrzebujesz
 
 ---
 
