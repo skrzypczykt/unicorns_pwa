@@ -1,6 +1,11 @@
 import { defineConfig, devices } from '@playwright/test'
 import * as dotenv from 'dotenv'
 import * as path from 'path'
+import { fileURLToPath } from 'url'
+
+// ES module compatibility
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // Załaduj zmienne środowiskowe z .env.test (jeśli istnieje)
 dotenv.config({ path: path.resolve(__dirname, '.env.test') })

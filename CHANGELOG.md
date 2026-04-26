@@ -4,6 +4,14 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.5.7] - 2026-04-26
+
+### Naprawiono
+
+- **ES module __dirname error**
+  - Użyto `import.meta.url` + `fileURLToPath` zamiast `__dirname`
+  - Kompatybilność z ES modules w playwright.config.ts
+
 ## [0.5.6] - 2026-04-26
 
 ### Naprawiono
@@ -11,6 +19,10 @@ Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 - **Missing dotenv dependency**
   - Dodano `dotenv` do devDependencies
   - Naprawiono błąd "Cannot find package 'dotenv'" w testach E2E
+  
+- **ES module __dirname error**
+  - Użyto `import.meta.url` + `fileURLToPath` zamiast `__dirname`
+  - Kompatybilność z ES modules w playwright.config.ts
 
 ## [0.5.5] - 2026-04-26
 
