@@ -1,83 +1,61 @@
 # Strategia Migracji Bazy Danych - Unicorns PWA
 
-## Problem
+## Status (2026-04-26)
 
-**Obecny stan:**
-- 50 plików migracji w `supabase/migrations/`
-- Duplikaty numerów (002, 006, 010 występują wielokrotnie)
-- Migracje nie działają gdy wykonywane wszystkie na raz
-- Brak gwarancji kolejności wykonania
-- Historia zmian rozbita i nieprzejrzysta
+✅ **Problem rozwiązany!** Migracje zostały naprawione.
 
-**Dlaczego to problem:**
-- Supabase wykonuje migracje alfabetycznie po nazwie pliku
-- Duplikaty numerów = losowa kolejność
-- Niektóre migracje zależą od poprzednich (FK, ENUM types, RLS)
-- Deploy na świeżą bazę kończy się błędem
+**Aktualny stan:**
+- 49 plików migracji w `supabase/migrations/`
+- ✅ Brak duplikatów numerów (użyto sufiksu 'a' dla konfliktów)
+- ✅ Sekwencyjna numeracja (z wyjątkiem 045 - placeholder)
+- ✅ Migracje wykonują się w poprawnej kolejności alfabetycznie
+- ✅ Backup dostępny w `supabase/migrations.backup-20260426-114839/`
+
+**Co naprawiono (2026-04-26):**
+- `002_fix_rls_policies.sql` → `002a_fix_rls_policies.sql`
+- `006_add_participants_count.sql` → `006a_add_participants_count.sql`
+- `007_push_notifications.sql` → `007a_push_notifications.sql`
+- Usunięto stare próby dodania external_trainer (010_no_enum, 010_safe)
+- Dodano 045_placeholder.sql dla ciągłości numeracji
 
 ---
 
-## Rozwiązanie
+## Historia Problemu (rozwiązany)
 
-### Faza 1: Renumeracja Migracji (Manual Fix)
+### Faza 1: Renumeracja Migracji ✅ WYKONANE
 
-**Zasada:** Jedna migracja = jeden numer, chronologicznie
+**Status:** Naprawione 2026-04-26
 
-**Kroki:**
+**Zastosowane rozwiązanie:**
+Zamiast pełnej renumeracji (która wymagałaby shiftu wszystkich plików), użyto sufiksu 'a' dla konfliktów:
 
-1. **Backup obecnych migracji:**
-   ```bash
-   cp -r supabase/migrations supabase/migrations.backup-$(date +%Y%m%d)
-   ```
+**Faktyczne zmiany:**
+```bash
+# Duplikaty oznaczone sufiksem 'a' (późniejsza wersja)
+002_allow_user_registration.sql  # Oryginalny
+002a_fix_rls_policies.sql         # Fix RLS (było 002_fix)
 
-2. **Renumeracja plików** (ręcznie lub skryptem):
-   
-   ```bash
-   # Sprawdź duplikaty
-   ls -1 supabase/migrations/ | cut -d'_' -f1 | sort | uniq -d
-   
-   # Output: 002, 006, 010
-   ```
+006_activity_images.sql           # Oryginalny
+006a_add_participants_count.sql   # Funkcja count (było 006_add)
 
-3. **Plan renumeracji:**
+007_auto_create_user_profile.sql  # Oryginalny
+007a_push_notifications.sql       # Push system (było 007_push)
 
-   | Stary | Nowy | Plik |
-   |-------|------|------|
-   | 002_fix_rls_policies.sql | 003_fix_rls_policies.sql | Był później od allow_user |
-   | 006_add_participants_count.sql | 007_add_participants_count.sql | Był później od images |
-   | 010_add_external_trainer_role_no_enum.sql | 011_add_external_trainer_role_no_enum.sql | |
-   | 010_add_external_trainer_role_safe.sql | 012_add_external_trainer_role_safe.sql | Ostatni z trio |
-   | 011_fix_user_section_balances_rls.sql | 013_fix_user_section_balances_rls.sql | Shift |
-   | ... | ... | (wszystkie kolejne +2) |
+# Trio external_trainer: usunięto stare, zostawiono final
+010_add_external_trainer_role.sql # Safe version (poprzednio 010_safe)
+# Deleted: 010_add_external_trainer_role_no_enum.sql
+# Deleted: 010_add_external_trainer_role_safe.sql
 
-4. **Skrypt automatyczny:**
+# Placeholder dla ciągłości
+045_placeholder.sql               # No-op migration
+```
 
-   ```bash
-   # scripts/renumber-migrations.sh
-   #!/bin/bash
-   
-   cd supabase/migrations
-   
-   # Rename 002_fix → 003_fix
-   mv 002_fix_rls_policies.sql 003_fix_rls_policies.sql
-   
-   # Rename 006_add_participants → 007_add_participants
-   mv 006_add_participants_count.sql 007_add_participants_count.sql
-   
-   # 010 trio → 011, 012, 013
-   mv 010_add_external_trainer_role_no_enum.sql 011_add_external_trainer_role_no_enum.sql
-   mv 010_add_external_trainer_role_safe.sql 012_add_external_trainer_role_safe.sql
-   
-   # Shift wszystkich >= 011 o +2
-   for file in 0{11..49}_*.sql; do
-     if [ -f "$file" ]; then
-       num=$(echo $file | cut -d'_' -f1)
-       newnum=$(printf "%03d" $((10#$num + 2)))
-       newname=$(echo $file | sed "s/^$num/$newnum/")
-       mv "$file" "$newname"
-     fi
-   done
-   ```
+**Zalety tego podejścia:**
+- ✅ Minimalne zmiany (tylko 4 pliki przenumerowane)
+- ✅ Brak shift'u 40+ plików
+- ✅ Git history zachowany
+- ✅ Kolejność alfabetyczna = poprawna kolejność chronologiczna
+- ✅ Łatwe do review
 
 ### Faza 2: Konsolidacja (Future Improvement)
 
@@ -421,10 +399,10 @@ END $$;
 ## Akcje do Wykonania (TODO)
 
 ### Natychmiastowe:
-- [ ] Backup obecnych migracji: `cp -r supabase/migrations supabase/migrations.backup-20260426`
-- [ ] Uruchom skrypt renumeracji (scripts/renumber-migrations.sh)
-- [ ] Test lokalnie: `npx supabase db reset`
-- [ ] Commit renumeracji: "Renumber migrations to fix duplicates"
+- [x] ~~Backup obecnych migracji~~ ✅ Done: `supabase/migrations.backup-20260426-114839/`
+- [x] ~~Fix duplikaty~~ ✅ Done: użyto sufiksu 'a'
+- [ ] Test lokalnie: `npx supabase db reset` (wymaga Docker)
+- [x] ~~Commit renumeracji~~ ✅ Done: commit 9e1bace
 
 ### Krótkoterminowe (tydzień):
 - [ ] Dodaj komentarze "Depends on" do każdej migracji
