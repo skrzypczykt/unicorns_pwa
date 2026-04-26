@@ -10,16 +10,26 @@
 
 ---
 
+## Oznaczenia Platform
+
+Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
+
+- **💻 Dowolne urządzenie** - Komputer, laptop, tablet lub telefon (Android/iOS)
+- **📱 Telefon** - Wymaga telefonu (Android lub iOS)
+- **🤖 Tylko Android** - Wymaga telefonu z systemem Android
+- **🍎 Tylko iOS** - Wymaga iPhone'a lub iPada z iOS
+
 ## Jak Korzystać z Tego Dokumentu
 
 ### Dla testera:
 
 1. **Przygotuj środowisko:**
-   - Komputer lub telefon
+   - Komputer, tablet lub telefon (sprawdź ikonkę przy scenariuszu)
    - Przeglądarka: Chrome, Safari, Firefox lub Edge
    - Notatnik do zapisywania problemów
 
 2. **Dla każdego scenariusza:**
+   - Sprawdź ikonkę urządzenia (💻/📱/🤖/🍎)
    - Przeczytaj cały scenariusz przed rozpoczęciem
    - Wykonaj kroki dokładnie w podanej kolejności
    - Zaznacz ✅ jeśli przeszedł, ❌ jeśli błąd
@@ -28,14 +38,15 @@
 3. **Zgłaszanie problemów:**
    - Email: unicorns.lodz@gmail.com
    - Tytuł: "[TEST] Nazwa scenariusza - krótki opis problemu"
-   - Treść: Kroki które wykonałeś, co się stało, screenshot
+   - Treść: Kroki które wykonałeś, urządzenie, co się stało, screenshot
 
 ---
 
 ## SEKCJA 1: Rejestracja i Logowanie (Scenariusze 1-8)
 
-### Scenariusz 1: Rejestracja Nowego Użytkownika
+### Scenariusz 1: Rejestracja Nowego Użytkownika 💻
 
+**Urządzenie:** Dowolne (komputer, tablet, telefon)  
 **Cel:** Sprawdzić czy nowy użytkownik może się zarejestrować.
 
 **Wymagania wstępne:**
@@ -63,8 +74,9 @@
 
 ---
 
-### Scenariusz 2: Logowanie Istniejącego Użytkownika
+### Scenariusz 2: Logowanie Istniejącego Użytkownika 💻
 
+**Urządzenie:** Dowolne (komputer, tablet, telefon)  
 **Cel:** Sprawdzić czy zarejestrowany użytkownik może się zalogować.
 
 **Wymagania wstępne:**
@@ -88,7 +100,7 @@
 
 ---
 
-### Scenariusz 3: Resetowanie Hasła
+### Scenariusz 3: Resetowanie Hasła 💻
 
 **Cel:** Sprawdzić czy użytkownik może zresetować zapomniane hasło.
 
@@ -118,7 +130,7 @@
 
 ---
 
-### Scenariusz 4: Wylogowanie
+### Scenariusz 4: Wylogowanie 💻
 
 **Cel:** Sprawdzić czy użytkownik może się wylogować.
 
@@ -141,7 +153,7 @@
 
 ---
 
-### Scenariusz 5: Walidacja Formularza Rejestracji - Email
+### Scenariusz 5: Walidacja Formularza Rejestracji - Email 💻
 
 **Cel:** Sprawdzić czy system blokuje niepoprawne emaile.
 
@@ -163,7 +175,7 @@
 
 ---
 
-### Scenariusz 6: Walidacja Formularza - Hasło Za Krótkie
+### Scenariusz 6: Walidacja Formularza - Hasło Za Krótkie 💻
 
 **Cel:** Sprawdzić czy system wymaga minimum długości hasła.
 
@@ -185,7 +197,7 @@
 
 ---
 
-### Scenariusz 7: Walidacja - Hasła Nie Pasują
+### Scenariusz 7: Walidacja - Hasła Nie Pasują 💻
 
 **Cel:** Sprawdzić czy system wykrywa różne hasła.
 
@@ -207,7 +219,7 @@
 
 ---
 
-### Scenariusz 8: Duplikat Email - Nie Można Użyć Tego Samego Email Dwukrotnie
+### Scenariusz 8: Duplikat Email - Nie Można Użyć Tego Samego Email Dwukrotnie 💻
 
 **Cel:** Sprawdzić że jeden email = jedno konto.
 
@@ -232,7 +244,7 @@
 
 ## SEKCJA 2: Przeglądanie Zajęć (Scenariusze 9-16)
 
-### Scenariusz 9: Wyświetlanie Listy Zajęć
+### Scenariusz 9: Wyświetlanie Listy Zajęć 💻
 
 **Cel:** Sprawdzić czy lista zajęć się ładuje.
 
@@ -255,7 +267,7 @@
 
 ---
 
-### Scenariusz 10: Filtrowanie Zajęć Po Dacie
+### Scenariusz 10: Filtrowanie Zajęć Po Dacie 💻
 
 **Cel:** Sprawdzić czy filtry działają.
 
@@ -279,7 +291,7 @@
 
 ---
 
-### Scenariusz 11: Filtrowanie Po Sekcji
+### Scenariusz 11: Filtrowanie Po Sekcji 💻
 
 **Cel:** Sprawdzić filtrowanie po typie zajęć.
 
@@ -303,7 +315,7 @@
 
 ---
 
-### Scenariusz 12: Resetowanie Filtrów
+### Scenariusz 12: Resetowanie Filtrów 💻
 
 **Cel:** Sprawdzić przycisk "Wyczyść filtry".
 
@@ -327,7 +339,7 @@
 
 ---
 
-### Scenariusz 13: Szczegóły Zajęć
+### Scenariusz 13: Szczegóły Zajęć 💻
 
 **Cel:** Sprawdzić czy można zobaczyć więcej informacji o zajęciach.
 
@@ -351,7 +363,7 @@
 
 ---
 
-### Scenariusz 14: Zajęcia Pełne - Brak Miejsc
+### Scenariusz 14: Zajęcia Pełne - Brak Miejsc 💻
 
 **Cel:** Sprawdzić komunikat gdy zajęcia wypełnione.
 
@@ -374,7 +386,7 @@
 
 ---
 
-### Scenariusz 15: Sortowanie Listy Zajęć
+### Scenariusz 15: Sortowanie Listy Zajęć 💻
 
 **Cel:** Sprawdzić czy sortowanie działa.
 
@@ -398,8 +410,9 @@
 
 ---
 
-### Scenariusz 16: Mobile - Responsywność Harmonogramu
+### Scenariusz 16: Mobile - Responsywność Harmonogramu 📱
 
+**Urządzenie:** Telefon (Android lub iOS)  
 **Cel:** Sprawdzić czy harmonogram działa na telefonie.
 
 **Wymagania wstępne:**
@@ -426,7 +439,7 @@
 
 ## SEKCJA 3: Rezerwacja Zajęć (Scenariusze 17-28)
 
-### Scenariusz 17: Zapis na Bezpłatne Zajęcia
+### Scenariusz 17: Zapis na Bezpłatne Zajęcia 💻
 
 **Cel:** Sprawdzić proces zapisu na darmowe zajęcia.
 
@@ -452,7 +465,7 @@
 
 ---
 
-### Scenariusz 18: Zapis na Płatne Zajęcia (Bez Płacenia)
+### Scenariusz 18: Zapis na Płatne Zajęcia (Bez Płacenia) 💻
 
 **Cel:** Sprawdzić czy można się zapisać bez natychmiastowej płatności.
 
@@ -479,7 +492,7 @@
 
 ---
 
-### Scenariusz 19: Płatność BLIK - Sukces
+### Scenariusz 19: Płatność BLIK - Sukces 💻
 
 **Cel:** Sprawdzić płatność BLIK (kod testowy 111112).
 
@@ -508,7 +521,7 @@
 
 ---
 
-### Scenariusz 20: Płatność BLIK - Błędny Kod
+### Scenariusz 20: Płatność BLIK - Błędny Kod 💻
 
 **Cel:** Sprawdzić obsługę błędnego kodu BLIK.
 
@@ -535,7 +548,7 @@
 
 ---
 
-### Scenariusz 21: Płatność PayByLink (Przelew)
+### Scenariusz 21: Płatność PayByLink (Przelew) 💻
 
 **Cel:** Sprawdzić płatność przelewem online.
 
@@ -564,7 +577,7 @@
 
 ---
 
-### Scenariusz 22: Duplikat Zapisu - Nie Można Zapisać Się Dwukrotnie
+### Scenariusz 22: Duplikat Zapisu - Nie Można Zapisać Się Dwukrotnie 💻
 
 **Cel:** Sprawdzić że nie można się zapisać 2x na te same zajęcia.
 
@@ -588,7 +601,7 @@
 
 ---
 
-### Scenariusz 23: Anulowanie Rezerwacji (Przed Deadline)
+### Scenariusz 23: Anulowanie Rezerwacji (Przed Deadline) 💻
 
 **Cel:** Sprawdzić anulowanie rezerwacji w terminie.
 
@@ -614,7 +627,7 @@
 
 ---
 
-### Scenariusz 24: Anulowanie Po Deadline - Blokada
+### Scenariusz 24: Anulowanie Po Deadline - Blokada 💻
 
 **Cel:** Sprawdzić że nie można anulować po deadline.
 
@@ -636,7 +649,7 @@
 
 ---
 
-### Scenariusz 25: Anulowanie Opłaconych Zajęć - Blokada
+### Scenariusz 25: Anulowanie Opłaconych Zajęć - Blokada 💻
 
 **Cel:** Sprawdzić że nie można anulować zajęć które są opłacone.
 
@@ -658,7 +671,7 @@
 
 ---
 
-### Scenariusz 26: Widok Moich Rezerwacji - Chronologia
+### Scenariusz 26: Widok Moich Rezerwacji - Chronologia 💻
 
 **Cel:** Sprawdzić sortowanie w "Moje Rezerwacje".
 
@@ -681,7 +694,7 @@
 
 ---
 
-### Scenariusz 27: Termin Płatności - Przypomnienie
+### Scenariusz 27: Termin Płatności - Przypomnienie 💻
 
 **Cel:** Sprawdzić komunikat o zbliżającym się deadline płatności.
 
@@ -703,7 +716,7 @@
 
 ---
 
-### Scenariusz 28: Wydarzenia Specjalne - Zapis
+### Scenariusz 28: Wydarzenia Specjalne - Zapis 💻
 
 **Cel:** Sprawdzić zapis na wydarzenia specjalne (bez trenera).
 
@@ -729,7 +742,7 @@
 
 ## SEKCJA 4: Profil Użytkownika (Scenariusze 29-35)
 
-### Scenariusz 29: Edycja Profilu - Imię i Nazwisko
+### Scenariusz 29: Edycja Profilu - Imię i Nazwisko 💻
 
 **Cel:** Sprawdzić edycję danych profilu.
 
@@ -756,7 +769,7 @@
 
 ---
 
-### Scenariusz 30: Edycja Profilu - Telefon
+### Scenariusz 30: Edycja Profilu - Telefon 💻
 
 **Cel:** Sprawdzić dodawanie numeru telefonu.
 
@@ -780,7 +793,7 @@
 
 ---
 
-### Scenariusz 31: Zmiana Hasła
+### Scenariusz 31: Zmiana Hasła 💻
 
 **Cel:** Sprawdzić zmianę hasła z poziomu profilu.
 
@@ -807,7 +820,7 @@
 
 ---
 
-### Scenariusz 32: Powiadomienia Email - Wyłączenie
+### Scenariusz 32: Powiadomienia Email - Wyłączenie 💻
 
 **Cel:** Sprawdzić ustawienia powiadomień email.
 
@@ -831,7 +844,7 @@
 
 ---
 
-### Scenariusz 33: Powiadomienia Push - Włączenie
+### Scenariusz 33: Powiadomienia Push - Włączenie 💻
 
 **Cel:** Sprawdzić włączanie powiadomień push.
 
@@ -855,7 +868,7 @@
 
 ---
 
-### Scenariusz 34: Usunięcie Konta - Dialog Potwierdzenia
+### Scenariusz 34: Usunięcie Konta - Dialog Potwierdzenia 💻
 
 **Cel:** Sprawdzić czy jest zabezpieczenie przed przypadkowym usunięciem konta.
 
@@ -879,7 +892,7 @@
 
 ---
 
-### Scenariusz 35: Historia Płatności
+### Scenariusz 35: Historia Płatności 💻
 
 **Cel:** Sprawdzić widok historii transakcji.
 
@@ -904,7 +917,7 @@
 
 ## SEKCJA 5: Wydarzenia Online (Scenariusze 36-38)
 
-### Scenariusz 36: Zapis na Wydarzenie Online
+### Scenariusz 36: Zapis na Wydarzenie Online 💻
 
 **Cel:** Sprawdzić zapis na zajęcia online (Zoom/Meet).
 
@@ -927,7 +940,7 @@
 
 ---
 
-### Scenariusz 37: Dołączanie do Zajęć Online - Przed Czasem
+### Scenariusz 37: Dołączanie do Zajęć Online - Przed Czasem 💻
 
 **Cel:** Sprawdzić że link jest niedostępny przed rozpoczęciem.
 
@@ -948,7 +961,7 @@
 
 ---
 
-### Scenariusz 38: Dołączanie do Zajęć Online - W Trakcie
+### Scenariusz 38: Dołączanie do Zajęć Online - W Trakcie 💻
 
 **Cel:** Sprawdzić link do zajęć podczas trwania.
 
@@ -974,7 +987,7 @@
 
 **UWAGA:** Te scenariusze wymagają konta z rolą "admin". Skontaktuj się z zespołem aby otrzymać konto testowe.
 
-### Scenariusz 39: Logowanie jako Admin
+### Scenariusz 39: Logowanie jako Admin 💻
 
 **Cel:** Sprawdzić dostęp do panelu admina.
 
@@ -996,7 +1009,7 @@
 
 ---
 
-### Scenariusz 40: Dodawanie Nowych Zajęć (Admin)
+### Scenariusz 40: Dodawanie Nowych Zajęć (Admin) 💻
 
 **Cel:** Sprawdzić tworzenie zajęć przez admina.
 
@@ -1025,7 +1038,7 @@
 
 ---
 
-### Scenariusz 41: Edycja Istniejących Zajęć (Admin)
+### Scenariusz 41: Edycja Istniejących Zajęć (Admin) 💻
 
 **Cel:** Sprawdzić edycję zajęć.
 
@@ -1052,7 +1065,7 @@
 
 ---
 
-### Scenariusz 42: Usuwanie Zajęć (Admin)
+### Scenariusz 42: Usuwanie Zajęć (Admin) 💻
 
 **Cel:** Sprawdzić usuwanie zajęć.
 
@@ -1077,7 +1090,7 @@
 
 ---
 
-### Scenariusz 43: Blokada Usuwania Zajęć z Rezerwacjami
+### Scenariusz 43: Blokada Usuwania Zajęć z Rezerwacjami 💻
 
 **Cel:** Sprawdzić że nie można usunąć zajęć gdy są rezerwacje.
 
@@ -1101,7 +1114,7 @@
 
 ---
 
-### Scenariusz 44: Lista Użytkowników (Admin)
+### Scenariusz 44: Lista Użytkowników (Admin) 💻
 
 **Cel:** Sprawdzić widok użytkowników.
 
@@ -1123,7 +1136,7 @@
 
 ---
 
-### Scenariusz 45: Zmiana Roli Użytkownika (Admin)
+### Scenariusz 45: Zmiana Roli Użytkownika (Admin) 💻
 
 **Cel:** Sprawdzić nadawanie uprawnień.
 
@@ -1148,7 +1161,7 @@
 
 ---
 
-### Scenariusz 46: Panel Płatności - Statystyki (Admin)
+### Scenariusz 46: Panel Płatności - Statystyki (Admin) 💻
 
 **Cel:** Sprawdzić panel płatności.
 
@@ -1174,7 +1187,7 @@
 
 ## SEKCJA 7: Wydajność i UX (Scenariusze 47-50)
 
-### Scenariusz 47: Szybkość Ładowania Strony Głównej
+### Scenariusz 47: Szybkość Ładowania Strony Głównej 💻
 
 **Cel:** Sprawdzić czy strona ładuje się szybko.
 
@@ -1199,8 +1212,9 @@
 
 ---
 
-### Scenariusz 48: Responsywność - Tablet
+### Scenariusz 48: Responsywność - Tablet 📱
 
+**Urządzenie:** Tablet (Android lub iOS)  
 **Cel:** Sprawdzić działanie na tablecie.
 
 **Wymagania wstępne:**
@@ -1223,32 +1237,42 @@
 
 ---
 
-### Scenariusz 49: PWA - Dodanie do Ekranu Głównego (Mobile)
+### Scenariusz 49: PWA - Dodanie do Ekranu Głównego 📱
 
+**Urządzenie:** Telefon - RÓŻNE KROKI dla Android i iOS  
 **Cel:** Sprawdzić instalację jako PWA.
 
 **Wymagania wstępne:**
 - Telefon (Android/iOS)
-- Przeglądarka Chrome lub Safari
+- Przeglądarka Chrome (Android) lub Safari (iOS)
 
-**Kroki:**
-1. Otwórz stronę na telefonie
-2. **Android:** Menu przeglądarki → "Dodaj do ekranu głównego"
-3. **iOS:** Przycisk "Udostępnij" → "Dodaj do ekranu"
-4. Kliknij ikonę na ekranie głównym
+**Kroki (🤖 Android - Chrome):**
+1. Otwórz stronę w Chrome
+2. Kliknij menu (3 kropki w górnym rogu) → "Dodaj do ekranu głównego"
+3. Potwierdź nazwę aplikacji
+4. Kliknij "Dodaj"
+5. Znajdź ikonę "Unicorns PWA" na ekranie głównym i kliknij
 
-**Oczekiwany rezultat:**
-- ✅ Pojawia się prompt "Dodaj Unicorns PWA do ekranu"
+**Kroki (🍎 iOS - Safari):**
+1. Otwórz stronę w Safari
+2. Kliknij przycisk "Udostępnij" (kwadrat ze strzałką w górę, na dole)
+3. Przewiń w dół i wybierz "Dodaj do ekranu początkowego"
+4. Potwierdź nazwę aplikacji
+5. Kliknij "Dodaj"
+6. Znajdź ikonę "Unicorns PWA" na ekranie głównym i kliknij
+
+**Oczekiwany rezultat (oba systemy):**
 - ✅ Ikona pojawia się na ekranie głównym
-- ✅ Otwiera się jak natywna aplikacja (bez paska przeglądarki)
+- ✅ Otwiera się jak natywna aplikacja (bez paska przeglądarki/adresu)
 - ✅ Działa tak samo jak w przeglądarce
+- ✅ Ma własną ikonę (logo Unicorns)
 
 **Status:** [ ] Przeszedł ✅  [ ] Błąd ❌  
 **Notatki:**
 
 ---
 
-### Scenariusz 50: Offline - Brak Internetu
+### Scenariusz 50: Offline - Brak Internetu 📱
 
 **Cel:** Sprawdzić jak aplikacja zachowuje się bez internetu.
 
