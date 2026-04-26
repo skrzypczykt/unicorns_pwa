@@ -47,9 +47,7 @@ jobs:
   e2e-tests:
     name: E2E Tests (Playwright)
     runs-on: ubuntu-latest
-    # Only run E2E on main/develop (requires seed data in test database)
-    # Feature branches skip E2E to avoid failures from missing test users
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    # Run E2E on all branches (seed data exists in test database)
 
     steps:
       - name: Checkout code
