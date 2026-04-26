@@ -137,9 +137,20 @@ export default function AdminPaymentsPage() {
       case 'success': return '✅ Sukces'
       case 'failed': return '❌ Błąd'
       case 'pending': return '⏳ Oczekuje'
-      case 'duplicate': return '🔁 Duplikat'
+      case 'duplicate': return '🔁 Powtórny webhook (OK)'
       case 'processing': return '⚙️ Przetwarzanie'
       default: return status
+    }
+  }
+
+  const getStatusDescription = (status: string) => {
+    switch (status) {
+      case 'success': return 'Płatność pomyślnie przetworzona'
+      case 'failed': return 'Błąd podczas przetwarzania płatności'
+      case 'pending': return 'Oczekuje na przetworzenie'
+      case 'duplicate': return 'Webhook ITN został już wcześniej przetworzony - zabezpieczenie przed podwójnym bookingiem. To jest poprawne zachowanie systemu.'
+      case 'processing': return 'Płatność w trakcie przetwarzania'
+      default: return ''
     }
   }
 
@@ -200,6 +211,25 @@ export default function AdminPaymentsPage() {
           >
             ← Powrót
           </button>
+        </div>
+
+        {/* Info Box - Status Explanation */}
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
+          <h3 className="font-semibold text-blue-900 mb-2">ℹ️ Wyjaśnienie statusów webhooków</h3>
+          <div className="grid md:grid-cols-2 gap-3 text-sm">
+            <div>
+              <span className="font-semibold text-green-700">✅ Sukces:</span> Płatność pomyślnie przetworzona
+            </div>
+            <div>
+              <span className="font-semibold text-red-700">❌ Błąd:</span> Problem z przetworzeniem płatności
+            </div>
+            <div>
+              <span className="font-semibold text-orange-700">⏳ Oczekuje:</span> Webhook w kolejce do przetworzenia
+            </div>
+            <div>
+              <span className="font-semibold text-gray-700">🔁 Powtórny webhook:</span> Autopay wysłał ten sam webhook wielokrotnie (np. retry). System zignorował duplikat - <strong>to prawidłowe zachowanie</strong> zabezpieczające przed podwójnym bookingiem.
+            </div>
+          </div>
         </div>
 
         {/* Overall Stats */}
@@ -351,7 +381,10 @@ export default function AdminPaymentsPage() {
                         {formatAmount(event.amount, event.currency)}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(event.processed_status)}`}>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(event.processed_status)}`}
+                          title={getStatusDescription(event.processed_status)}
+                        >
                           {getStatusBadge(event.processed_status)}
                         </span>
                       </td>
