@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.5.8] - 2026-04-26
+
+### Zmieniono
+
+- **Optymalizacja testów E2E w CI**
+  - W CI tylko Chromium (zamiast 5 przeglądarek)
+  - Czas wykonania: ~10 min → ~2-3 min
+  - Dotenv ładuje .env.test tylko lokalnie (CI używa GitHub Secrets)
+
 ## [0.5.7] - 2026-04-26
 
 ### Naprawiono

@@ -7,8 +7,11 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Załaduj zmienne środowiskowe z .env.test (jeśli istnieje)
-dotenv.config({ path: path.resolve(__dirname, '.env.test') })
+// Załaduj zmienne środowiskowe z .env.test (tylko lokalnie, CI używa GitHub Secrets)
+const envPath = path.resolve(__dirname, '.env.test')
+if (!process.env.CI) {
+  dotenv.config({ path: envPath })
+}
 
 /**
  * Konfiguracja Playwright dla testów E2E
@@ -55,33 +58,42 @@ export default defineConfig({
   timeout: 60000,
 
   // Przeglądarki do testowania
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
+  projects: process.env.CI
+    ? [
+        // W CI tylko Chromium (szybciej)
+        {
+          name: 'chromium',
+          use: { ...devices['Desktop Chrome'] },
+        },
+      ]
+    : [
+        // Lokalnie wszystkie przeglądarki
+        {
+          name: 'chromium',
+          use: { ...devices['Desktop Chrome'] },
+        },
 
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
+        {
+          name: 'firefox',
+          use: { ...devices['Desktop Firefox'] },
+        },
 
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+        {
+          name: 'webkit',
+          use: { ...devices['Desktop Safari'] },
+        },
 
-    // Mobile viewports
-    {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
-    },
+        // Mobile viewports
+        {
+          name: 'Mobile Chrome',
+          use: { ...devices['Pixel 5'] },
+        },
 
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 13'] },
-    },
-  ],
+        {
+          name: 'Mobile Safari',
+          use: { ...devices['iPhone 13'] },
+        },
+      ],
 
   // Opcjonalnie: uruchom dev server lokalnie
   // Odkomentuj jeśli chcesz testować lokalną wersję
