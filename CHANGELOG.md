@@ -4,6 +4,42 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.5.4] - 2026-04-26
+
+### Dodano
+
+- **Automatyzacja testów**
+  - 86 testów E2E (Playwright) - 84% pokrycia
+  - 23 testy jednostkowe (Vitest) z coverage reporting
+  - GitHub Actions CI/CD (testy unit + E2E)
+  - Lighthouse CI dla wydajności
+  - Seedowane dane testowe w środowisku testowym
+
+- **Strategia git flow**
+  - Workflow: feature branches → develop → main
+  - Pre-commit hook wymuszający podbijanie wersji
+  - Branch protection dla main (tylko przez PR)
+  - E2E testy tylko na main/develop (nie na feature branches)
+
+- **Optymalizacja kosztów Netlify**
+  - Deploy tylko na main i develop
+  - Branch previews wyłączone (70% redukcja rebuilds)
+  - Warunkowa konfiguracja per branch
+
+### Zmieniono
+
+- **Dokumentacja testów manualnych**
+  - Zredukowano z 84 do 19 scenariuszy manualnych (16%)
+  - 84% testów wykonywanych automatycznie
+  - Scenariusze manualne tylko dla: płatności (Autopay sandbox), PWA (instalacja iOS/Android), push notifications (fizyczne urządzenia), wydarzenia czasowe, UX/wydajność
+  - Nowa wersja: MANUAL_TESTING_SCENARIOS_v3.md
+
+### Bezpieczeństwo
+
+- Testy XSS i SQL injection w test suite
+- Testy RLS (Row Level Security) dla Supabase
+- Wymuszanie wersjonowania przed commitami (pre-commit hook)
+
 ## [0.4.10] - 2026-04-25
 
 ### Naprawiono
