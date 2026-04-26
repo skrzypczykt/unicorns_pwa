@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.4.10] - 2026-04-25
+
+### Naprawiono
+
+- **Weryfikacja hash dla PayByLink (GatewayID=106)**
+  - Dodano CustomerData fields (fName, nrb) do kalkulacji hash w ITN webhook
+  - Rozwiązuje problem z błędną weryfikacją hash dla płatności PayByLink
+  - Hash ITN zawiera teraz: ServiceID|OrderID|RemoteID|Amount|Currency|[GatewayID]|PaymentDate|PaymentStatus|[PaymentStatusDetails]|[CustomerData.fName]|[CustomerData.nrb]|SharedKey
+
 ## [0.4.9] - 2026-04-24
 
 ### Dodano

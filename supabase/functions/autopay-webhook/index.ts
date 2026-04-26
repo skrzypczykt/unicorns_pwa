@@ -133,6 +133,8 @@ function parseITN(xml: string): {
   paymentDate: string
   paymentStatus: string
   paymentStatusDetails: string
+  customerDataFName: string
+  customerDataNrb: string
   hash: string
 } {
   const extractValue = (tag: string): string => {
@@ -150,6 +152,8 @@ function parseITN(xml: string): {
     paymentDate: extractValue('paymentDate'),
     paymentStatus: extractValue('paymentStatus'),
     paymentStatusDetails: extractValue('paymentStatusDetails'),
+    customerDataFName: extractValue('fName'),
+    customerDataNrb: extractValue('nrb'),
     hash: extractValue('hash')
   }
 }
@@ -162,7 +166,7 @@ async function verifyHash(
   sharedKey: string
 ): Promise<boolean> {
   // Hash ITN: zgodnie z dokumentacją Autopay - pomijamy puste wartości
-  // Kolejność: ServiceID|OrderID|RemoteID|Amount|Currency|[GatewayID]|PaymentDate|PaymentStatus|[PaymentStatusDetails]|SharedKey
+  // Kolejność: ServiceID|OrderID|RemoteID|Amount|Currency|[GatewayID]|PaymentDate|PaymentStatus|[PaymentStatusDetails]|[CustomerData.fName]|[CustomerData.nrb]|SharedKey
   const hashParts: string[] = [
     data.serviceId,
     data.orderId,
@@ -183,6 +187,16 @@ async function verifyHash(
   // PaymentStatusDetails - tylko jeśli niepuste
   if (data.paymentStatusDetails) {
     hashParts.push(data.paymentStatusDetails)
+  }
+
+  // CustomerData.fName - tylko jeśli niepuste
+  if (data.customerDataFName) {
+    hashParts.push(data.customerDataFName)
+  }
+
+  // CustomerData.nrb - tylko jeśli niepuste
+  if (data.customerDataNrb) {
+    hashParts.push(data.customerDataNrb)
   }
 
   // SharedKey na końcu
