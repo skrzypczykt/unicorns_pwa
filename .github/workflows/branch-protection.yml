@@ -1,0 +1,27 @@
+name: Branch Protection Check
+
+# Ten workflow blokuje bezpośrednie pushe do main
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  check-branch-protection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Block direct push to main
+        run: |
+          echo "❌ BŁĄD: Bezpośredni push do main jest zabroniony!"
+          echo ""
+          echo "Prawidłowy workflow:"
+          echo "1. Utwórz branch: git checkout -b feature/nazwa-zadania"
+          echo "2. Commituj zmiany: git commit -m 'opis'"
+          echo "3. Push do brancha: git push origin feature/nazwa-zadania"
+          echo "4. Utwórz Pull Request do develop"
+          echo "5. Po merge do develop, utwórz PR develop -> main"
+          echo ""
+          echo "Aktualna struktura:"
+          echo "  feature/* -> develop (automatyczne testy)"
+          echo "  develop -> main (wymaga PR + review)"
+          exit 1

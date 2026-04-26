@@ -15,6 +15,28 @@
   # Node version
   NODE_VERSION = "20"
 
+# BRANCH-SPECIFIC DEPLOYS (oszczędność kosztów!)
+# TYLKO develop i main deployują automatycznie
+# Feature branches: manual preview tylko na żądanie
+
+[context.production]
+  # Produkcja - deploy z main brancha
+  branch = "main"
+  command = "yarn install && yarn build"
+  publish = "dist"
+
+[context.develop]
+  # Staging - deploy z develop brancha
+  branch = "develop"
+  command = "yarn install && yarn build"
+  publish = "dist"
+
+# Feature branches: NIE auto-deploy (oszczędność!)
+# Użyj: Netlify UI → Deploy Preview ręcznie
+[context.branch-deploy]
+  # Wyłącz auto-deploy dla wszystkich innych branchy
+  command = "echo 'Branch preview disabled. Use manual deploy if needed.'"
+
 # SPA routing - redirect all routes to index.html
 [[redirects]]
   from = "/*"

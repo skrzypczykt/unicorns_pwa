@@ -2,21 +2,28 @@
 
 ## Status (2026-04-26)
 
-✅ **Problem rozwiązany!** Migracje zostały naprawione.
+✅ **Problem rozwiązany!** Migracje zostały naprawione i są w pełni kompatybilne z Supabase CLI.
 
 **Aktualny stan:**
 - 49 plików migracji w `supabase/migrations/`
-- ✅ Brak duplikatów numerów (użyto sufiksu 'a' dla konfliktów)
-- ✅ Sekwencyjna numeracja (z wyjątkiem 045 - placeholder)
+- ✅ **Brak duplikatów numerów** - wszystkie migracje mają unikalne numery 001-049
+- ✅ **Supabase CLI kompatybilne** - wszystkie migracje rozpoznawane przez `supabase migration list`
+- ✅ Sekwencyjna numeracja bez luk (045 to placeholder)
 - ✅ Migracje wykonują się w poprawnej kolejności alfabetycznie
 - ✅ Backup dostępny w `supabase/migrations.backup-20260426-114839/`
 
 **Co naprawiono (2026-04-26):**
-- `002_fix_rls_policies.sql` → `002a_fix_rls_policies.sql`
-- `006_add_participants_count.sql` → `006a_add_participants_count.sql`
-- `007_push_notifications.sql` → `007a_push_notifications.sql`
+
+**Wersja 1 (sufiks 'a' - ODRZUCONA):**
+- Problem: Supabase CLI nie rozpoznaje plików z sufiksem (np. `002a_*.sql`)
+- Błąd: `Skipping migration 002a_fix_rls_policies.sql... (file name must match pattern "<timestamp>_name.sql")`
+
+**Wersja 2 (FINALNA - sekwencyjna numeracja):**
+- `002a_fix_rls_policies.sql` → `047_fix_rls_policies.sql`
+- `006a_add_participants_count.sql` → `048_add_participants_count.sql`
+- `007a_push_notifications.sql` → `049_push_notifications.sql`
 - Usunięto stare próby dodania external_trainer (010_no_enum, 010_safe)
-- Dodano 045_placeholder.sql dla ciągłości numeracji
+- Zachowano 045_placeholder.sql dla ciągłości numeracji
 
 ---
 
@@ -400,9 +407,11 @@ END $$;
 
 ### Natychmiastowe:
 - [x] ~~Backup obecnych migracji~~ ✅ Done: `supabase/migrations.backup-20260426-114839/`
-- [x] ~~Fix duplikaty~~ ✅ Done: użyto sufiksu 'a'
+- [x] ~~Fix duplikaty (v1: sufiks 'a')~~ ❌ Odrzucone: Supabase CLI nie rozpoznaje
+- [x] ~~Fix duplikaty (v2: sekwencyjna 047-049)~~ ✅ Done: git mv 002a→047, 006a→048, 007a→049
+- [x] ~~Weryfikacja Supabase CLI~~ ✅ Done: `supabase migration list` pokazuje wszystkie 49
 - [ ] Test lokalnie: `npx supabase db reset` (wymaga Docker)
-- [x] ~~Commit renumeracji~~ ✅ Done: commit 9e1bace
+- [x] ~~Commit renumeracji~~ ✅ Done: TBD
 
 ### Krótkoterminowe (tydzień):
 - [ ] Dodaj komentarze "Depends on" do każdej migracji
