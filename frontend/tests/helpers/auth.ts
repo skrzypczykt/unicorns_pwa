@@ -93,13 +93,21 @@ export const TEST_USERS = {
   regular: {
     email: 'test.user@unicorns-test.local',
     password: 'TestPass123!',
+    id: 'regular-user-id',
   },
   admin: {
     email: 'admin@unicorns-test.local',
     password: 'AdminPass123!',
+    id: 'admin-user-id',
   },
   trainer: {
     email: 'trainer@unicorns-test.local',
     password: 'TrainerPass123!',
+    id: 'trainer-user-id',
+  },
+  member: {
+    email: 'member@unicorns-test.local',
+    password: 'MemberPass123!',
+    id: 'member-user-id',
   },
 }

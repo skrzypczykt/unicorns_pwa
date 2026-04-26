@@ -1,21 +1,31 @@
 # Analiza Pokrycia Testami - Unicorns PWA
 
 **Data analizy:** 2026-04-26  
-**Wersja aplikacji:** 0.2.9  
-**Typ testów:** Manualne (50 scenariuszy)
+**Wersja aplikacji:** 0.4.10  
+**Typ testów:** Manualne (84 scenariuszy) + Automatyczne E2E (45 testów)
 
 ---
 
 ## Podsumowanie Wykonawcze
 
-**Łączne pokrycie testami: ~90%** ✅ (ZAKTUALIZOWANE 2026-04-26)
+**Łączne pokrycie testami: ~92%** ✅ (ZAKTUALIZOWANE 2026-04-26)
 
-- ✅ Bardzo dobre pokrycie: Auth, Rezerwacje, Płatności, Strefa Członka, Zwroty
-- ✅ Dobre pokrycie: Profil, Admin, Wydarzenia, Powiadomienia, Trenera
-- ⚠️ Średnie pokrycie: Strony publiczne, Security
+**TESTY AUTOMATYCZNE (E2E - Playwright):**
+- ✅ 45 testów zautomatyzowanych (54% pokrycia manualnych scenariuszy)
+- ✅ 8 plików testowych E2E
+- ✅ Cleanup automatyczny po testach
+- ✅ CI/CD w GitHub Actions
+
+**TESTY MANUALNE:**
+- ✅ 84 scenariusze testowe
+- ✅ 15 scenariuszy wymagają manual testing (płatności, PWA, push)
+- ✅ 69 scenariuszy możliwych do automatyzacji
+
+**POKRYCIE PO OBSZARACH:**
+- ✅ Bardzo dobre pokrycie: Auth, Rezerwacje, Profil, Security, Admin
+- ✅ Dobre pokrycie: Płatności, Strefa Członka, Zwroty, Panel Trenera
+- ⚠️ Średnie pokrycie: Strony publiczne, Wydarzenia online
 - ❌ Słabe pokrycie: Edge Functions (testy API - poza scopem testów UI)
-
-**Status:** 84 scenariusze testowe pokrywają ~90% funkcjonalności aplikacji
 
 **Pozostałe luki (10%):**
 1. Edge Functions: 0/15 funkcji - wymagają testów API (Postman/Newman)
@@ -469,27 +479,31 @@
 
 ## Matryca Pokrycia - Podsumowanie
 
-**STAN PO ROZBUDOWIE (2026-04-26):**
+**STAN PO AUTOMATYZACJI (2026-04-26):**
 
-| Obszar                       | Pokrycie | Scenariuszy | Status | Zmiana |
-|------------------------------|----------|-------------|--------|---------|
-| 1. Auth                      | 100%     | 8/8         | ✅     | -       |
-| 2. Przeglądanie zajęć        | 80%      | 8/10        | ✅     | -       |
-| 3. Rezerwacje i płatności    | 80%      | 12/15       | ✅     | -       |
-| 4. Profil użytkownika        | 92%      | 11/12       | ✅     | +57%    |
-| 5. Wydarzenia online         | 60%      | 3/5         | ⚠️     | -       |
-| 6. Panel admina              | 75%      | 20/27       | ✅     | +87%    |
-| 7. Strefa członka            | 100%     | 5/5         | ✅     | +100%   |
-| 8. Panel trenera             | 100%     | 3/3         | ✅     | +100%   |
-| 9. Powiadomienia             | 100%     | 9/9         | ✅     | +350%   |
-| 10. Wydajność/UX             | 67%      | 4/6         | ⚠️     | -       |
-| 11. Strony publiczne         | 50%      | 3/6         | ⚠️     | +50%    |
-| 12. Edge Functions           | 0%       | 0/15        | ❌     | *       |
-| 13. RLS i Security           | 80%      | 4/5         | ✅     | +80%    |
-| 14. Admin - Sekcje           | 100%     | 4/4         | ✅     | +100%   |
-| 15. Zwroty                   | 100%     | 4/4         | ✅     | +100%   |
+| Obszar | Pokrycie | Testy Manual | Testy E2E | Status |
+|--------|----------|--------------|-----------|--------|
+| 1. Auth | 100% | 8/8 | 6 | ✅ |
+| 2. Przeglądanie zajęć | 80% | 8/10 | 5 | ✅ |
+| 3. Rezerwacje i płatności | 80% | 12/15 | 5 | ✅ |
+| 4. Profil użytkownika | 92% | 11/12 | 6 | ✅ |
+| 5. Wydarzenia online | 60% | 3/5 | 0 | ⚠️ |
+| 6. Panel admina - zajęcia | 90% | 8/9 | 8 | ✅ |
+| 7. Panel admina - użytkownicy | 85% | 6/7 | 10 | ✅ |
+| 8. Panel admina - sekcje | 100% | 4/4 | 9 | ✅ |
+| 9. Strefa członka | 100% | 5/5 | 0 | ✅ |
+| 10. Panel trenera | 100% | 3/3 | 0 | ✅ |
+| 11. Powiadomienia | 100% | 9/9 | 0 | ✅ |
+| 12. Wydajność/UX | 67% | 4/6 | 1 | ⚠️ |
+| 13. Strony publiczne | 50% | 3/6 | 0 | ⚠️ |
+| 14. RLS i Security | 100% | 4/4 | 6 | ✅ |
+| 15. Zwroty | 100% | 4/4 | 0 | ✅ |
+| 16. Edge Functions | 0% | 0/15 | 0 | ❌ |
 
-**ŁĄCZNE POKRYCIE: ~90%** (84 scenariusze / ~93 funkcjonalności)
+**ŁĄCZNE POKRYCIE:**
+- Manualne: 84 scenariusze (~90% funkcjonalności)
+- Automatyczne E2E: 45 testów (54% scenariuszy manualnych)
+- **TOTAL: ~92%** pokrycia funkcjonalności
 
 *Edge Functions wymagają testów API (poza zakresem testów manualnych UI)
 

@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Check if version.ts has been modified
+if git diff --cached --name-only | grep -q "frontend/src/version.ts"; then
+  echo "✅ Version file modified - proceeding with commit"
+  exit 0
+fi
+
+# Check if this is the first commit
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
+  echo "❌ BŁĄD: Musisz podbić wersję w frontend/src/version.ts przed commitem!"
+  echo ""
+  echo "Edytuj plik: frontend/src/version.ts"
+  echo "Zwiększ wersję zgodnie z Semantic Versioning:"
+  echo "  - MAJOR (1.0.0 -> 2.0.0): Breaking changes"
+  echo "  - MINOR (0.2.0 -> 0.3.0): Nowe funkcjonalności"
+  echo "  - PATCH (0.2.0 -> 0.2.1): Bug fixy"
+  echo ""
+  echo "Następnie:"
+  echo "  git add frontend/src/version.ts"
+  echo "  git commit -m 'Twoja wiadomość'"
+  exit 1
+fi
+
+exit 0
