@@ -9,6 +9,17 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './tests/setup.ts',
     css: true,
+    // Exclude Playwright E2E tests from Vitest (they run with playwright test)
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/cypress/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      '**/tests/e2e/**', // Exclude E2E tests - they use Playwright
+      '**/e2e/**',
+    ],
+    // Only include unit tests
+    include: ['**/__tests__/**/*.{test,spec}.{js,ts,jsx,tsx}', '**/src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
