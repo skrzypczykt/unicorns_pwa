@@ -1,15 +1,23 @@
--- Migration: Add external_trainer role
--- External trainers can lead activities but cannot register for them
+-- Safe migration: Add external_trainer role
+-- This version can be run multiple times safely
 
--- Add external_trainer to user_role enum
-ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'external_trainer';
+-- First, check if external_trainer already exists in the enum
+DO $$
+BEGIN
+  -- Try to add the value, ignore if it already exists
+  BEGIN
+    ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'external_trainer';
+  EXCEPTION
+    WHEN duplicate_object THEN
+      RAISE NOTICE 'external_trainer role already exists, skipping';
+  END;
+END $$;
 
 -- Update RLS policies to prevent external_trainers from registering for activities
 
--- Drop existing policy if exists
+-- Drop and recreate policy for registering
 DROP POLICY IF EXISTS "Users can register for activities" ON registrations;
 
--- Recreate policy excluding external_trainers
 CREATE POLICY "Users can register for activities"
   ON registrations FOR INSERT
   WITH CHECK (
@@ -59,11 +67,7 @@ CREATE POLICY "Trainers can manage attendance"
     )
   );
 
--- External trainers should NOT have balance tracking
--- Add comment to clarify this
-COMMENT ON TYPE user_role IS 'User roles: admin (full access), trainer (can lead classes and register), external_trainer (can only lead classes), user (can only register)';
-
--- Create function to prevent external_trainers from having balances
+-- Create or replace function to prevent external_trainers from having balances
 CREATE OR REPLACE FUNCTION prevent_external_trainer_balance()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -78,21 +82,21 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Add trigger to balance_transactions
+-- Add trigger to balance_transactions (drop first if exists)
 DROP TRIGGER IF EXISTS check_external_trainer_balance ON balance_transactions;
 CREATE TRIGGER check_external_trainer_balance
   BEFORE INSERT ON balance_transactions
   FOR EACH ROW
   EXECUTE FUNCTION prevent_external_trainer_balance();
 
--- Add trigger to user_section_balances
+-- Add trigger to user_section_balances (drop first if exists)
 DROP TRIGGER IF EXISTS check_external_trainer_section_balance ON user_section_balances;
 CREATE TRIGGER check_external_trainer_section_balance
   BEFORE INSERT OR UPDATE ON user_section_balances
   FOR EACH ROW
   EXECUTE FUNCTION prevent_external_trainer_balance();
 
--- Update existing policies for registrations viewing
+-- Update policy for viewing registrations
 DROP POLICY IF EXISTS "Users can view their registrations" ON registrations;
 
 CREATE POLICY "Users can view their registrations"
@@ -106,4 +110,14 @@ CREATE POLICY "Users can view their registrations"
     )
   );
 
+-- Update comments
+COMMENT ON TYPE user_role IS 'User roles: admin (full access), trainer (can lead classes and register), external_trainer (can only lead classes), user (can only register)';
 COMMENT ON COLUMN users.role IS 'User role: admin, trainer, external_trainer, or user';
+
+-- Success message
+DO $$
+BEGIN
+  RAISE NOTICE '✅ Migration completed successfully!';
+  RAISE NOTICE 'external_trainer role is now available';
+  RAISE NOTICE 'External trainers can lead activities but cannot register or have balances';
+END $$;
