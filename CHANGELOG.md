@@ -4,6 +4,23 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.5.13] - 2026-04-26
+
+### Dodano
+
+- **Atrybuty data-testid w WeeklyCalendarView**
+  - `data-testid="activity-card"` - karty w widoku kalendarzowym
+  - `data-testid="activity-name"` - nazwa zajęć
+  - `data-testid="activity-date"` - czas trwania
+  - `data-testid="activity-price"` - cena (nowe pole w widoku)
+  - Wyświetlanie ceny w widoku kalendarzowym
+
+### Naprawiono
+
+- **Brak data-testid w domyślnym widoku**
+  - Widok kalendarzowy (`viewMode='calendar'`) jest domyślny
+  - Testy teraz przechodzą z widokiem kalendarzowym
+
 ## [0.5.12] - 2026-04-26
 
 ### Dodano

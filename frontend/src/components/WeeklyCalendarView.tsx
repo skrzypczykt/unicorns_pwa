@@ -267,6 +267,8 @@ const WeeklyCalendarView = ({
                     return (
                       <div
                         key={activity.id}
+                        data-testid="activity-card"
+                        data-activity-type="calendar-view"
                         className={`relative rounded-lg p-2 border-2 shadow-sm hover:shadow-md transition-all cursor-pointer text-xs overflow-hidden ${
                           isRegistered
                             ? 'bg-green-50 border-green-400'
@@ -285,13 +287,18 @@ const WeeklyCalendarView = ({
                         )}
 
                         {/* Nazwa */}
-                        <div className="font-bold text-purple-700 truncate mb-1">
+                        <div data-testid="activity-name" className="font-bold text-purple-700 truncate mb-1">
                           {activity.name}
                         </div>
 
                         {/* Czas trwania */}
-                        <div className="text-gray-600 mb-1">
+                        <div data-testid="activity-date" className="text-gray-600 mb-1">
                           ⏱ {formatDuration(activity.duration_minutes)}
+                        </div>
+
+                        {/* Cena */}
+                        <div data-testid="activity-price" className="text-[10px] text-purple-600 font-semibold mb-1">
+                          {activity.cost === 0 ? '🎉 Darmowe' : `💰 ${activity.cost.toFixed(2)} zł`}
                         </div>
 
                         {/* Liczba uczestników */}
