@@ -367,14 +367,20 @@ Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
 
 **Cel:** Sprawdzić komunikat gdy zajęcia wypełnione.
 
-**Wymagania wstępne:**
-- Zalogowany użytkownik
-- Zajęcia z limitem np. 10/10 (pełne)
+**Przygotowanie:**
+Przed rozpoczęciem tego testu, zaloguj się i znajdź lub stwórz zajęcia które są całkowicie wypełnione. Aby to sprawdzić:
+1. Wejdź w "Harmonogram"
+2. Przeglądaj listę zajęć i szukaj takiego, które ma licznik pokazujący "X/X" gdzie obie liczby są równe (np. "10/10", "12/12" - oznacza to że wszystkie miejsca są zajęte)
+3. Jeśli NIE widzisz żadnych pełnych zajęć:
+   - Skontaktuj się z Tomasz Skrzypczyk (skrzypczykt@gmail.com)
+   - Poproś o utworzenie testowych zajęć z małym limitem (np. 2 miejsca) i wypełnienie ich rezerwacjami
+   - LUB jeśli masz uprawnienia admin, stwórz zajęcia z limitem 1 osoba i zapisz się na nie z drugiego konta
+4. Zapamiętaj nazwę pełnych zajęć
 
-**Kroki:**
-1. Znajdź zajęcia które są pełne (10/10)
-2. Kliknij na nie
-3. Sprawdź przycisk zapisz się
+**Kroki testowe:**
+1. W zakładce "Harmonogram" znajdź zajęcia które są pełne (licznik "X/X", np. "10/10")
+2. Kliknij na te zajęcia aby zobaczyć szczegóły
+3. Sprawdź przycisk "Zapisz się" i komunikaty
 
 **Oczekiwany rezultat:**
 - ✅ Widzisz badge "Brak miejsc" LUB "Pełne"
@@ -443,16 +449,23 @@ Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
 
 **Cel:** Sprawdzić proces zapisu na darmowe zajęcia.
 
-**Wymagania wstępne:**
-- Zalogowany użytkownik
-- Zajęcia BEZPŁATNE (cena = 0 zł) z wolnymi miejscami
+**Przygotowanie:**
+Przed rozpoczęciem tego testu, zaloguj się i znajdź lub stwórz bezpłatne zajęcia. Aby to sprawdzić:
+1. Wejdź w "Harmonogram"
+2. Poszukaj zajęć które mają cenę "0 zł" lub "Bezpłatne"
+3. Upewnij się że te zajęcia mają wolne miejsca (licznik np. "3/10" - nie "10/10")
+4. Jeśli NIE widzisz żadnych bezpłatnych zajęć z wolnymi miejscami:
+   - Skontaktuj się z Tomasz Skrzypczyk (skrzypczykt@gmail.com)
+   - Poproś o utworzenie testowych bezpłatnych zajęć (cena 0 zł)
+   - LUB jeśli masz uprawnienia admin, stwórz takie zajęcia w Panelu Admina (ustaw cenę na 0 zł)
+5. Upewnij się że NIE jesteś jeszcze zapisany na te bezpłatne zajęcia (sprawdź w "Moje Rezerwacje")
 
-**Kroki:**
-1. Wejdź na Harmonogram
-2. Znajdź zajęcia bezpłatne (0 zł)
-3. Kliknij na nie
-4. Kliknij "Zapisz się"
-5. Potwierdź zapis (jeśli jest dialog)
+**Kroki testowe:**
+1. Wejdź na "Harmonogram"
+2. Znajdź zajęcia bezpłatne (cena = 0 zł) z wolnymi miejscami
+3. Kliknij na te zajęcia aby zobaczyć szczegóły
+4. Kliknij przycisk "Zapisz się"
+5. Jeśli pojawia się dialog potwierdzenia, zatwierdź zapis
 
 **Oczekiwany rezultat:**
 - ✅ Widzisz komunikat "Zapisano na zajęcia!"
@@ -581,15 +594,21 @@ Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
 
 **Cel:** Sprawdzić że nie można się zapisać 2x na te same zajęcia.
 
-**Wymagania wstępne:**
-- Zalogowany użytkownik
-- Już zapisany na zajęcia "Fitness 27.04 18:00"
+**Przygotowanie:**
+Przed rozpoczęciem tego testu, zaloguj się na swoje konto użytkownika i upewnij się, że jesteś zapisany na przynajmniej jedne nadchodzące zajęcia. Aby to sprawdzić:
+1. Wejdź w menu "Moje Rezerwacje"
+2. Sprawdź czy widzisz jakąkolwiek rezerwację na przyszłe zajęcia
+3. Jeśli NIE widzisz żadnych rezerwacji:
+   - Wejdź w "Harmonogram"
+   - Znajdź dowolne zajęcia w przyszłości (jutro lub później)
+   - Kliknij "Zapisz się" i potwierdź
+   - Wróć do "Moje Rezerwacje" i zapamiętaj nazwę i datę tych zajęć
 
-**Kroki:**
-1. Wejdź na Harmonogram
-2. Znajdź zajęcia na które JUŻ JESTEŚ ZAPISANY
-3. Kliknij na nie
-4. Spróbuj kliknąć "Zapisz się"
+**Kroki testowe:**
+1. Wejdź na "Harmonogram"
+2. Znajdź zajęcia na które JUŻ JESTEŚ ZAPISANY (te same co w Moich Rezerwacjach)
+3. Kliknij na nie aby zobaczyć szczegóły
+4. Sprawdź co widać przy przycisku zapisu
 
 **Oczekiwany rezultat:**
 - ✅ Przycisk "Zapisz się" jest nieaktywny LUB nie istnieje
@@ -605,14 +624,22 @@ Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
 
 **Cel:** Sprawdzić anulowanie rezerwacji w terminie.
 
-**Wymagania wstępne:**
-- Zalogowany użytkownik
-- Nieopłacona rezerwacja na zajęcia jutro (deadline NIE minął)
+**Przygotowanie:**
+Przed rozpoczęciem tego testu, zaloguj się na swoje konto użytkownika i upewnij się, że masz nieopłaconą rezerwację na zajęcia w przyszłości. Aby to sprawdzić:
+1. Wejdź w menu "Moje Rezerwacje"
+2. Sprawdź czy widzisz jakąkolwiek rezerwację ze statusem "Nieopłacone" na zajęcia jutro lub później
+3. Jeśli NIE widzisz takiej rezerwacji:
+   - Wejdź w "Harmonogram"
+   - Znajdź zajęcia jutro lub za kilka dni
+   - Kliknij "Zapisz się" i potwierdź
+   - NIE płać za te zajęcia
+   - Wróć do "Moje Rezerwacje" - powinieneś zobaczyć nową rezerwację ze statusem "Nieopłacone"
+4. Upewnij się, że deadline anulowania NIE minął (np. jeśli zajęcia są jutro o 18:00, deadline to zwykle dzisiaj do 18:00)
 
-**Kroki:**
-1. Wejdź w "Moje Rezerwacje"
-2. Znajdź rezerwację którą chcesz anulować
-3. Sprawdź deadline (np. "Możesz anulować do: 26.04 17:00")
+**Kroki testowe:**
+1. W zakładce "Moje Rezerwacje" znajdź nieopłaconą rezerwację
+2. Sprawdź czy widzisz informację o deadline (np. "Możesz anulować do: 26.04 17:00")
+3. Upewnij się że deadline NIE minął (obecny czas < deadline)
 4. Kliknij "Anuluj rezerwację"
 5. Potwierdź anulowanie w dialogu
 
@@ -944,13 +971,22 @@ Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
 
 **Cel:** Sprawdzić że link jest niedostępny przed rozpoczęciem.
 
-**Wymagania wstępne:**
-- Zapisany na zajęcia online JUTRO
+**Przygotowanie:**
+Przed rozpoczęciem tego testu, zaloguj się na swoje konto i upewnij się, że jesteś zapisany na zajęcia online które odbędą się JUTRO lub później. Aby to sprawdzić:
+1. Wejdź w "Harmonogram"
+2. Poszukaj zajęć z ikoną 💻 (oznacza zajęcia online) na jutro lub późniejszy dzień
+3. Jeśli NIE widzisz żadnych zajęć online w przyszłości:
+   - Skontaktuj się z Tomasz Skrzypczyk (skrzypczykt@gmail.com)
+   - Poproś o utworzenie testowych zajęć online na odpowiedni termin (np. jutro o 10:00)
+4. Gdy zajęcia online już istnieją, zapisz się na nie:
+   - Kliknij na zajęcia
+   - Kliknij "Zapisz się"
+   - Potwierdź (możesz, ale nie musisz płacić)
+5. Wejdź w "Moje Rezerwacje" i upewnij się że widzisz te zajęcia online z ikoną 💻
 
-**Kroki:**
-1. Wejdź w "Moje Rezerwacje"
-2. Znajdź zajęcia online jutro
-3. Sprawdź czy widzisz przycisk "Dołącz"
+**Kroki testowe:**
+1. W zakładce "Moje Rezerwacje" znajdź zajęcia online jutro
+2. Sprawdź czy widzisz przycisk "Dołącz do spotkania"
 
 **Oczekiwany rezultat:**
 - ✅ Przycisk "Dołącz" NIE jest widoczny LUB jest nieaktywny
@@ -965,13 +1001,26 @@ Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
 
 **Cel:** Sprawdzić link do zajęć podczas trwania.
 
-**Wymagania wstępne:**
-- Zapisany na zajęcia online które trwają TERAZ (poproś Tomasz Skrzypczyk o utworzenie testowych zajęć online na odpowiednią godzinę)
+**Przygotowanie:**
+⚠️ UWAGA: Ten test wymaga zajęć online które odbywają się TERAZ (w ciągu 15 minut). Musisz to zaplanować z wyprzedzeniem:
 
-**Kroki:**
-1. Gdy zajęcia już się zaczęły (0-15 min przed lub w trakcie)
+1. **Dzień wcześniej:** Skontaktuj się z Tomasz Skrzypczyk (skrzypczykt@gmail.com):
+   - Poproś o utworzenie testowych zajęć online na określoną godzinę (np. jutro o 14:00)
+   - Podaj dokładną godzinę kiedy będziesz mógł przeprowadzić test
+   
+2. **W dniu testu, PRZED godziną zajęć:**
+   - Zaloguj się i wejdź w "Harmonogram"
+   - Znajdź zajęcia online z ikoną 💻 o umówionej godzinie
+   - Kliknij "Zapisz się" i potwierdź
+   - Sprawdź w "Moje Rezerwacje" że masz rezerwację
+   
+3. **WAŻNE:** Rozpocznij ten test gdy zajęcia są za 10-15 minut LUB już się zaczęły (ale nie później niż 30 min od startu)
+
+**Kroki testowe:**
+1. Upewnij się że jest odpowiednia godzina (15 min przed zajęciami do 30 min po rozpoczęciu)
 2. Wejdź w "Moje Rezerwacje"
-3. Kliknij "Dołącz do spotkania"
+3. Znajdź zajęcia online które właśnie trwają
+4. Kliknij przycisk "Dołącz do spotkania"
 
 **Oczekiwany rezultat:**
 - ✅ Przycisk "Dołącz" jest widoczny i aktywny
@@ -1042,16 +1091,28 @@ Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
 
 **Cel:** Sprawdzić edycję zajęć.
 
-**Wymagania wstępne:**
-- Zalogowany admin
-- Istniejące zajęcia "Test Yoga"
+**Przygotowanie:**
+Przed rozpoczęciem tego testu, zaloguj się na konto z uprawnieniami administratora i upewnij się, że w systemie istnieje przynajmniej jedno wydarzenie które możesz edytować. Aby to sprawdzić:
+1. Wejdź w menu "Panel Admina" → zakładka "Zajęcia"
+2. Sprawdź czy widzisz listę zajęć (minimum 1 pozycja)
+3. Jeśli NIE widzisz żadnych zajęć:
+   - W zakładce "Zajęcia" kliknij "Dodaj zajęcia"
+   - Wypełnij formularz:
+     - Nazwa: "Test Yoga"
+     - Sekcja: wybierz dowolną (np. "Yoga")
+     - Data: jutro o 18:00
+     - Czas trwania: 60 min
+     - Cena: 50 zł
+     - Limit: 12 osób
+   - Kliknij "Utwórz zajęcia"
+4. Zapamiętaj nazwę zajęć które będziesz edytować (np. "Test Yoga")
 
-**Kroki:**
+**Kroki testowe:**
 1. Panel Admina → Zajęcia
-2. Znajdź "Test Yoga"
-3. Kliknij "Edytuj" ✏️
-4. Zmień cenę z 50 zł na 45 zł
-5. Zmień limit z 12 na 15
+2. Znajdź zajęcia które chcesz edytować (np. "Test Yoga")
+3. Kliknij ikonę "Edytuj" ✏️ przy tych zajęciach
+4. Zmień cenę (np. z 50 zł na 45 zł)
+5. Zmień limit miejsc (np. z 12 na 15)
 6. Kliknij "Zapisz zmiany"
 
 **Oczekiwany rezultat:**
@@ -1069,15 +1130,28 @@ Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
 
 **Cel:** Sprawdzić usuwanie zajęć.
 
-**Wymagania wstępne:**
-- Zalogowany admin
-- Zajęcia bez żadnych rezerwacji
+**Przygotowanie:**
+Przed rozpoczęciem tego testu, zaloguj się na konto z uprawnieniami administratora i upewnij się, że w systemie istnieje przynajmniej jedno wydarzenie na które **NIKT NIE JEST ZAPISANY**. Aby to sprawdzić:
+1. Wejdź w menu "Panel Admina" → zakładka "Zajęcia"
+2. Przeglądaj listę zajęć i szukaj takiego, które ma licznik rezerwacji "0/X" (np. "0/12" oznacza 0 zapisanych osób z limitu 12)
+3. Jeśli NIE widzisz żadnych zajęć bez rezerwacji:
+   - Kliknij "Dodaj zajęcia"
+   - Wypełnij formularz:
+     - Nazwa: "Test Do Usunięcia"
+     - Sekcja: wybierz dowolną
+     - Data: za 7 dni (ważne: wybierz datę w przyszłości, żeby nikt się nie zapisał)
+     - Czas trwania: 60 min
+     - Cena: 1 zł
+     - Limit: 10 osób
+   - Kliknij "Utwórz zajęcia"
+   - Upewnij się że nikt się nie zapisał (licznik powinien pokazywać "0/10")
+4. Zapamiętaj nazwę zajęć bez rezerwacji (te które będziesz usuwać)
 
-**Kroki:**
+**Kroki testowe:**
 1. Panel Admina → Zajęcia
-2. Znajdź zajęcia bez rezerwacji (0/12)
-3. Kliknij "Usuń" 🗑️
-4. Potwierdź usunięcie
+2. Znajdź zajęcia bez rezerwacji (licznik pokazuje "0/X")
+3. Kliknij ikonę "Usuń" 🗑️
+4. Przeczytaj pytanie w dialogu i potwierdź usunięcie
 
 **Oczekiwany rezultat:**
 - ✅ Widzisz dialog "Czy na pewno usunąć?"
@@ -1094,15 +1168,25 @@ Każdy scenariusz ma ikonkę oznaczającą wymagane urządzenie:
 
 **Cel:** Sprawdzić że nie można usunąć zajęć gdy są rezerwacje.
 
-**Wymagania wstępne:**
-- Zalogowany admin
-- Zajęcia z minimum 1 rezerwacją (np. 3/12)
+**Przygotowanie:**
+Przed rozpoczęciem tego testu, zaloguj się na konto z uprawnieniami administratora i upewnij się, że w systemie istnieje przynajmniej jedno wydarzenie na które **KTOŚ JUŻ JEST ZAPISANY**. Aby to sprawdzić:
+1. Wejdź w menu "Panel Admina" → zakładka "Zajęcia"
+2. Przeglądaj listę zajęć i szukaj takiego, które ma licznik rezerwacji większy niż 0 (np. "3/12" oznacza 3 zapisane osoby z limitu 12)
+3. Jeśli NIE widzisz żadnych zajęć z rezerwacjami:
+   - **Opcja A - szybka:** Otwórz drugą przeglądarkę/okno incognito
+     - Zaloguj się tam swoim zwykłym kontem użytkownika (NIE admin)
+     - Wejdź w "Harmonogram" i zapisz się na dowolne zajęcia w przyszłości
+     - Wróć do okna z kontem admin i odśwież listę zajęć
+   - **Opcja B - poproś kogoś:** Poproś inną osobę aby zapisała się na jakieś zajęcia
+   - **Opcja C - stwórz nowe konto:** Utwórz testowe konto użytkownika i zapisz się na zajęcia
+4. Upewnij się że widzisz zajęcia z licznikiem większym niż 0 (np. "1/12", "3/15" itp.)
+5. Zapamiętaj nazwę tych zajęć
 
-**Kroki:**
+**Kroki testowe:**
 1. Panel Admina → Zajęcia
-2. Znajdź zajęcia Z rezerwacjami (3/12)
-3. Kliknij "Usuń"
-4. Sprawdź komunikat
+2. Znajdź zajęcia Z rezerwacjami (licznik pokazuje np. "3/12" - coś więcej niż "0/X")
+3. Kliknij ikonę "Usuń" 🗑️
+4. Przeczytaj komunikat błędu
 
 **Oczekiwany rezultat:**
 - ✅ Widzisz błąd "Nie można usunąć - są rezerwacje"
