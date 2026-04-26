@@ -791,6 +791,8 @@ const ActivitiesPage = () => {
               return (
                 <div
                   key={activity.id}
+                  data-testid="activity-card"
+                  data-activity-type="special-event"
                   className="perspective-1000"
                   style={{ perspective: '1000px' }}
                 >
@@ -828,7 +830,7 @@ const ActivitiesPage = () => {
 
                     {/* Tytuł na obrazku */}
                     <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <h3 className="text-2xl font-bold text-white drop-shadow-lg">{activity.name}</h3>
+                      <h3 data-testid="activity-name" className="text-2xl font-bold text-white drop-shadow-lg">{activity.name}</h3>
                     </div>
                   </div>
 
@@ -836,10 +838,10 @@ const ActivitiesPage = () => {
                   <div className="p-6">
                     <p className="text-gray-600 mb-4 text-sm">{activity.description}</p>
 
-                    <div className="space-y-2 mb-4">
+                    <div className="space-y-2 mb-4" data-testid="activity-details">
                       <div className="flex items-center gap-2 text-sm">
                         <span>📅</span>
-                        <span>{formatDate(activity.date_time)}</span>
+                        <span data-testid="activity-date">{formatDate(activity.date_time)}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <span>⏱️</span>
@@ -867,7 +869,7 @@ const ActivitiesPage = () => {
                       {activity.cost === 0 ? (
                         <div className="flex items-center gap-2 text-sm font-bold text-green-600">
                           <span>🎉</span>
-                          <span>Wstęp wolny</span>
+                          <span data-testid="activity-price">Wstęp wolny</span>
                         </div>
                       ) : (
                         <>
@@ -893,7 +895,7 @@ const ActivitiesPage = () => {
                           </div>
                           <div className="flex items-center gap-2 text-sm font-bold text-purple-600">
                             <span>💰</span>
-                            <span>{activity.cost.toFixed(2)} zł</span>
+                            <span data-testid="activity-price">{activity.cost.toFixed(2)} zł</span>
                           </div>
                         </>
                       )}
@@ -1122,6 +1124,8 @@ const ActivitiesPage = () => {
             return (
               <div
                 key={activity.id}
+                data-testid="activity-card"
+                data-activity-type="regular"
                 className="perspective-1000"
                 style={{ perspective: '1000px' }}
               >
@@ -1153,7 +1157,7 @@ const ActivitiesPage = () => {
 
                   {/* Tytuł na obrazku */}
                   <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <h3 className="text-2xl font-bold text-white drop-shadow-lg">{activity.name}</h3>
+                    <h3 data-testid="activity-name" className="text-2xl font-bold text-white drop-shadow-lg">{activity.name}</h3>
                   </div>
                 </div>
 
@@ -1161,10 +1165,10 @@ const ActivitiesPage = () => {
                 <div className="p-6">
                   <p className="text-gray-600 mb-4 text-sm">{activity.description}</p>
 
-                  <div className="space-y-2 mb-4">
+                  <div className="space-y-2 mb-4" data-testid="activity-details">
                   <div className="flex items-center gap-2 text-sm">
                     <span>📅</span>
-                    <span>{formatDate(activity.date_time)}</span>
+                    <span data-testid="activity-date">{formatDate(activity.date_time)}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <span>⏱️</span>
@@ -1192,7 +1196,7 @@ const ActivitiesPage = () => {
                   {activity.cost === 0 ? (
                     <div className="flex items-center gap-2 text-sm font-bold text-green-600">
                       <span>🎉</span>
-                      <span>Wstęp wolny</span>
+                      <span data-testid="activity-price">Wstęp wolny</span>
                     </div>
                   ) : (
                     <>
@@ -1218,7 +1222,7 @@ const ActivitiesPage = () => {
                       </div>
                       <div className="flex items-center gap-2 text-sm font-bold text-purple-600">
                         <span>💰</span>
-                        <span>{activity.cost.toFixed(2)} zł</span>
+                        <span data-testid="activity-price">{activity.cost.toFixed(2)} zł</span>
                       </div>
                     </>
                   )}
