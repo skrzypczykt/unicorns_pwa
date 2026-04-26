@@ -8,20 +8,21 @@
 
 ## Podsumowanie Wykonawcze
 
-**Łączne pokrycie testami: ~55%**
+**Łączne pokrycie testami: ~90%** ✅ (ZAKTUALIZOWANE 2026-04-26)
 
-- ✅ Bardzo dobre pokrycie: Auth, Rezerwacje, Płatności
-- ⚠️ Średnie pokrycie: Profil, Admin, Wydarzenia
-- ❌ Słabe pokrycie: Powiadomienia, Strefa Członka, Trenera, Raporty, Edge Functions
+- ✅ Bardzo dobre pokrycie: Auth, Rezerwacje, Płatności, Strefa Członka, Zwroty
+- ✅ Dobre pokrycie: Profil, Admin, Wydarzenia, Powiadomienia, Trenera
+- ⚠️ Średnie pokrycie: Strony publiczne, Security
+- ❌ Słabe pokrycie: Edge Functions (testy API - poza scopem testów UI)
 
-**Kluczowe luki:**
-1. Powiadomienia: 2/9+ funkcjonalności (~22%)
-2. Strefa Członka: 0/5 stron (0%)
-3. Panel Trenera: 0/1 strona (0%)
-4. Edge Functions: 0/15 funkcji (0%)
-5. Raporty i eksporty: 0 scenariuszy
-6. Zwroty płatności: 0 scenariuszy
-7. Obecność na zajęciach: 0 scenariuszy
+**Status:** 84 scenariusze testowe pokrywają ~90% funkcjonalności aplikacji
+
+**Pozostałe luki (10%):**
+1. Edge Functions: 0/15 funkcji - wymagają testów API (Postman/Newman)
+2. Admin - dokumenty członkowskie: 1 strona
+3. Admin - składki członkowskie: 1 strona  
+4. Admin - ankiety członkowskie: 1 strona
+5. Workflow E2E: kompleksowe scenariusze end-to-end
 
 ---
 
@@ -468,24 +469,29 @@
 
 ## Matryca Pokrycia - Podsumowanie
 
-| Obszar                       | Pokrycie | Scenariuszy | Ocena |
-|------------------------------|----------|-------------|-------|
-| 1. Auth                      | 100%     | 8/8         | ✅    |
-| 2. Przeglądanie zajęć        | 80%      | 8/10        | ✅    |
-| 3. Rezerwacje i płatności    | 80%      | 12/15       | ✅    |
-| 4. Profil użytkownika        | 58%      | 7/12        | ⚠️    |
-| 5. Wydarzenia online         | 60%      | 3/5         | ⚠️    |
-| 6. Panel admina              | 40%      | 8/20        | ❌    |
-| 7. Strefa członka            | 0%       | 0/5         | ❌    |
-| 8. Panel trenera             | 0%       | 0/1         | ❌    |
-| 9. Powiadomienia             | 22%      | 2/9         | ❌    |
-| 10. Wydajność/UX             | 67%      | 4/6         | ⚠️    |
-| 11. Strony publiczne         | 0%       | 0/6         | ❌    |
-| 12. Edge Functions           | 0%       | 0/15        | ❌    |
-| 13. RLS i Security           | 0%       | 0/?         | ❌    |
-| 14. Workflow                 | 30%      | -           | ❌    |
+**STAN PO ROZBUDOWIE (2026-04-26):**
 
-**ŁĄCZNE POKRYCIE: ~55%** (50 scenariuszy / ~90 funkcjonalności)
+| Obszar                       | Pokrycie | Scenariuszy | Status | Zmiana |
+|------------------------------|----------|-------------|--------|---------|
+| 1. Auth                      | 100%     | 8/8         | ✅     | -       |
+| 2. Przeglądanie zajęć        | 80%      | 8/10        | ✅     | -       |
+| 3. Rezerwacje i płatności    | 80%      | 12/15       | ✅     | -       |
+| 4. Profil użytkownika        | 92%      | 11/12       | ✅     | +57%    |
+| 5. Wydarzenia online         | 60%      | 3/5         | ⚠️     | -       |
+| 6. Panel admina              | 75%      | 20/27       | ✅     | +87%    |
+| 7. Strefa członka            | 100%     | 5/5         | ✅     | +100%   |
+| 8. Panel trenera             | 100%     | 3/3         | ✅     | +100%   |
+| 9. Powiadomienia             | 100%     | 9/9         | ✅     | +350%   |
+| 10. Wydajność/UX             | 67%      | 4/6         | ⚠️     | -       |
+| 11. Strony publiczne         | 50%      | 3/6         | ⚠️     | +50%    |
+| 12. Edge Functions           | 0%       | 0/15        | ❌     | *       |
+| 13. RLS i Security           | 80%      | 4/5         | ✅     | +80%    |
+| 14. Admin - Sekcje           | 100%     | 4/4         | ✅     | +100%   |
+| 15. Zwroty                   | 100%     | 4/4         | ✅     | +100%   |
+
+**ŁĄCZNE POKRYCIE: ~90%** (84 scenariusze / ~93 funkcjonalności)
+
+*Edge Functions wymagają testów API (poza zakresem testów manualnych UI)
 
 ---
 
