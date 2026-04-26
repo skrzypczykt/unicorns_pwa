@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test'
-import { loginUser } from '../helpers/auth'
+import { loginUser, TEST_USERS } from '../helpers/auth'
 
 test.describe('Przeglądanie Zajęć (Activities)', () => {
   test.beforeEach(async ({ page }) => {
     // Setup: Zaloguj użytkownika przed każdym testem
-    await loginUser(page, 'test@unicorns-test.local', 'TestPass123!')
+    await loginUser(page, TEST_USERS.regular.email, TEST_USERS.regular.password)
   })
 
   test('Scenariusz 9: Wyświetlanie listy zajęć', async ({ page }) => {
@@ -152,7 +152,7 @@ test.describe('Responsywność - Mobile', () => {
     // Ten test uruchamia się tylko na mobile viewportach
     test.skip(!isMobile, 'Test tylko dla mobile')
 
-    await loginUser(page, 'test@unicorns-test.local', 'TestPass123!')
+    await loginUser(page, TEST_USERS.regular.email, TEST_USERS.regular.password)
     await page.goto('/activities')
 
     // Poczekaj na załadowanie

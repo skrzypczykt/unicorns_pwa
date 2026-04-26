@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.5.10] - 2026-04-26
+
+### Naprawiono
+
+- **Hardcoded emails w testach E2E**
+  - Zamieniono `test@unicorns-test.local` na `TEST_USERS.regular.email`
+  - Testy używają teraz poprawnych emaili z seed data
+  - Fix dla testów activities.spec.ts i auth.spec.ts
+
 ## [0.5.9] - 2026-04-26
 
 ### Zmieniono

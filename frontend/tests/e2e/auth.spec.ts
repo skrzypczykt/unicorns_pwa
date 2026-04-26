@@ -1,14 +1,10 @@
 import { test, expect } from '@playwright/test'
-import { loginUser, logoutUser, generateTestUser, registerUser } from '../helpers/auth'
+import { loginUser, logoutUser, generateTestUser, registerUser, TEST_USERS } from '../helpers/auth'
 
 test.describe('Autentykacja (Authentication)', () => {
   test('Scenariusz 2: Logowanie istniejącego użytkownika', async ({ page }) => {
-    // UWAGA: Ten test wymaga istniejącego użytkownika w bazie
-    // Możesz go utworzyć ręcznie lub przez panel admina
-    const email = 'test@unicorns-test.local'
-    const password = 'TestPass123!'
-
-    await loginUser(page, email, password)
+    // Test używa użytkownika z seedowanych danych
+    await loginUser(page, TEST_USERS.regular.email, TEST_USERS.regular.password)
 
     // Weryfikacja: Użytkownik zalogowany
     await expect(page.locator('text=Harmonogram')).toBeVisible()
@@ -17,9 +13,7 @@ test.describe('Autentykacja (Authentication)', () => {
 
   test('Scenariusz 4: Wylogowanie', async ({ page }) => {
     // Setup: Najpierw zaloguj
-    const email = 'test@unicorns-test.local'
-    const password = 'TestPass123!'
-    await loginUser(page, email, password)
+    await loginUser(page, TEST_USERS.regular.email, TEST_USERS.regular.password)
 
     // Wyloguj
     await logoutUser(page)
@@ -34,7 +28,7 @@ test.describe('Autentykacja (Authentication)', () => {
 
     // Wpisz nieprawidłowy email
     await page.fill('input[name="email"]', 'nieprawidlowy-email')
-    await page.fill('input[name="password"]', 'TestPass123!')
+    await page.fill('input[name="password"]', TEST_USERS.regular.password)
     await page.click('button:has-text("Zaloguj się")')
 
     // Weryfikacja: Błąd walidacji
@@ -78,7 +72,7 @@ test.describe('Błędy autentykacji', () => {
   test('Nieprawidłowe hasło - komunikat błędu', async ({ page }) => {
     await page.goto('/login')
 
-    await page.fill('input[name="email"]', 'test@unicorns-test.local')
+    await page.fill('input[name="email"]', TEST_USERS.regular.email)
     await page.fill('input[name="password"]', 'ZłeHasło123!')
     await page.click('button:has-text("Zaloguj się")')
 
