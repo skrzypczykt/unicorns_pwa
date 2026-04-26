@@ -1,2 +1,2 @@
-export const APP_VERSION = '0.5.5'
+export const APP_VERSION = '0.5.6'
 export const BUILD_DATE = new Date().toISOString().split('T')[0]

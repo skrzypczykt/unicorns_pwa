@@ -4,6 +4,14 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.5.6] - 2026-04-26
+
+### Naprawiono
+
+- **Missing dotenv dependency**
+  - Dodano `dotenv` do devDependencies
+  - Naprawiono błąd "Cannot find package 'dotenv'" w testach E2E
+
 ## [0.5.5] - 2026-04-26
 
 ### Dodano
