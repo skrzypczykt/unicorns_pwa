@@ -34,7 +34,12 @@ export default defineConfig({
 
   // Reporter
   reporter: process.env.CI
-    ? [['html'], ['junit', { outputFile: 'test-results/junit.xml' }]]
+    ? [
+        ['list'], // Progress w czasie rzeczywistym
+        ['github'], // Integracja z GitHub Actions UI
+        ['html'], // HTML report na końcu
+        ['junit', { outputFile: 'test-results/junit.xml' }],
+      ]
     : [['html'], ['list']],
 
   use: {

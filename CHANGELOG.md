@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.5.9] - 2026-04-26
+
+### Zmieniono
+
+- **Dodano logi testów E2E w CI**
+  - Reporter 'list' - progress w czasie rzeczywistym
+  - Reporter 'github' - integracja z GitHub Actions UI
+  - Widoczny postęp i szacowany czas wykonania
+
 ## [0.5.8] - 2026-04-26
 
 ### Zmieniono
