@@ -12,6 +12,20 @@ Centralne miejsce dla całej dokumentacji projektu Unicorns PWA.
 
 ### 📖 Przewodniki (Guides)
 
+#### Testowanie
+- [**50 Scenariuszy Testów Manualnych**](guides/MANUAL_TESTING_SCENARIOS.md)  
+  Szczegółowe scenariusze testów dla osób nietechnicznych (testerzy beta, wolontariusze)
+  - Rejestracja i logowanie (8 scenariuszy)
+  - Przeglądanie zajęć (8 scenariuszy)
+  - Rezerwacje i płatności (12 scenariuszy)
+  - Profil użytkownika (7 scenariuszy)
+  - Wydarzenia online (3 scenariusze)
+  - Panel admina (8 scenariuszy)
+  - Wydajność i UX (4 scenariusze)
+
+- [**Testing Strategy**](guides/TESTING_STRATEGY.md)  
+  Strategia testów automatycznych (unit, integration, E2E) dla developerów
+
 #### Zarządzanie Treścią
 - [**Strategia Przechowywania Zdjęć**](guides/IMAGE_STORAGE_STRATEGY.md)  
   Hybrydowe podejście: GitHub repo (statyczne) + Cloudinary (dynamiczne)
