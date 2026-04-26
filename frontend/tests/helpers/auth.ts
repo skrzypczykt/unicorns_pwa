@@ -86,28 +86,42 @@ export async function isUserLoggedIn(page: Page): Promise<boolean> {
 }
 
 /**
- * Tymczasowy użytkownik dla szybkich testów
- * UWAGA: Te konta powinny istnieć w bazie testowej
+ * Pobierz hasło z zmiennej środowiskowej
+ * UWAGA: Hasło musi być ustawione w .env.test (lokalnie) lub w GitHub Secrets (CI)
+ */
+const getTestPassword = (): string => {
+  const password = process.env.TEST_USER_PASSWORD
+  if (!password) {
+    throw new Error(
+      'TEST_USER_PASSWORD not set. Create .env.test file with TEST_USER_PASSWORD=your_password'
+    )
+  }
+  return password
+}
+
+/**
+ * Użytkownicy testowi
+ * UWAGA: Te konta muszą istnieć w bazie testowej (utworzone przez seed-test-env.sql)
  */
 export const TEST_USERS = {
   regular: {
     email: 'test.user@unicorns-test.local',
-    password: 'TestPass123!',
-    id: 'regular-user-id',
+    password: getTestPassword(),
+    id: 'a1111111-1111-1111-1111-111111111111',
   },
   admin: {
     email: 'admin@unicorns-test.local',
-    password: 'AdminPass123!',
-    id: 'admin-user-id',
+    password: getTestPassword(),
+    id: 'a2222222-2222-2222-2222-222222222222',
   },
   trainer: {
     email: 'trainer@unicorns-test.local',
-    password: 'TrainerPass123!',
-    id: 'trainer-user-id',
+    password: getTestPassword(),
+    id: 'a3333333-3333-3333-3333-333333333333',
   },
   member: {
     email: 'member@unicorns-test.local',
-    password: 'MemberPass123!',
-    id: 'member-user-id',
+    password: getTestPassword(),
+    id: 'a4444444-4444-4444-4444-444444444444',
   },
 }

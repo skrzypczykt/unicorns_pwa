@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test'
+import * as dotenv from 'dotenv'
+import * as path from 'path'
+
+// Załaduj zmienne środowiskowe z .env.test (jeśli istnieje)
+dotenv.config({ path: path.resolve(__dirname, '.env.test') })
 
 /**
  * Konfiguracja Playwright dla testów E2E

@@ -4,6 +4,33 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.5.5] - 2026-04-26
+
+### Dodano
+
+- **Supabase Vault dla haseł testowych**
+  - Skrypt `seed-test-env.sql` pobiera hasła z Vault zamiast plain text
+  - Secret `test_user_password` przechowywany bezpiecznie w Supabase
+  - Dokumentacja `SUPABASE_TEST_SETUP.md` i `SETUP_TEST_PASSWORD.md`
+
+- **Zmienne środowiskowe dla testów Playwright**
+  - `.env.test.example` - szablon konfiguracji
+  - `playwright.config.ts` - ładuje `.env.test` przez dotenv
+  - `auth.ts` - pobiera hasło z `process.env.TEST_USER_PASSWORD`
+  - GitHub Actions używa `${{ secrets.TEST_USER_PASSWORD }}`
+
+- **Dane seedowe dla środowiska testowego**
+  - 4 użytkowników testowych (regular, admin, trainer, member)
+  - 3 sekcje (Badminton, Joga, Inne)
+  - 5 zajęć testowych (różne typy)
+  - 3 rezerwacje + transakcje
+
+### Bezpieczeństwo
+
+- Rotacja haseł testowych (stare były w repo)
+- Nowe hasło: przechowywane w Vault + GitHub Secrets
+- `.env.test` w `.gitignore` (lokalne testy)
+
 ## [0.5.4] - 2026-04-26
 
 ### Dodano
