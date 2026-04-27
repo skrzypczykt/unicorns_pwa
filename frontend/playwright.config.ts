@@ -1,0 +1,111 @@
+import { defineConfig, devices } from '@playwright/test'
+import * as dotenv from 'dotenv'
+import * as path from 'path'
+import { fileURLToPath } from 'url'
+
+// ES module compatibility
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Załaduj zmienne środowiskowe z .env.test (tylko lokalnie, CI używa GitHub Secrets)
+const envPath = path.resolve(__dirname, '.env.test')
+if (!process.env.CI) {
+  dotenv.config({ path: envPath })
+}
+
+/**
+ * Konfiguracja Playwright dla testów E2E
+ * Dokumentacja: https://playwright.dev/docs/test-configuration
+ */
+export default defineConfig({
+  testDir: './tests/e2e',
+
+  // Uruchom testy równolegle
+  fullyParallel: true,
+
+  // Fail build jeśli zostawiono test.only() w CI
+  forbidOnly: !!process.env.CI,
+
+  // Retry w CI, brak retry lokalnie
+  retries: process.env.CI ? 2 : 0,
+
+  // Limit workerów - w CI 1, lokalnie auto
+  workers: process.env.CI ? 1 : undefined,
+
+  // Reporter
+  reporter: process.env.CI
+    ? [
+        ['list'], // Progress w czasie rzeczywistym
+        ['github'], // Integracja z GitHub Actions UI
+        ['html'], // HTML report na końcu
+        ['junit', { outputFile: 'test-results/junit.xml' }],
+      ]
+    : [['html'], ['list']],
+
+  use: {
+    // Base URL aplikacji (może być override przez env variable)
+    baseURL: process.env.BASE_URL || 'https://unicorns-test.netlify.app',
+
+    // Trace tylko przy retry (oszczędność miejsca)
+    trace: 'on-first-retry',
+
+    // Screenshot tylko przy błędzie
+    screenshot: 'only-on-failure',
+
+    // Video tylko przy błędzie
+    video: 'retain-on-failure',
+
+    // Timeout dla pojedynczej akcji (np. click, fill)
+    actionTimeout: 10000,
+  },
+
+  // Timeout dla całego testu
+  timeout: 60000,
+
+  // Przeglądarki do testowania
+  projects: process.env.CI
+    ? [
+        // W CI tylko Chromium (szybciej)
+        {
+          name: 'chromium',
+          use: { ...devices['Desktop Chrome'] },
+        },
+      ]
+    : [
+        // Lokalnie wszystkie przeglądarki
+        {
+          name: 'chromium',
+          use: { ...devices['Desktop Chrome'] },
+        },
+
+        {
+          name: 'firefox',
+          use: { ...devices['Desktop Firefox'] },
+        },
+
+        {
+          name: 'webkit',
+          use: { ...devices['Desktop Safari'] },
+        },
+
+        // Mobile viewports
+        {
+          name: 'Mobile Chrome',
+          use: { ...devices['Pixel 5'] },
+        },
+
+        {
+          name: 'Mobile Safari',
+          use: { ...devices['iPhone 13'] },
+        },
+      ],
+
+  // Opcjonalnie: uruchom dev server lokalnie
+  // Odkomentuj jeśli chcesz testować lokalną wersję
+  // webServer: {
+  //   command: 'npm run dev',
+  //   url: 'http://localhost:5173',
+  //   reuseExistingServer: !process.env.CI,
+  //   timeout: 120000,
+  // },
+})

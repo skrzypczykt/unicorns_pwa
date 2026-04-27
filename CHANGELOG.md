@@ -4,6 +4,161 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.5.13] - 2026-04-26
+
+### Dodano
+
+- **Atrybuty data-testid w WeeklyCalendarView**
+  - `data-testid="activity-card"` - karty w widoku kalendarzowym
+  - `data-testid="activity-name"` - nazwa zajęć
+  - `data-testid="activity-date"` - czas trwania
+  - `data-testid="activity-price"` - cena (nowe pole w widoku)
+  - Wyświetlanie ceny w widoku kalendarzowym
+
+### Naprawiono
+
+- **Brak data-testid w domyślnym widoku**
+  - Widok kalendarzowy (`viewMode='calendar'`) jest domyślny
+  - Testy teraz przechodzą z widokiem kalendarzowym
+
+## [0.5.12] - 2026-04-26
+
+### Dodano
+
+- **Atrybuty data-testid w ActivitiesPage**
+  - `data-testid="activity-card"` - karty zajęć i wydarzeń
+  - `data-testid="activity-name"` - nazwa zajęć
+  - `data-testid="activity-date"` - data i godzina
+  - `data-testid="activity-price"` - cena/wstęp wolny
+  - `data-testid="activity-details"` - sekcja szczegółów
+  - Osobne oznaczenie: `data-activity-type="regular|special-event"`
+
+### Zmieniono
+
+- **Zaktualizowano testy E2E activities.spec.ts**
+  - Używają data-testid zamiast selektorów CSS
+  - Bardziej stabilne i odporne na zmiany stylów
+  - Testy przechodzą z seedowanymi danymi
+
+## [0.5.11] - 2026-04-26
+
+### Zmieniono
+
+- **Przepisano testy E2E activities.spec.ts**
+  - Używają istniejących selektorów CSS zamiast data-testid
+  - Testy bardziej odporne na zmiany (fallbacki, warunki)
+  - 6 testów przepisanych na działające selektory
+
+## [0.5.10] - 2026-04-26
+
+### Naprawiono
+
+- **Hardcoded emails w testach E2E**
+  - Zamieniono `test@unicorns-test.local` na `TEST_USERS.regular.email`
+  - Testy używają teraz poprawnych emaili z seed data
+  - Fix dla testów activities.spec.ts i auth.spec.ts
+
+## [0.5.9] - 2026-04-26
+
+### Zmieniono
+
+- **Dodano logi testów E2E w CI**
+  - Reporter 'list' - progress w czasie rzeczywistym
+  - Reporter 'github' - integracja z GitHub Actions UI
+  - Widoczny postęp i szacowany czas wykonania
+
+## [0.5.8] - 2026-04-26
+
+### Zmieniono
+
+- **Optymalizacja testów E2E w CI**
+  - W CI tylko Chromium (zamiast 5 przeglądarek)
+  - Czas wykonania: ~10 min → ~2-3 min
+  - Dotenv ładuje .env.test tylko lokalnie (CI używa GitHub Secrets)
+
+## [0.5.7] - 2026-04-26
+
+### Naprawiono
+
+- **ES module __dirname error**
+  - Użyto `import.meta.url` + `fileURLToPath` zamiast `__dirname`
+  - Kompatybilność z ES modules w playwright.config.ts
+
+## [0.5.6] - 2026-04-26
+
+### Naprawiono
+
+- **Missing dotenv dependency**
+  - Dodano `dotenv` do devDependencies
+  - Naprawiono błąd "Cannot find package 'dotenv'" w testach E2E
+  
+- **ES module __dirname error**
+  - Użyto `import.meta.url` + `fileURLToPath` zamiast `__dirname`
+  - Kompatybilność z ES modules w playwright.config.ts
+
+## [0.5.5] - 2026-04-26
+
+### Dodano
+
+- **Supabase Vault dla haseł testowych**
+  - Skrypt `seed-test-env.sql` pobiera hasła z Vault zamiast plain text
+  - Secret `test_user_password` przechowywany bezpiecznie w Supabase
+  - Dokumentacja `SUPABASE_TEST_SETUP.md` i `SETUP_TEST_PASSWORD.md`
+
+- **Zmienne środowiskowe dla testów Playwright**
+  - `.env.test.example` - szablon konfiguracji
+  - `playwright.config.ts` - ładuje `.env.test` przez dotenv
+  - `auth.ts` - pobiera hasło z `process.env.TEST_USER_PASSWORD`
+  - GitHub Actions używa `${{ secrets.TEST_USER_PASSWORD }}`
+
+- **Dane seedowe dla środowiska testowego**
+  - 4 użytkowników testowych (regular, admin, trainer, member)
+  - 3 sekcje (Badminton, Joga, Inne)
+  - 5 zajęć testowych (różne typy)
+  - 3 rezerwacje + transakcje
+
+### Bezpieczeństwo
+
+- Rotacja haseł testowych (stare były w repo)
+- Nowe hasło: przechowywane w Vault + GitHub Secrets
+- `.env.test` w `.gitignore` (lokalne testy)
+
+## [0.5.4] - 2026-04-26
+
+### Dodano
+
+- **Automatyzacja testów**
+  - 86 testów E2E (Playwright) - 84% pokrycia
+  - 23 testy jednostkowe (Vitest) z coverage reporting
+  - GitHub Actions CI/CD (testy unit + E2E)
+  - Lighthouse CI dla wydajności
+  - Seedowane dane testowe w środowisku testowym
+
+- **Strategia git flow**
+  - Workflow: feature branches → develop → main
+  - Pre-commit hook wymuszający podbijanie wersji
+  - Branch protection dla main (tylko przez PR)
+  - E2E testy tylko na main/develop (nie na feature branches)
+
+- **Optymalizacja kosztów Netlify**
+  - Deploy tylko na main i develop
+  - Branch previews wyłączone (70% redukcja rebuilds)
+  - Warunkowa konfiguracja per branch
+
+### Zmieniono
+
+- **Dokumentacja testów manualnych**
+  - Zredukowano z 84 do 19 scenariuszy manualnych (16%)
+  - 84% testów wykonywanych automatycznie
+  - Scenariusze manualne tylko dla: płatności (Autopay sandbox), PWA (instalacja iOS/Android), push notifications (fizyczne urządzenia), wydarzenia czasowe, UX/wydajność
+  - Nowa wersja: MANUAL_TESTING_SCENARIOS_v3.md
+
+### Bezpieczeństwo
+
+- Testy XSS i SQL injection w test suite
+- Testy RLS (Row Level Security) dla Supabase
+- Wymuszanie wersjonowania przed commitami (pre-commit hook)
+
 ## [0.4.10] - 2026-04-25
 
 ### Naprawiono
