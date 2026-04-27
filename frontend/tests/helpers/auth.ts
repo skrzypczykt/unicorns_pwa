@@ -49,12 +49,15 @@ export async function registerUser(page: Page, user: TestUser) {
  */
 export async function loginUser(page: Page, email: string, password: string) {
   await page.goto('/login')
-  await page.fill('input[name="email"]', email)
-  await page.fill('input[name="password"]', password)
+  await page.fill('#email', email)
+  await page.fill('#password', password)
   await page.click('button:has-text("Zaloguj się")')
 
-  // Poczekaj na przekierowanie (może być na / lub /harmonogram)
-  await page.waitForURL(/\/(harmonogram|activities)?$/, { timeout: 10000 })
+  // Poczekaj na zniknięcie przycisku logowania (oznacza sukces)
+  await page.waitForSelector('button:has-text("Zaloguj się")', { state: 'hidden', timeout: 10000 })
+
+  // Daj czas na reload i przekierowanie
+  await page.waitForTimeout(1000)
 }
 
 /**
