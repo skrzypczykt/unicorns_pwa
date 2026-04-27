@@ -64,6 +64,7 @@ import ScrollToTop from './components/ScrollToTop'
 import HamburgerMenu from './components/HamburgerMenu'
 import WelcomeNotificationModal from './components/WelcomeNotificationModal'
 import VersionBanner from './components/VersionBanner'
+import ErrorBoundary from './components/ErrorBoundary'
 
 interface UserProfile {
   id: string
@@ -125,10 +126,11 @@ function App() {
 
   if (!user || !profile) {
     return (
-      <BrowserRouter>
-        <ScrollToTop />
-        <InstallPWAPrompt />
-        <Routes>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <ScrollToTop />
+          <InstallPWAPrompt />
+          <Routes>
           <Route path="/" element={<PublicAboutPage />} />
           <Route path="/about-app" element={<AboutAppPage />} />
           <Route path="/news" element={<NewsPage />} />
@@ -143,10 +145,12 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      </ErrorBoundary>
     )
   }
 
   return (
+    <ErrorBoundary>
     <BrowserRouter>
       <ScrollToTop />
       <AppContent
@@ -385,6 +389,7 @@ const AppContent = ({ user, profile, handleSignOut, onProfileUpdate, onUserUpdat
         </footer>
       </div>
     </>
+    </ErrorBoundary>
   )
 }
 
