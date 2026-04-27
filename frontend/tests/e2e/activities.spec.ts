@@ -10,32 +10,8 @@ test.describe('Przeglądanie Zajęć (Activities)', () => {
   test('Scenariusz 9: Wyświetlanie listy zajęć', async ({ page }) => {
     await page.goto('/activities')
 
-    // Debug: Sprawdź co jest na stronie
-    console.log('URL:', page.url())
-
     // Poczekaj na nagłówek
     await page.waitForSelector('text=Harmonogram zajęć', { timeout: 5000 })
-    console.log('✓ Nagłówek strony znaleziony')
-
-    // Debug: Wypisz HTML body
-    const bodyHTML = await page.locator('body').innerHTML()
-    console.log('Body HTML length:', bodyHTML.length)
-    console.log('Has data-testid:', bodyHTML.includes('data-testid'))
-    console.log('Has activity-card:', bodyHTML.includes('activity-card'))
-
-    // Debug: Policz wszystkie elementy z data-testid
-    const allTestIds = await page.locator('[data-testid]').count()
-    console.log('Elements with data-testid:', allTestIds)
-
-    // Debug: Sprawdź widok kalendarz vs kafelki
-    const calendarButton = await page.locator('button:has-text("Kalendarz")').isVisible()
-    const gridButton = await page.locator('button:has-text("Kafelki")').isVisible()
-    console.log('Calendar button visible:', calendarButton)
-    console.log('Grid button visible:', gridButton)
-
-    // Zrób screenshot
-    await page.screenshot({ path: 'test-results/activities-debug.png', fullPage: true })
-    console.log('Screenshot saved to test-results/activities-debug.png')
 
     // Poczekaj na załadowanie listy
     await page.waitForSelector('[data-testid="activity-card"]', { timeout: 10000 })
