@@ -1,0 +1,353 @@
+name: Database Migration Safety
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/*.sql'
+      - 'supabase/seed*.sql'
+
+jobs:
+  migration-safety-check:
+    name: Migration Safety Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get changed migration files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            supabase/migrations/*.sql
+
+      - name: Check for destructive operations
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "🔍 Checking migrations for destructive operations..."
+          echo ""
+
+          DESTRUCTIVE_FOUND=false
+
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "Analyzing: $file"
+
+            # Check for dangerous DROP operations
+            if grep -in "DROP TABLE\|DROP DATABASE\|DROP SCHEMA" "$file"; then
+              echo "⚠️ WARNING: DROP TABLE/DATABASE/SCHEMA found in $file"
+              echo "This is a DESTRUCTIVE operation that will DELETE data!"
+              DESTRUCTIVE_FOUND=true
+            fi
+
+            # Check for TRUNCATE (deletes all rows)
+            if grep -in "TRUNCATE" "$file"; then
+              echo "⚠️ WARNING: TRUNCATE found in $file"
+              echo "This will DELETE all data from the table!"
+              DESTRUCTIVE_FOUND=true
+            fi
+
+            # Check for DELETE without WHERE (deletes all rows)
+            if grep -iE "DELETE\s+FROM.*;" "$file" | grep -iv "WHERE"; then
+              echo "⚠️ WARNING: DELETE without WHERE clause found in $file"
+              echo "This will DELETE all data from the table!"
+              DESTRUCTIVE_FOUND=true
+            fi
+
+            # Check for DROP COLUMN (data loss)
+            if grep -in "DROP COLUMN\|ALTER TABLE.*DROP" "$file"; then
+              echo "⚠️ WARNING: DROP COLUMN found in $file"
+              echo "This will DELETE data from the column!"
+              DESTRUCTIVE_FOUND=true
+            fi
+
+            echo "---"
+          done
+
+          if [ "$DESTRUCTIVE_FOUND" = true ]; then
+            echo ""
+            echo "❌ DESTRUCTIVE OPERATIONS DETECTED!"
+            echo ""
+            echo "Please ensure:"
+            echo "1. You have a backup of production data"
+            echo "2. You've tested this migration on a copy of production data"
+            echo "3. You have a rollback plan"
+            echo "4. This change has been reviewed by a senior developer"
+            echo ""
+            echo "If this is intentional, document the reason in the PR description."
+            # Don't fail - allow manual review, but warn
+            # exit 1
+          else
+            echo "✅ No destructive operations detected"
+          fi
+
+      - name: Check for transaction wrappers
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "🔍 Checking for transaction wrappers..."
+          echo ""
+
+          MISSING_TRANSACTION=false
+
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            # Skip seed files and certain utility scripts
+            if [[ "$file" == *"seed"* ]] || [[ "$file" == *"VERIFY"* ]] || [[ "$file" == *"CHECK"* ]]; then
+              echo "Skipping non-migration file: $file"
+              continue
+            fi
+
+            echo "Checking: $file"
+
+            # Check if file has BEGIN or START TRANSACTION
+            if ! grep -iq "BEGIN\|START TRANSACTION" "$file"; then
+              echo "⚠️ Migration $file may be missing transaction wrapper (BEGIN;)"
+              MISSING_TRANSACTION=true
+            fi
+
+            # If it has BEGIN, it should also have COMMIT
+            if grep -iq "BEGIN" "$file" && ! grep -iq "COMMIT" "$file"; then
+              echo "⚠️ Migration $file has BEGIN but no COMMIT"
+              MISSING_TRANSACTION=true
+            fi
+          done
+
+          echo ""
+
+          if [ "$MISSING_TRANSACTION" = true ]; then
+            echo "⚠️ Some migrations may be missing transaction wrappers"
+            echo ""
+            echo "Migrations should be wrapped in transactions:"
+            echo ""
+            echo "BEGIN;"
+            echo "  -- Your migration SQL here"
+            echo "COMMIT;"
+            echo ""
+            echo "This ensures atomicity - either all changes succeed or all fail."
+          else
+            echo "✅ Transaction wrappers present"
+          fi
+
+      - name: Check for RLS policy changes
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "🔍 Checking RLS policy changes..."
+          echo ""
+
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if grep -iq "CREATE POLICY\|ALTER POLICY\|DROP POLICY" "$file"; then
+              echo "📋 RLS policy changes detected in: $file"
+
+              # Check for admin-only policies
+              if grep -iq "role.*=.*'admin'" "$file"; then
+                echo "  ℹ️ Admin-only policy detected"
+              fi
+
+              # Check for public access policies (potential security issue)
+              if grep -iq "TO public\|FOR public\|USING (true)" "$file"; then
+                echo "  ⚠️ WARNING: Public access policy detected!"
+                echo "  Ensure this is intentional and doesn't expose sensitive data."
+              fi
+            fi
+          done
+
+          echo "✅ RLS policy review completed"
+
+      - name: Check for index creation
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "🔍 Checking for index creation..."
+          echo ""
+
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if grep -iq "CREATE INDEX\|CREATE UNIQUE INDEX" "$file"; then
+              echo "📋 Index creation detected in: $file"
+
+              # Check for CONCURRENTLY (recommended for production)
+              if grep -iq "CREATE.*INDEX CONCURRENTLY" "$file"; then
+                echo "  ✅ Using CONCURRENTLY (non-blocking)"
+              else
+                echo "  ⚠️ Index creation without CONCURRENTLY"
+                echo "  Consider using CREATE INDEX CONCURRENTLY for production to avoid table locks"
+              fi
+            fi
+          done
+
+          echo "✅ Index review completed"
+
+      - name: Check for data type changes
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "🔍 Checking for data type changes..."
+          echo ""
+
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if grep -iq "ALTER.*TYPE\|ALTER COLUMN.*TYPE" "$file"; then
+              echo "⚠️ Column type change detected in: $file"
+              grep -in "ALTER.*TYPE\|ALTER COLUMN.*TYPE" "$file"
+              echo ""
+              echo "Type changes can be risky:"
+              echo "1. May require table rewrite (locks table)"
+              echo "2. May fail if existing data doesn't match new type"
+              echo "3. Test on production-like data first"
+            fi
+          done
+
+          echo "✅ Type change review completed"
+
+      - name: Check for foreign key constraints
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "🔍 Checking foreign key constraints..."
+          echo ""
+
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if grep -iq "ADD CONSTRAINT.*FOREIGN KEY\|ADD FOREIGN KEY" "$file"; then
+              echo "📋 Foreign key constraint added in: $file"
+
+              # Check for ON DELETE CASCADE (can delete data unexpectedly)
+              if grep -iq "ON DELETE CASCADE" "$file"; then
+                echo "  ⚠️ ON DELETE CASCADE detected - deletions will cascade!"
+              fi
+
+              # Check for NOT VALID (recommended for large tables)
+              if grep -iq "NOT VALID" "$file"; then
+                echo "  ✅ Using NOT VALID (validates later, non-blocking)"
+              else
+                echo "  ℹ️ Consider using NOT VALID for large tables to avoid locks"
+              fi
+            fi
+          done
+
+          echo "✅ Foreign key review completed"
+
+  migration-naming-check:
+    name: Migration Naming Convention
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate migration file names
+        run: |
+          echo "🔍 Validating migration naming convention..."
+          echo ""
+
+          INVALID_NAMES=false
+
+          for file in supabase/migrations/*.sql; do
+            filename=$(basename "$file")
+
+            # Check format: NNN_description.sql
+            if ! [[ $filename =~ ^[0-9]{3}_[a-z0-9_]+\.sql$ ]]; then
+              # Skip utility files
+              if [[ ! "$filename" =~ ^(VERIFY|CHECK|QUICK_FIX|FIX_|UPDATE_|ADD_|CLEANUP_) ]]; then
+                echo "⚠️ Invalid migration name: $filename"
+                echo "   Expected format: NNN_description.sql (e.g., 050_add_user_roles.sql)"
+                INVALID_NAMES=true
+              fi
+            fi
+          done
+
+          if [ "$INVALID_NAMES" = true ]; then
+            echo ""
+            echo "⚠️ Some migration files don't follow naming convention"
+            echo "Use format: NNN_description.sql where NNN is a 3-digit number"
+          else
+            echo "✅ All migrations follow naming convention"
+          fi
+
+  payment-table-protection:
+    name: Payment Table Protection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get changed migration files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            supabase/migrations/*.sql
+
+      - name: Protect payment-critical tables
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "🔒 Checking for changes to payment-critical tables..."
+          echo ""
+
+          CRITICAL_TABLES=(
+            "transactions"
+            "registrations"
+            "users"
+            "activities"
+          )
+
+          CRITICAL_CHANGES=false
+
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            for table in "${CRITICAL_TABLES[@]}"; do
+              # Check for DROP or TRUNCATE on critical tables
+              if grep -iq "DROP TABLE.*$table\|TRUNCATE.*$table" "$file"; then
+                echo "❌ CRITICAL: Destructive operation on $table in $file"
+                CRITICAL_CHANGES=true
+              fi
+
+              # Check for removing payment-related columns
+              if grep -iq "DROP COLUMN.*payment\|DROP COLUMN.*transaction\|DROP COLUMN.*refund" "$file"; then
+                echo "⚠️ WARNING: Payment-related column being dropped in $file"
+                CRITICAL_CHANGES=true
+              fi
+            done
+          done
+
+          if [ "$CRITICAL_CHANGES" = true ]; then
+            echo ""
+            echo "❌ CRITICAL PAYMENT TABLE CHANGES DETECTED!"
+            echo ""
+            echo "This migration affects payment-critical tables."
+            echo "REQUIRED before merging:"
+            echo "1. Full backup of production database"
+            echo "2. Test on production data copy"
+            echo "3. Senior developer review"
+            echo "4. Rollback plan documented in PR"
+            echo ""
+            exit 1
+          fi
+
+          echo "✅ No critical payment table changes detected"
+
+  summary:
+    name: Database Safety Summary
+    runs-on: ubuntu-latest
+    needs: [migration-safety-check, migration-naming-check, payment-table-protection]
+    if: always()
+
+    steps:
+      - name: Generate summary
+        run: |
+          echo "🗄️ Database Migration Safety Summary"
+          echo "===================================="
+          echo ""
+          echo "Check Results:"
+          echo "- Migration Safety: ${{ needs.migration-safety-check.result }}"
+          echo "- Naming Convention: ${{ needs.migration-naming-check.result }}"
+          echo "- Payment Table Protection: ${{ needs.payment-table-protection.result }}"
+          echo ""
+
+          if [[ "${{ needs.payment-table-protection.result }}" == "failure" ]]; then
+            echo "❌ CRITICAL: Payment table protection failed!"
+            echo "Cannot merge migrations that destructively modify payment tables."
+            exit 1
+          fi
+
+          echo "✅ Database safety checks completed"
+          echo ""
+          echo "Migration Review Checklist:"
+          echo "- [ ] Tested on local database copy"
+          echo "- [ ] Reviewed for destructive operations"
+          echo "- [ ] Transaction wrappers present"
+          echo "- [ ] RLS policies reviewed"
+          echo "- [ ] Rollback plan documented (if needed)"

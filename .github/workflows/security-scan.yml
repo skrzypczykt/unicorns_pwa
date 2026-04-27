@@ -1,0 +1,318 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Weekly security scan every Monday at 2am
+    - cron: '0 2 * * 1'
+
+jobs:
+  dependency-audit:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: yarn install --frozen-lockfile
+
+      - name: Run npm audit
+        working-directory: ./frontend
+        run: |
+          echo "Running security audit..."
+          npm audit --audit-level=moderate || echo "Vulnerabilities found, check report"
+          npm audit --json > ../audit-results.json
+        continue-on-error: true
+
+      - name: Upload audit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npm-audit-results
+          path: audit-results.json
+          retention-days: 30
+
+  secret-scanning:
+    name: Secret & Credential Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for comprehensive scanning
+
+      - name: Gitleaks - Scan for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_SUMMARY: true
+
+      - name: Check for hardcoded credentials in code
+        run: |
+          echo "Checking for potential hardcoded secrets..."
+
+          # Check for common secret patterns
+          if grep -rn "SUPABASE_SERVICE_ROLE_KEY\s*=\s*['\"][^'\"]\+['\"]" . --include="*.ts" --include="*.tsx" --exclude-dir=node_modules; then
+            echo "⚠️ Potential hardcoded Supabase service role key found!"
+            exit 1
+          fi
+
+          if grep -rn "password\s*=\s*['\"][^'\"]\+['\"]" . --include="*.ts" --include="*.tsx" --exclude-dir=node_modules | grep -v "TEST_USER_PASSWORD"; then
+            echo "⚠️ Potential hardcoded password found!"
+            exit 1
+          fi
+
+          echo "✅ No obvious hardcoded secrets detected"
+
+  sast-analysis:
+    name: Static Application Security Testing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: yarn install --frozen-lockfile
+
+      - name: Install ESLint security plugin
+        working-directory: ./frontend
+        run: npm install --save-dev eslint-plugin-security
+
+      - name: Run ESLint with security checks
+        working-directory: ./frontend
+        run: npx eslint . --ext .ts,.tsx --max-warnings=10
+        continue-on-error: true
+
+      - name: TypeScript strict check
+        working-directory: ./frontend
+        run: npx tsc --noEmit --strict
+        continue-on-error: true
+
+      - name: Check for console.log in production code
+        run: |
+          echo "Checking for console.log statements..."
+          LOG_COUNT=$(grep -rn "console\.log" frontend/src --include="*.ts" --include="*.tsx" | wc -l | tr -d ' ')
+          echo "Found $LOG_COUNT console.log statements"
+
+          if [ "$LOG_COUNT" -gt 0 ]; then
+            echo "⚠️ WARNING: Found $LOG_COUNT console.log statements in production code"
+            echo "These should be removed or wrapped in DEV checks to prevent info leakage"
+            grep -rn "console\.log" frontend/src --include="*.ts" --include="*.tsx" | head -10
+            # Don't fail build yet, but warn
+            # exit 1
+          fi
+
+  codeql-analysis:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript,typescript
+          queries: security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+  payment-code-check:
+    name: Payment Code Security Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check payment webhook signature verification
+        run: |
+          echo "Verifying payment webhook security..."
+
+          # Ensure webhook handlers verify signatures
+          for webhook in supabase/functions/*-webhook/index.ts; do
+            if [ -f "$webhook" ]; then
+              if ! grep -q "verifySignature\|verify.*Signature" "$webhook"; then
+                echo "⚠️ WARNING: $webhook may not verify signatures!"
+                exit 1
+              fi
+            fi
+          done
+
+          echo "✅ Payment webhooks appear to verify signatures"
+
+      - name: Check for payment amount validation
+        run: |
+          echo "Checking for payment amount validation..."
+
+          # Payment initiation should validate amounts
+          if ! grep -q "amount.*>.*0\|validateAmount\|isValidAmount" supabase/functions/payment-initiate/index.ts; then
+            echo "⚠️ WARNING: payment-initiate may not validate amounts"
+          fi
+
+          echo "✅ Payment validation checks completed"
+
+      - name: Check CORS configuration
+        run: |
+          echo "Verifying CORS configuration..."
+
+          if ! grep -q "getAllowedOrigins\|allowedOrigins" supabase/functions/_shared/cors.ts; then
+            echo "⚠️ WARNING: CORS may not restrict origins properly"
+          fi
+
+          echo "✅ CORS configuration checked"
+
+  sql-injection-check:
+    name: SQL Injection Pattern Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for unsafe SQL patterns
+        run: |
+          echo "Checking for potential SQL injection vulnerabilities..."
+
+          # Check for string concatenation in SQL queries
+          UNSAFE_SQL=$(grep -rn "\.from.*+.*\|\.select.*+.*\|\.eq.*+.*" frontend/src supabase/functions --include="*.ts" --include="*.tsx" || true)
+
+          if [ -n "$UNSAFE_SQL" ]; then
+            echo "⚠️ WARNING: Potential unsafe SQL construction found:"
+            echo "$UNSAFE_SQL"
+            # Don't fail - Supabase client is generally safe
+          fi
+
+          echo "✅ SQL injection check completed"
+
+  frontend-security-headers:
+    name: Verify Security Headers
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check netlify.toml security headers
+        run: |
+          echo "Verifying security headers configuration..."
+
+          # Check for required security headers
+          REQUIRED_HEADERS=(
+            "X-Frame-Options"
+            "X-Content-Type-Options"
+            "Strict-Transport-Security"
+            "Content-Security-Policy"
+            "Referrer-Policy"
+          )
+
+          for header in "${REQUIRED_HEADERS[@]}"; do
+            if ! grep -q "$header" netlify.toml; then
+              echo "⚠️ Missing required header: $header"
+              exit 1
+            fi
+          done
+
+          echo "✅ All required security headers present"
+
+      - name: Verify CSP allows payment providers
+        run: |
+          echo "Checking CSP for payment provider domains..."
+
+          # Ensure Autopay domains are in CSP
+          if ! grep -q "autopay\.pl\|testpay\.autopay\.eu" netlify.toml; then
+            echo "⚠️ Payment provider domains missing from CSP"
+            exit 1
+          fi
+
+          echo "✅ Payment provider domains in CSP"
+
+  gdpr-compliance-check:
+    name: GDPR Compliance Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for GDPR consent handling
+        run: |
+          echo "Verifying GDPR compliance features..."
+
+          # Check for consent fields in migrations
+          if ! grep -rq "gdpr_consent\|marketing_consent\|privacy_policy_accepted" supabase/migrations; then
+            echo "⚠️ No GDPR consent fields found in database schema"
+          else
+            echo "✅ GDPR consent fields present"
+          fi
+
+          # Check for data deletion capability
+          if [ -f "supabase/functions/delete-user-account/index.ts" ]; then
+            echo "✅ User account deletion function exists"
+          else
+            echo "⚠️ No user account deletion function found (GDPR requirement)"
+          fi
+
+  summary:
+    name: Security Scan Summary
+    runs-on: ubuntu-latest
+    needs: [dependency-audit, secret-scanning, sast-analysis, codeql-analysis, payment-code-check, sql-injection-check, frontend-security-headers, gdpr-compliance-check]
+    if: always()
+
+    steps:
+      - name: Check job statuses
+        run: |
+          echo "🔒 Security Scan Complete"
+          echo "=========================="
+          echo ""
+          echo "Results:"
+          echo "- Dependency Audit: ${{ needs.dependency-audit.result }}"
+          echo "- Secret Scanning: ${{ needs.secret-scanning.result }}"
+          echo "- SAST Analysis: ${{ needs.sast-analysis.result }}"
+          echo "- CodeQL: ${{ needs.codeql-analysis.result }}"
+          echo "- Payment Security: ${{ needs.payment-code-check.result }}"
+          echo "- SQL Injection Check: ${{ needs.sql-injection-check.result }}"
+          echo "- Security Headers: ${{ needs.frontend-security-headers.result }}"
+          echo "- GDPR Compliance: ${{ needs.gdpr-compliance-check.result }}"
+          echo ""
+
+          if [[ "${{ needs.dependency-audit.result }}" == "failure" ]] || \
+             [[ "${{ needs.secret-scanning.result }}" == "failure" ]] || \
+             [[ "${{ needs.payment-code-check.result }}" == "failure" ]] || \
+             [[ "${{ needs.frontend-security-headers.result }}" == "failure" ]]; then
+            echo "❌ Critical security checks failed!"
+            exit 1
+          fi
+
+          echo "✅ Security scan passed"
