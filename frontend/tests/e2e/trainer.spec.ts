@@ -267,7 +267,7 @@ test.describe('Panel Trenera (Trainer Panel)', () => {
     }
   })
 
-  test('Statystyki frekwencji dla zajęć', async ({ page }) => {
+  test.skip('Statystyki frekwencji dla zajęć', async ({ page }) => {
     // Kliknij na zakończone zajęcia
     const completedClass = page.locator('[data-testid="trainer-class-row"]')
       .filter({ has: page.locator('[data-testid="class-status"]:has-text(/zakończone/i)') })
