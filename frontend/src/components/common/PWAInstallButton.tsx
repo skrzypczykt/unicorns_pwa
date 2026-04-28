@@ -1,26 +1,23 @@
-import { usePWAInstall } from '../../hooks/usePWAInstall'
+import { useInstallPWA } from '../../hooks/useInstallPWA'
 import { useEffect, useState } from 'react'
 
 const PWAInstallButton = () => {
-  const { isInstallable, isInstalled, handleInstall } = usePWAInstall()
+  const { isInstallable, isInstalled, promptInstall } = useInstallPWA()
   const [showIOSInstructions, setShowIOSInstructions] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
 
   useEffect(() => {
-    console.log('[PWA Button] isInstallable:', isInstallable, 'isInstalled:', isInstalled)
 
     // Wykryj iOS (Safari nie wspiera beforeinstallprompt)
     const iOS = /iPhone|iPad|iPod/.test(navigator.userAgent)
     setIsIOS(iOS)
-    console.log('[PWA Button] Is iOS:', iOS)
   }, [isInstallable, isInstalled])
 
   // Pokaż przycisk dla Chrome/Edge (beforeinstallprompt)
   if (isInstallable) {
-    console.log('[PWA Button] Rendering install button (Chrome/Edge)')
     return (
       <button
-        onClick={handleInstall}
+        onClick={promptInstall}
         className="w-full mt-4 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center gap-2"
       >
         <span className="text-2xl">📱</span>
@@ -31,7 +28,6 @@ const PWAInstallButton = () => {
 
   // Dla iOS - pokaż instrukcje manualne
   if (isIOS && !isInstalled) {
-    console.log('[PWA Button] Showing iOS instructions')
     return (
       <div className="w-full mt-4">
         <button
@@ -56,7 +52,6 @@ const PWAInstallButton = () => {
     )
   }
 
-  console.log('[PWA Button] Not showing button - not installable and not iOS')
   return null
 }
 

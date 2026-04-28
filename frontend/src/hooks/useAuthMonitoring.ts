@@ -44,11 +44,9 @@ export const useAuthMonitoring = ({
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('[Auth Monitor] Event:', event, 'Session:', !!session)
 
         // Wylogowanie
         if (event === 'SIGNED_OUT') {
-          console.log('[Auth Monitor] User signed out')
           onUserUpdate(null)
           onProfileUpdate(null)
           previousRoleRef.current = null
@@ -68,9 +66,24 @@ export const useAuthMonitoring = ({
               .eq('id', session.user.id)
               .single()
 
-            if (error || !currentProfile) {
-              // Użytkownik usunięty lub profil nie istnieje
-              console.warn('[Auth Monitor] Profile not found, logging out')
+            if (error) {
+              // Błąd podczas pobierania profilu (RLS, timeout, itp.)
+              // NIE wylogowuj - może to być przejściowy problem
+              if (import.meta.env.DEV) {
+                console.warn('[Auth Monitor] Profile fetch error (not logging out):', error)
+              }
+              // Jeśli profil już mamy, zatrzymaj się tutaj
+              if (profile) {
+                return
+              }
+              // Jeśli to pierwszy raz i nie ma profilu, to dopiero wtedy problem
+            }
+
+            if (!currentProfile) {
+              // Profil nie istnieje - użytkownik usunięty
+              if (import.meta.env.DEV) {
+                console.warn('[Auth Monitor] Profile not found, logging out')
+              }
               await supabase.auth.signOut()
               alert('Twoje konto zostało usunięte lub wystąpił błąd. Zaloguj się ponownie.')
               navigate('/login')
@@ -79,7 +92,9 @@ export const useAuthMonitoring = ({
 
             // Sprawdź czy rola się zmieniła
             if (previousRoleRef.current && currentProfile.role !== previousRoleRef.current) {
-              console.warn('[Auth Monitor] Role changed:', previousRoleRef.current, '->', currentProfile.role)
+              if (import.meta.env.DEV) {
+                console.warn('[Auth Monitor] Role changed:', previousRoleRef.current, '->', currentProfile.role)
+              }
 
               // Wyloguj użytkownika
               await supabase.auth.signOut()
@@ -100,7 +115,6 @@ export const useAuthMonitoring = ({
 
         // Błąd użytkownika (np. invalid token)
         if (event === 'USER_DELETED') {
-          console.log('[Auth Monitor] User deleted')
           await supabase.auth.signOut()
           alert('Twoje konto zostało usunięte.')
           navigate('/login')
@@ -130,7 +144,9 @@ export const useAuthMonitoring = ({
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
         if (sessionError || !session) {
-          console.warn('[Auth Monitor] Session invalid, logging out')
+          if (import.meta.env.DEV) {
+            console.warn('[Auth Monitor] Session invalid, logging out')
+          }
           await supabase.auth.signOut()
           navigate('/login')
           return
@@ -143,8 +159,20 @@ export const useAuthMonitoring = ({
           .eq('id', user.id)
           .single()
 
-        if (profileError || !profileData) {
-          console.warn('[Auth Monitor] Profile deleted, logging out')
+        if (profileError) {
+          // Błąd podczas pobierania - NIE wylogowuj natychmiast
+          // Może to być przejściowy problem sieciowy
+          if (import.meta.env.DEV) {
+            console.warn('[Auth Monitor] Profile check error (ignoring):', profileError)
+          }
+          return
+        }
+
+        if (!profileData) {
+          // Profil faktycznie nie istnieje - użytkownik usunięty
+          if (import.meta.env.DEV) {
+            console.warn('[Auth Monitor] Profile deleted, logging out')
+          }
           await supabase.auth.signOut()
           alert('Twoje konto zostało usunięte.')
           navigate('/login')
@@ -153,7 +181,9 @@ export const useAuthMonitoring = ({
 
         // Sprawdź czy rola się zmieniła (dodatkowa walidacja)
         if (profile && profileData.role !== profile.role) {
-          console.warn('[Auth Monitor] Role changed (polling detected):', profile.role, '->', profileData.role)
+          if (import.meta.env.DEV) {
+            console.warn('[Auth Monitor] Role changed (polling detected):', profile.role, '->', profileData.role)
+          }
           await supabase.auth.signOut()
           alert(`Twoje uprawnienia zostały zmienione. Zaloguj się ponownie.`)
           navigate('/login')
