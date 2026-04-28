@@ -4,6 +4,14 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.6.4] - 2026-04-28
+
+### Naprawiono
+
+- **E2E Payment Tests - Multiple Activity Details Dialogs**
+  - Użycie `.last()` dla activity-details gdy jest więcej niż jeden element
+  - Scope register-button do konkretnego dialogu zamiast całej strony
+
 ## [0.6.3] - 2026-04-28
 
 ### Naprawiono
