@@ -168,20 +168,34 @@ The project has **solid technical foundations** (TypeScript, Supabase, modern Re
 
 ---
 
-## 📊 ROI Calculation
+## 📊 Value Assessment (Non-Profit Impact)
 
-### Investment
-- **Time:** ~280 hours (7 weeks)
-- **Cost:** ~€14,000 (assuming €50/hour)
+### Time Investment
+- **Initial Audit & Quick Wins (v0.6.0):** ~20 hours (volunteer time)
+- **Remaining Roadmap:** ~260 hours (can be distributed among volunteers)
 
-### Returns (Annual)
-- **Bug reduction:** 60% fewer production bugs = €8,000 saved
-- **Faster features:** 50% faster development = €12,000 value
-- **Reduced onboarding:** 1 week saved per dev = €2,000 saved
-- **Prevented security breach:** Risk mitigation = €50,000+ value
+### Impact on Organization
 
-**Total Annual Value:** €72,000+  
-**ROI:** 414% in first year
+**Member Experience**
+- ✅ **Safer payments** - eliminated data leakage risk
+- ✅ **Better reliability** - error boundaries prevent white screens
+- ✅ **Faster features** - reduced code duplication = quicker iterations
+
+**Volunteer Developer Experience**
+- ✅ **Easier onboarding** - clean code, documented patterns
+- ✅ **Less maintenance** - 60% reduction in duplicate code
+- ✅ **Faster debugging** - centralized auth, error handling
+
+**Organizational Benefits**
+- ✅ **GDPR compliance** - proper data handling
+- ✅ **Security posture** - automated scanning, no sensitive data leaks
+- ✅ **Sustainability** - maintainable codebase for long-term volunteer projects
+- ✅ **Professional quality** - production-grade app for association members
+
+**Community Trust**
+- ✅ Members' payment data is secure
+- ✅ Application stability improved (no more error white screens)
+- ✅ Professional image for the association
 
 ---
 
