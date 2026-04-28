@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase/client'
 import { useNavigate } from 'react-router-dom'
+import { useRequireAdmin } from '../../hooks/useRequireAuth'
+import { AccessDenied } from '../../components/AccessDenied'
 
 interface User {
   id: string
@@ -25,6 +27,7 @@ interface Transaction {
 
 const AdminUsersPage = () => {
   const navigate = useNavigate()
+  const { isLoading: authLoading, isAuthorized } = useRequireAdmin()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
@@ -32,8 +35,10 @@ const AdminUsersPage = () => {
   const [loadingTransactions, setLoadingTransactions] = useState(false)
 
   useEffect(() => {
-    fetchUsers()
-  }, [])
+    if (!authLoading && isAuthorized) {
+      fetchUsers()
+    }
+  }, [authLoading, isAuthorized])
 
   const fetchUsers = async () => {
     try {
@@ -167,7 +172,7 @@ const AdminUsersPage = () => {
     })
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center">
         <div className="text-center">
@@ -176,6 +181,10 @@ const AdminUsersPage = () => {
         </div>
       </div>
     )
+  }
+
+  if (!isAuthorized) {
+    return <AccessDenied />
   }
 
   return (

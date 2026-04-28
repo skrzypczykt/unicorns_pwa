@@ -4,6 +4,42 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.6.12] - 2026-04-28
+
+### Dodano
+
+- **Access Control - Admin Pages**
+  - Dodano AccessDenied komponent do wyświetlania komunikatu "Brak dostępu"
+  - Dodano useRequireAdmin hook do wszystkich 12 stron administracyjnych
+  - Admin pages wyświetlają teraz "Brak dostępu" dla nieuprawnionych użytkowników
+  - Security E2E testy powinny teraz przechodzić poprawnie
+
+- **Code Refactoring - AdminActivitiesPage (częściowe)**
+  - Utworzono 5 custom hooks dla logiki AdminActivitiesPage:
+    - useActivityData.ts - data fetching (activities, trainers, types)
+    - useActivityForm.ts - zarządzanie stanem formularza
+    - useActivityMutations.ts - CRUD operations
+    - useActivityEdit.ts - edycja z powiadomieniami
+    - useActivityCancellation.ts - anulowanie zajęć i refundy
+  - Utworzono komponent RecurringActivityFields.tsx (189 linii)
+  - Wyodrębniono ~1,100 linii kodu do reużywalnych modułów
+
+### Zmieniono
+
+- **CLAUDE.md** - Dodano sekcję Architecture Patterns z dokumentacją:
+  - Component organization guidelines
+  - State management patterns (Zustand, React Query)
+  - Data access layer planning
+  - Authentication patterns
+  - Error handling strategy
+  - Testing strategy
+  - Code quality metrics
+
+### Naprawiono
+
+- **Security** - Wszystkie strony admin wymagają teraz autoryzacji
+- **.nvmrc** - Dodano plik z wersją Node.js (24.9.0) dla spójności środowiska
+
 ## [0.6.10] - 2026-04-28
 
 ### Naprawiono

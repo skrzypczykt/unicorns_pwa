@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../supabase/client'
+import { useRequireAdmin } from '../../hooks/useRequireAuth'
+import { AccessDenied } from '../../components/AccessDenied'
 
 interface Document {
   id: string
@@ -16,6 +18,7 @@ interface Document {
 
 const AdminMemberDocumentsPage = () => {
   const navigate = useNavigate()
+  const { isLoading: authLoading, isAuthorized } = useRequireAdmin()
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -185,7 +188,7 @@ const AdminMemberDocumentsPage = () => {
     })
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center">
         <div className="text-center">
@@ -196,6 +199,10 @@ const AdminMemberDocumentsPage = () => {
     )
   }
 
+
+  if (!isAuthorized) {
+    return <AccessDenied />
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 py-8 px-4">
       <div className="max-w-6xl mx-auto">

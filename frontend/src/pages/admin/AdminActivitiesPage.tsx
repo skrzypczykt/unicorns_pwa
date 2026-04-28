@@ -8,6 +8,8 @@ import CancelActivityModal from '../../components/CancelActivityModal'
 import ActivityTypeSelector from '../../components/ActivityTypeSelector'
 import ActivityCreationBreadcrumbs from '../../components/ActivityCreationBreadcrumbs'
 import WeeklyCalendarView from '../../components/WeeklyCalendarView'
+import { useRequireTrainer } from '../../hooks/useRequireAuth'
+import { AccessDenied } from '../../components/AccessDenied'
 
 interface Activity {
   id: string
@@ -55,6 +57,7 @@ interface ActivityType {
 
 const AdminActivitiesPage = () => {
   const navigate = useNavigate()
+  const { isLoading: authLoading, isAuthorized } = useRequireTrainer()
   const [activities, setActivities] = useState<Activity[]>([])
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [activityTypes, setActivityTypes] = useState<ActivityType[]>([])
@@ -950,7 +953,7 @@ const AdminActivitiesPage = () => {
     return 0
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center">
         <div className="text-center">
@@ -959,6 +962,10 @@ const AdminActivitiesPage = () => {
         </div>
       </div>
     )
+  }
+
+  if (!isAuthorized) {
+    return <AccessDenied />
   }
 
   return (

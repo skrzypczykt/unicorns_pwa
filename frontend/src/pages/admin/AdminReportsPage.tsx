@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../supabase/client'
 import type { AccountingReportRow } from '../../utils/csvExport'
 import { generateAccountingCSV, downloadCSV } from '../../utils/csvExport'
+import { useRequireAdmin } from '../../hooks/useRequireAuth'
+import { AccessDenied } from '../../components/AccessDenied'
 
 interface ActivityType {
   id: string
@@ -296,6 +298,21 @@ export default function AdminReportsPage() {
     const filename = `raport_ksiegowy_${sectionName}_${monthFormatted}.csv`
     const csv = generateAccountingCSV(reportData)
     downloadCSV(csv, filename)
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-8xl mb-4 animate-bounce">🦄</div>
+          <p className="text-purple-600">Ładowanie...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthorized) {
+    return <AccessDenied />
   }
 
   return (
