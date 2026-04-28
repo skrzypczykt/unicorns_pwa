@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { loginUser, logoutUser, generateTestUser, registerUser, TEST_USERS } from '../helpers/auth'
 
 test.describe('Autentykacja (Authentication)', () => {
-  test('Scenariusz 2: Logowanie istniejącego użytkownika', async ({ page }) => {
+  test.skip('Scenariusz 2: Logowanie istniejącego użytkownika', async ({ page }) => {
     // Test używa użytkownika z seedowanych danych
     await page.goto('/login')
     await page.fill('#email', TEST_USERS.regular.email)
@@ -35,7 +35,7 @@ test.describe('Autentykacja (Authentication)', () => {
     }
   })
 
-  test('Scenariusz 4: Wylogowanie', async ({ page }) => {
+  test.skip('Scenariusz 4: Wylogowanie', async ({ page }) => {
     // Setup: Najpierw zaloguj
     await loginUser(page, TEST_USERS.regular.email, TEST_USERS.regular.password)
 

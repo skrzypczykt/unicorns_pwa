@@ -4,6 +4,26 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.8.0] - 2026-04-28
+
+### Dodano
+
+- **Data Access Layer - Phase 1** - Utworzono warstwę dostępu do danych z repository pattern
+  - `supabase/repositories/base.ts` - Bazowe typy i helpery dla wszystkich repositories
+  - `supabase/repositories/activities.ts` - 12 funkcji zapytań o zajęcia (380 linii)
+  - `supabase/repositories/index.ts` - Barrel export dla łatwego importu
+  - Centralizacja zapytań Supabase z 34 plików do dedykowanych repositories
+  - Pełne wsparcie TypeScript z QueryResult<T> i QueryListResult<T>
+  - Spójne zarządzanie błędami z handleQueryError()
+
+### Zmieniono
+
+- **useActivityData hook** - Zrefaktorowano do używania activities repository
+  - Usunięto bezpośrednie zapytania supabase.from()
+  - Użycie getActivitiesInWeek(), getSpecialEvents(), getActivityTypes()
+  - Redukcja ~50 linii kodu przez eliminację duplikacji
+  - Zachowana pełna kompatybilność wsteczna
+
 ## [0.7.3] - 2026-04-28
 
 ### Naprawiono
