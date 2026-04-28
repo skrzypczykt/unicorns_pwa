@@ -172,7 +172,7 @@ const AdminUsersPage = () => {
     })
   }
 
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center">
         <div className="text-center">
@@ -185,6 +185,17 @@ const AdminUsersPage = () => {
 
   if (!isAuthorized) {
     return <AccessDenied />
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-8xl mb-4 animate-bounce">🦄</div>
+          <p className="text-purple-600">Ładowanie...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -4,6 +4,17 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.6.15] - 2026-04-28
+
+### Naprawiono
+
+- **Admin Pages - Loading State Bug** - Naprawiono kolejność sprawdzania stanu loading
+  - Rozdzielono sprawdzenie `authLoading` i `loading` na osobne warunki
+  - Komponent najpierw sprawdza authLoading, potem isAuthorized, na końcu loading
+  - Naprawiono problem z wiecznym wyświetlaniem spinnera dla nieuprawnionych użytkowników
+  - Wszystkie 9 stron admin teraz poprawnie wyświetlają AccessDenied component
+  - Naprawia E2E testy dla admin pages
+
 ## [0.6.14] - 2026-04-28
 
 ### Naprawiono

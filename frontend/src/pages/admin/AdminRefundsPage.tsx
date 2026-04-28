@@ -142,7 +142,7 @@ export default function AdminRefundsPage() {
     )
   }
 
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 p-4 flex items-center justify-center">
         <p className="text-gray-600">Ładowanie zwrotów...</p>
@@ -152,6 +152,14 @@ export default function AdminRefundsPage() {
 
   if (!isAuthorized) {
     return <AccessDenied />
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 p-4 flex items-center justify-center">
+        <p className="text-gray-600">Ładowanie zwrotów...</p>
+      </div>
+    )
   }
 
   const pendingCount = refunds.filter(r => r.refund_status === 'pending').length
