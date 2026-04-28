@@ -48,6 +48,8 @@ Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
   - Zaktualizowane Success Criteria (4/8 done)
   - Zaktualizowany Risk Assessment (2 ryzyka zmitigowane)
   - Dodana sekcja z kluczowymi osiągnięciami v0.6.0
+  - Usunięta sekcja ROI (nieodpowiednia dla non-profit)
+  - Zastąpiona "Value Assessment" skupiającym się na wpływie dla stowarzyszenia
 
 ### Usunięto
 
