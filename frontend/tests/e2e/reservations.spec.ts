@@ -38,8 +38,12 @@ test.describe('Rezerwacje (Reservations)', () => {
     const paidActivity = page.locator('[data-testid="activity-card"]').filter({ hasText: 'zł' }).first()
     await paidActivity.click()
 
-    // Sprawdź czy widoczna cena
-    await expect(page.locator('[data-testid="activity-price"]')).toBeVisible()
+    // Poczekaj na dialog szczegółów
+    const activityDetails = page.locator('[data-testid="activity-details"]')
+    await expect(activityDetails).toBeVisible()
+
+    // Sprawdź czy widoczna cena w dialogu
+    await expect(activityDetails.locator('[data-testid="activity-price"]')).toBeVisible()
 
     // Kliknij "Zapisz się"
     await page.click('[data-testid="register-button"]')

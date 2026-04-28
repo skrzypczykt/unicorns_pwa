@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.6.3] - 2026-04-28
+
+### Naprawiono
+
+- **E2E Payment Tests - Strict Mode Violation**
+  - Naprawiono błąd w teście "Zapis na płatne zajęcia bez płacenia"
+  - Scope activity-price locator do dialog szczegółów zamiast całej strony
+  - Eliminuje konflikt z wieloma elementami o tym samym data-testid
+
 ## [0.6.2] - 2026-04-28
 
 ### Naprawiono
