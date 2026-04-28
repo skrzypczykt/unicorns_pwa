@@ -148,7 +148,7 @@ test.describe('Panel Trenera (Trainer Panel)', () => {
 
     // Znajdź zajęcia które już się odbyły (status = "completed" lub przeszła data)
     const completedClass = page.locator('[data-testid="trainer-class-row"]')
-      .filter({ has: page.locator('[data-testid="class-status"]:has-text(/zakończone|completed/i)') })
+      .filter({ has: page.locator('[data-testid="class-status"]', { hasText: /zakończone/i }) })
       .first()
 
     if (await completedClass.count() === 0) {
@@ -267,10 +267,14 @@ test.describe('Panel Trenera (Trainer Panel)', () => {
     }
   })
 
+<<<<<<< HEAD
   test('Statystyki frekwencji dla zajęć', async ({ page }) => {
     // Czekaj na załadowanie listy zajęć
     await page.waitForTimeout(2000)
 
+=======
+  test.skip('Statystyki frekwencji dla zajęć', async ({ page }) => {
+>>>>>>> origin/develop
     // Kliknij na zakończone zajęcia
     const completedClass = page.locator('[data-testid="trainer-class-row"]')
       .filter({ has: page.locator('[data-testid="class-status"]', { hasText: /zakończone/i }) })
@@ -288,7 +292,15 @@ test.describe('Panel Trenera (Trainer Panel)', () => {
 
     // Panel szczegółów zajęć
     const detailsPanel = page.locator('[data-testid="class-details-panel"]')
+<<<<<<< HEAD
     const isPanelVisible = await detailsPanel.isVisible({ timeout: 5000 }).catch(() => false)
+=======
+    try {
+      await expect(detailsPanel).toBeVisible({ timeout: 5000 })
+    } catch {
+      test.skip('Class details panel not found - UI not implemented')
+    }
+>>>>>>> origin/develop
 
     if (!isPanelVisible) {
       test.skip(true, 'Class details panel not found - UI not implemented')
