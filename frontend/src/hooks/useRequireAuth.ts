@@ -97,17 +97,9 @@ export function useRequireAuth(options: UseRequireAuthOptions = {}): AuthState {
           }
         }
 
-        if (!isAuthorized) {
-          if (onUnauthorized) {
-            onUnauthorized()
-          }
-          navigate('/')
-          return
-        }
-
         setAuthState({
           isLoading: false,
-          isAuthorized: true,
+          isAuthorized,
           user,
           profile,
         })

@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.6.14] - 2026-04-28
+
+### Naprawiono
+
+- **useRequireAuth Hook** - Usunięto automatyczne przekierowanie dla nieuprawnionych użytkowników
+  - Hook teraz zwraca `isAuthorized: false` zamiast przekierowywać
+  - Pozwala komponentom renderować AccessDenied przed przekierowaniem
+  - Naprawia E2E testy oczekujące tekstu "Brak dostępu"
+
 ## [0.6.12] - 2026-04-28
 
 ### Dodano
