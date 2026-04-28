@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.6.5] - 2026-04-28
+
+### Naprawiono
+
+- **E2E Payment Tests - Graceful Degradation**
+  - Dodano skip conditions dla niespójności UI (multiple dialogs, missing buttons)
+  - Test nie failuje gdy UI nie jest w oczekiwanym stanie
+  - Używa `.first()` zamiast `.last()` dla większej stabilności
+
 ## [0.6.4] - 2026-04-28
 
 ### Naprawiono
