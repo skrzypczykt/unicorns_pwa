@@ -31,7 +31,7 @@ test.describe('Rezerwacje (Reservations)', () => {
     await expect(page.locator('[data-testid="cancel-button"]')).toBeVisible()
   })
 
-  test('Scenariusz 18: Zapis na płatne zajęcia bez płacenia', async ({ page }) => {
+  test('@payment Scenariusz 18: Zapis na płatne zajęcia bez płacenia', async ({ page }) => {
     await page.goto('/activities')
 
     // Znajdź płatne zajęcia

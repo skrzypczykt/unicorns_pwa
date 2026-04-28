@@ -8,7 +8,7 @@ test.describe('Zwroty i Refundy (Refunds)', () => {
     await page.goto('/admin/refunds')
   })
 
-  test('Scenariusz 56: Lista zwrotów', async ({ page }) => {
+  test('@payment Scenariusz 56: Lista zwrotów', async ({ page }) => {
     // Sprawdź nagłówek strony
     await expect(page.locator('h1:has-text("Zwroty i Refundy")')).toBeVisible()
 
@@ -47,7 +47,7 @@ test.describe('Zwroty i Refundy (Refunds)', () => {
     }
   })
 
-  test('Scenariusz 57: Zatwierdzanie zwrotu', async ({ page }) => {
+  test('@payment Scenariusz 57: Zatwierdzanie zwrotu', async ({ page }) => {
     // Znajdź zwrot w statusie "pending"
     const pendingRefund = page.locator('[data-testid="refund-row"]')
       .filter({ has: page.locator('[data-testid="refund-status"]:has-text("pending")') })
@@ -86,7 +86,7 @@ test.describe('Zwroty i Refundy (Refunds)', () => {
     expect(['approved', 'processing', 'processed']).toContain(newStatus?.toLowerCase().trim())
   })
 
-  test('Scenariusz 58: Odrzucanie zwrotu', async ({ page }) => {
+  test('@payment Scenariusz 58: Odrzucanie zwrotu', async ({ page }) => {
     // Znajdź zwrot w statusie "pending"
     const pendingRefund = page.locator('[data-testid="refund-row"]')
       .filter({ has: page.locator('[data-testid="refund-status"]:has-text("pending")') })
@@ -125,7 +125,7 @@ test.describe('Zwroty i Refundy (Refunds)', () => {
     await expect(page.locator('text=Anulowanie po terminie')).toBeVisible()
   })
 
-  test('Scenariusz 59: Status przetwarzania zwrotu', async ({ page }) => {
+  test('@payment Scenariusz 59: Status przetwarzania zwrotu', async ({ page }) => {
     // Znajdź zwrot który został zatwierdzony i jest przetwarzany
     const processingRefund = page.locator('[data-testid="refund-row"]')
       .filter({
@@ -228,7 +228,7 @@ test.describe('Zwroty i Refundy (Refunds)', () => {
     }
   })
 
-  test('Ręczny zwrot przez admina', async ({ page }) => {
+  test('@payment Ręczny zwrot przez admina', async ({ page }) => {
     // Kliknij "Nowy zwrot ręczny"
     await page.click('[data-testid="manual-refund-button"]')
 
@@ -286,7 +286,7 @@ test.describe('Security - Refunds', () => {
 })
 
 test.describe('Refunds - Workflow Integration', () => {
-  test('Pełny flow: Anulowanie opłaconej rezerwacji -> Wniosek o zwrot -> Zatwierdzenie', async ({ page, context }) => {
+  test('@payment Pełny flow: Anulowanie opłaconej rezerwacji -> Wniosek o zwrot -> Zatwierdzenie', async ({ page, context }) => {
     // Część 1: Użytkownik anuluje opłaconą rezerwację
     await loginUser(page, TEST_USERS.regular.email, TEST_USERS.regular.password)
     await page.goto('/my-classes')

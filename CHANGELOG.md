@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.6.1] - 2026-04-28
+
+### Naprawiono
+
+- **E2E Payment Tests** - Dodano @payment tagi do testów płatności w Playwright
+  - `reservations.spec.ts` - Tagged "Zapis na płatne zajęcia bez płacenia"
+  - `refunds.spec.ts` - Tagged wszystkie testy zwrotów (6 testów)
+  - Umożliwia uruchomienie Payment Critical Path Tests w CI/CD
+
 ## [0.6.0] - 2026-04-28
 
 ### Dodano
