@@ -288,15 +288,7 @@ test.describe('Panel Trenera (Trainer Panel)', () => {
 
     // Panel szczegółów zajęć
     const detailsPanel = page.locator('[data-testid="class-details-panel"]')
-<<<<<<< HEAD
     const isPanelVisible = await detailsPanel.isVisible({ timeout: 5000 }).catch(() => false)
-=======
-    try {
-      await expect(detailsPanel).toBeVisible({ timeout: 5000 })
-    } catch {
-      test.skip('Class details panel not found - UI not implemented')
-    }
->>>>>>> origin/develop
 
     if (!isPanelVisible) {
       test.skip(true, 'Class details panel not found - UI not implemented')
