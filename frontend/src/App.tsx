@@ -151,16 +151,17 @@ function App() {
 
   return (
     <ErrorBoundary>
-    <BrowserRouter>
-      <ScrollToTop />
-      <AppContent
-        user={user}
-        profile={profile}
-        handleSignOut={handleSignOut}
-        onProfileUpdate={setProfile}
-        onUserUpdate={setUser}
-      />
-    </BrowserRouter>
+      <BrowserRouter>
+        <ScrollToTop />
+        <AppContent
+          user={user}
+          profile={profile}
+          handleSignOut={handleSignOut}
+          onProfileUpdate={setProfile}
+          onUserUpdate={setUser}
+        />
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }
 
@@ -389,7 +390,6 @@ const AppContent = ({ user, profile, handleSignOut, onProfileUpdate, onUserUpdat
         </footer>
       </div>
     </>
-    </ErrorBoundary>
   )
 }
 
