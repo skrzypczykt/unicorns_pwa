@@ -31,7 +31,7 @@ Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 - **Dokumentacja techniczna**
   - `SECURITY_AUDIT_REPORT.md` - Szczegółowy audit bezpieczeństwa (605 linii)
   - `OPTIMIZATION_ROADMAP.md` - Plan optymalizacji (942 linie)
-  - `EXECUTIVE_SUMMARY.md` - Podsumowanie wykonawcze (273 linie)
+  - `EXECUTIVE_SUMMARY.md` - Podsumowanie wykonawcze z osiągnięciami v0.6.0
   - `REFACTORING_PROGRESS.md` - Raport postępu refactoringu
 
 ### Naprawiono
@@ -43,6 +43,11 @@ Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 ### Zmieniono
 
 - **PWAInstallButton** - Używa zunifikowanego API `promptInstall`
+- **EXECUTIVE_SUMMARY.md** - Zaktualizowany z osiągnięciami v0.6.0
+  - Oznaczone ukończone zadania (Week 1: 80% complete)
+  - Zaktualizowane Success Criteria (4/8 done)
+  - Zaktualizowany Risk Assessment (2 ryzyka zmitigowane)
+  - Dodana sekcja z kluczowymi osiągnięciami v0.6.0
 
 ### Usunięto
 
