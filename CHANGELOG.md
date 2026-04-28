@@ -4,6 +4,62 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.6.0] - 2026-04-28
+
+### Dodano
+
+- **useRequireAuth hook** - Centralizacja logiki autentykacji i autoryzacji
+  - Eliminuje 41 duplikatów wzorca sprawdzania auth
+  - Convenience hooks: `useRequireAdmin()`, `useRequireTrainer()`, `useRequireMember()`
+  - Automatyczne przekierowania dla nieautoryzowanych użytkowników
+
+- **ErrorBoundary component** - Ochrona przed białym ekranem błędów
+  - User-friendly error UI z opcją reset
+  - Szczegóły błędów w trybie deweloperskim
+  - Gotowy do integracji z Sentry/LogRocket
+
+- **Shared Activity types** - Centralne definicje typów
+  - `types/activity.ts` z typami z database.types.ts
+  - Helper functions: `isActivityCancelled()`, `isActivityFull()`, etc.
+  - Eliminuje 7 duplikatów definicji Activity
+
+- **GitHub Actions workflows** - Automatyczne skanowanie bezpieczeństwa
+  - `security-scan.yml` - 8 jobów sprawdzających bezpieczeństwo
+  - `payment-regression.yml` - 6 jobów testów płatności
+  - `database-safety.yml` - Walidacja migracji SQL
+
+- **Dokumentacja techniczna**
+  - `SECURITY_AUDIT_REPORT.md` - Szczegółowy audit bezpieczeństwa (605 linii)
+  - `OPTIMIZATION_ROADMAP.md` - Plan optymalizacji (942 linie)
+  - `EXECUTIVE_SUMMARY.md` - Podsumowanie wykonawcze (273 linie)
+  - `REFACTORING_PROGRESS.md` - Raport postępu refactoringu
+
+### Naprawiono
+
+- **Błąd broken Navigation export** - Usunięty nieprawidłowy export nieistniejącego komponentu
+- **Duplikat PWA hooka** - Usunięty `usePWAInstall.ts`, zunifikowano do `useInstallPWA`
+- **ErrorBoundary JSX structure** - Naprawiona struktura tagów zamykających
+
+### Zmieniono
+
+- **PWAInstallButton** - Używa zunifikowanego API `promptInstall`
+
+### Usunięto
+
+- **60+ console.log statements** ⚡ CRITICAL SECURITY
+  - Usunięte wszystkie console.log z payment pages (zapobieganie wyciekowi danych)
+  - Usunięte logi zawierające orderIds, amounts, hashes, auth tokens
+  - Zatrzymane tylko w Service Worker (oddzielny kontekst)
+  - Poprawiona zgodność z GDPR
+
+### Bezpieczeństwo
+
+- **95% redukcja console.log** (67 → 3 tylko w SW)
+- **Zero wycieków** danych płatności w konsoli przeglądarki
+- **Zero logowania** tokenów autentykacji
+- **Automated security scanning** w CI/CD
+- **Payment regression tests** gotowe do uruchomienia
+
 ## [0.5.13] - 2026-04-26
 
 ### Dodano
