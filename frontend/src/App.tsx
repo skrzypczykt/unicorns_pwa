@@ -153,13 +153,16 @@ function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <ScrollToTop />
-        <AppContent
-          user={user}
-          profile={profile}
-          handleSignOut={handleSignOut}
-          onProfileUpdate={setProfile}
-          onUserUpdate={setUser}
-        />
+        {user && <VersionBanner />}
+        <div style={{ paddingTop: 'var(--version-banner-height, 0px)' }}>
+          <AppContent
+            user={user}
+            profile={profile}
+            handleSignOut={handleSignOut}
+            onProfileUpdate={setProfile}
+            onUserUpdate={setUser}
+          />
+        </div>
       </BrowserRouter>
     </ErrorBoundary>
   )
@@ -187,12 +190,10 @@ const AppContent = ({ user, profile, handleSignOut, onProfileUpdate, onUserUpdat
       <BackButton />
       <InstallPWAPrompt />
       <WelcomeNotificationModal />
-      {/* Version banner - pokazuje się tylko dla zalogowanych */}
-      {user && <VersionBanner />}
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 overflow-x-hidden">
         {/* Header - Responsywny - zawsze widoczny dla zalogowanych */}
         {profile && (
-          <header className="bg-gradient-to-r from-gray-900 via-black to-gray-900 backdrop-blur-sm shadow-lg border-b-4 border-purple-500 sticky top-[40px] z-50">
+          <header className="bg-gradient-to-r from-gray-900 via-black to-gray-900 backdrop-blur-sm shadow-lg border-b-4 border-purple-500 sticky z-50" style={{ top: 'var(--version-banner-height, 0px)' }}>
           <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-6">
             <div className="flex items-center justify-between gap-2">
               {/* Logo + Tytuł - Responsywne */}

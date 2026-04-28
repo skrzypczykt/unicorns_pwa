@@ -246,17 +246,32 @@ const WeeklyCalendarView = ({
                   return (
                     <div
                       key={dayIdx}
-                    className="bg-white/40 rounded-lg border border-gray-200 min-h-[80px]"
-                  ></div>
-                )
-              }
+                      className="bg-white/40 rounded-lg border border-gray-200 min-h-[80px] relative"
+                    ></div>
+                  )
+                }
+
+                // Oblicz maksymalną wysokość potrzebną dla tej komórki
+                // uwzględniając przesunięcie + wysokość kafelka
+                const maxHeight = Math.max(...slotActivities.map(activity => {
+                  const activityDate = new Date(activity.date_time)
+                  const minutes = activityDate.getMinutes()
+                  const minuteOffset = (minutes / 60) * 80
+                  const cardHeight = calculateCardHeight(activity.duration_minutes)
+                  return minuteOffset + cardHeight
+                }), 80) // minimum 80px
 
               // Renderuj zajęcia w tym slocie
               return (
-                <div key={dayIdx} className="space-y-1">
+                <div
+                  key={dayIdx}
+                  className="relative bg-white/20 rounded-lg border border-gray-200"
+                  style={{ minHeight: `${maxHeight}px` }}
+                >
                   {slotActivities.map((activity) => {
                     const activityDate = new Date(activity.date_time)
                     const minutes = activityDate.getMinutes()
+                    const hours = activityDate.getHours()
                     const isRegistered = !!userRegistrations[activity.id]
                     const registration = userRegistrations[activity.id]
                     const participantCount = participantCounts[activity.id] || 0
@@ -264,25 +279,32 @@ const WeeklyCalendarView = ({
                     const cardHeight = calculateCardHeight(activity.duration_minutes)
                     const isLong = isLongEvent(activity.duration_minutes)
 
+                    // Oblicz przesunięcie w pionie bazując na minutach rozpoczęcia
+                    // 1 minuta = (80px / 60 min) = ~1.33px
+                    const minuteOffset = (minutes / 60) * 80
+
                     return (
                       <div
                         key={activity.id}
                         data-testid="activity-card"
                         data-activity-type="calendar-view"
-                        className={`relative rounded-lg p-2 border-2 shadow-sm hover:shadow-md transition-all cursor-pointer text-xs overflow-hidden ${
+                        className={`absolute left-0 right-0 rounded-lg p-2 border-2 shadow-sm hover:shadow-md transition-all cursor-pointer text-xs overflow-hidden ${
                           isRegistered
                             ? 'bg-green-50 border-green-400'
                             : isFull
                             ? 'bg-gray-100 border-gray-400'
                             : 'bg-white/90 border-purple-300 hover:border-purple-500'
                         }`}
-                        style={{ minHeight: `${cardHeight}px` }}
+                        style={{
+                          minHeight: `${cardHeight}px`,
+                          top: `${minuteOffset}px`
+                        }}
                         onClick={() => onActivityClick(activity)}
                       >
-                        {/* Minuty jeśli nie :00 */}
+                        {/* Pełna godzina rozpoczęcia (zawsze pokazuj jeśli nie :00) */}
                         {minutes !== 0 && (
-                          <div className="text-[10px] text-gray-500 mb-1">
-                            :{minutes.toString().padStart(2, '0')}
+                          <div className="text-[10px] text-purple-600 font-semibold mb-1">
+                            🕐 {hours.toString().padStart(2, '0')}:{minutes.toString().padStart(2, '0')}
                           </div>
                         )}
 

@@ -19,6 +19,15 @@ const VersionBanner = () => {
   const [loading, setLoading] = useState(true)
   const [showBanner, setShowBanner] = useState(true)
 
+  // Expose banner height to parent via CSS custom property
+  useEffect(() => {
+    if (showBanner) {
+      document.documentElement.style.setProperty('--version-banner-height', '48px')
+    } else {
+      document.documentElement.style.setProperty('--version-banner-height', '0px')
+    }
+  }, [showBanner])
+
   useEffect(() => {
     // Sprawdź wersję od razu
     checkVersion()
