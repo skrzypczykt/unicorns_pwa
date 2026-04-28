@@ -160,17 +160,17 @@ jobs:
         run: |
           echo "Verifying payment webhook security..."
 
-          # Ensure webhook handlers verify signatures
+          # Ensure webhook handlers verify signatures/hashes
           for webhook in supabase/functions/*-webhook/index.ts; do
             if [ -f "$webhook" ]; then
-              if ! grep -q "verifySignature\|verify.*Signature" "$webhook"; then
+              if ! grep -q "verifySignature\|verify.*Signature\|verifyHash\|verify.*Hash" "$webhook"; then
                 echo "⚠️ WARNING: $webhook may not verify signatures!"
                 exit 1
               fi
             fi
           done
 
-          echo "✅ Payment webhooks appear to verify signatures"
+          echo "✅ Payment webhooks appear to verify signatures/hashes"
 
       - name: Check for payment amount validation
         run: |

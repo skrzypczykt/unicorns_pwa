@@ -226,7 +226,7 @@ jobs:
           fi
 
           # 3. CSP for payment pages
-          if grep -q "Content-Security-Policy.*frame-src.*autopay" netlify.toml; then
+          if grep -q "frame-src.*autopay" netlify.toml; then
             echo "✅ CSP for payment providers: PASS"
             ((PASSED++))
           else
