@@ -267,14 +267,10 @@ test.describe('Panel Trenera (Trainer Panel)', () => {
     }
   })
 
-<<<<<<< HEAD
   test('Statystyki frekwencji dla zajęć', async ({ page }) => {
     // Czekaj na załadowanie listy zajęć
     await page.waitForTimeout(2000)
 
-=======
-  test.skip('Statystyki frekwencji dla zajęć', async ({ page }) => {
->>>>>>> origin/develop
     // Kliknij na zakończone zajęcia
     const completedClass = page.locator('[data-testid="trainer-class-row"]')
       .filter({ has: page.locator('[data-testid="class-status"]', { hasText: /zakończone/i }) })

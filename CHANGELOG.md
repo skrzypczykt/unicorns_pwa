@@ -4,6 +4,14 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.7.2] - 2026-04-28
+
+### Naprawiono
+
+- **Merge Conflict** - Usunięto pozostałe markery konfliktu z trainer.spec.ts
+  - Konflikt pozostał po merge develop
+  - Naprawiono błąd składni TypeScript w lini 270
+
 ## [0.7.1] - 2026-04-28
 
 ### Naprawiono
