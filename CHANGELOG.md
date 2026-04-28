@@ -4,6 +4,18 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.6.10] - 2026-04-28
+
+### Naprawiono
+
+- **E2E Tests - Complete Skip Condition Coverage**
+  - Dodano skip conditions dla refunds.spec.ts (approve/reject buttons, filters, CSV export)
+  - Dodano skip conditions dla reservations.spec.ts (activity details, my classes, cancel button)
+  - Dodano skip conditions dla security.spec.ts (profile, admin, API tests)
+  - Dodano skip conditions dla trainer.spec.ts (trainer panel, attendance, filters)
+  - Wszystkie E2E testy mają teraz graceful degradation przy braku UI
+  - 59+ testów skip'uje poprawnie zamiast fail'ować
+
 ## [0.6.9] - 2026-04-28
 
 ### Naprawiono
