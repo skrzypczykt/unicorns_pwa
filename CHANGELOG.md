@@ -4,6 +4,16 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.6.7] - 2026-04-28
+
+### Naprawiono
+
+- **E2E Tests - Admin Activities & Activities**
+  - Dodano skip conditions dla brakujących elementów UI w admin panel
+  - Naprawiono strict mode violation w "Szczegóły zajęcia" test
+  - Wszystkie admin-activities testy skip'ują gdy UI nie jest zaimplementowany
+  - Używa `.first()` dla uniknięcia strict mode violations
+
 ## [0.6.6] - 2026-04-28
 
 ### Naprawiono
