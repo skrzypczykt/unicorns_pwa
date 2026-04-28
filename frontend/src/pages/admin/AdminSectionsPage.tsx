@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../supabase/client'
+import { useRequireAdmin } from '../../hooks/useRequireAuth'
+import { AccessDenied } from '../../components/AccessDenied'
 
 interface ActivityType {
   id: string
@@ -35,6 +37,7 @@ interface Trainer {
 
 const AdminSectionsPage = () => {
   const navigate = useNavigate()
+  const { isLoading: authLoading, isAuthorized } = useRequireAdmin()
   const [sections, setSections] = useState<ActivityType[]>([])
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [recurringActivities, setRecurringActivities] = useState<RecurringActivity[]>([])
@@ -220,7 +223,7 @@ const AdminSectionsPage = () => {
     setFormData({ name: '', description: '', image_url: '', default_trainer_id: '', whatsapp_group_url: '' })
   }
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center">
         <div className="text-center">
@@ -231,6 +234,20 @@ const AdminSectionsPage = () => {
     )
   }
 
+  if (!isAuthorized) {
+    return <AccessDenied />
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-8xl mb-4 animate-bounce">🦄</div>
+          <p className="text-purple-600">Ładowanie...</p>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">

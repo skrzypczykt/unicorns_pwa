@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase/client'
 import { useNavigate } from 'react-router-dom'
+import { useRequireAdmin } from '../../hooks/useRequireAuth'
+import { AccessDenied } from '../../components/AccessDenied'
 
 interface RefundItem {
   id: string
@@ -24,6 +26,7 @@ interface RefundItem {
 
 export default function AdminRefundsPage() {
   const navigate = useNavigate()
+  const { isLoading: authLoading, isAuthorized } = useRequireAdmin()
   const [refunds, setRefunds] = useState<RefundItem[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'pending' | 'processed' | 'failed'>('pending')
@@ -137,6 +140,18 @@ export default function AdminRefundsPage() {
         {labels[status as keyof typeof labels]}
       </span>
     )
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 p-4 flex items-center justify-center">
+        <p className="text-gray-600">Ładowanie zwrotów...</p>
+      </div>
+    )
+  }
+
+  if (!isAuthorized) {
+    return <AccessDenied />
   }
 
   if (loading) {

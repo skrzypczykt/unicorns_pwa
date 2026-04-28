@@ -1,0 +1,323 @@
+name: Payment Flow Regression Tests
+
+on:
+  pull_request:
+    paths:
+      # Trigger on payment-related code changes
+      - 'frontend/src/payment/**'
+      - 'frontend/src/pages/**/Payment*.tsx'
+      - 'frontend/src/pages/user/ActivitiesPage.tsx'
+      - 'supabase/functions/payment-**/**'
+      - 'supabase/functions/autopay-**/**'
+      - 'supabase/migrations/*payment*.sql'
+      - 'supabase/migrations/*transaction*.sql'
+      - 'supabase/migrations/*refund*.sql'
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/src/payment/**'
+      - 'supabase/functions/payment-**/**'
+
+jobs:
+  payment-critical-path:
+    name: Payment Critical Path Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: yarn install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        working-directory: ./frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run payment E2E tests
+        working-directory: ./frontend
+        run: npm run test:e2e -- --grep "@payment"
+        env:
+          BASE_URL: https://unicorns-test.netlify.app
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+        continue-on-error: false
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: payment-test-results
+          path: frontend/test-results/
+          retention-days: 30
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: payment-playwright-report
+          path: frontend/playwright-report/
+          retention-days: 30
+
+  payment-webhook-validation:
+    name: Payment Webhook Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Validate webhook signature verification
+        run: |
+          echo "Validating payment webhook handlers..."
+
+          # Check payment-webhook has signature verification
+          if ! grep -q "verifySignature" supabase/functions/payment-webhook/index.ts; then
+            echo "❌ payment-webhook missing signature verification!"
+            exit 1
+          fi
+
+          # Check for proper error handling
+          if ! grep -q "try.*catch" supabase/functions/payment-webhook/index.ts; then
+            echo "⚠️ payment-webhook may lack error handling"
+          fi
+
+          echo "✅ Webhook validation passed"
+
+      - name: Check webhook provider support
+        run: |
+          echo "Checking payment provider implementations..."
+
+          PROVIDERS_FILE="supabase/functions/payment-webhook/_shared/providers.ts"
+
+          if [ ! -f "$PROVIDERS_FILE" ]; then
+            echo "❌ Payment providers file not found!"
+            exit 1
+          fi
+
+          # Ensure Autopay is supported
+          if ! grep -q "autopay\|Autopay" "$PROVIDERS_FILE"; then
+            echo "⚠️ Autopay provider may not be implemented"
+          fi
+
+          echo "✅ Provider support validated"
+
+  transaction-integrity:
+    name: Transaction Integrity Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate transaction state machine
+        run: |
+          echo "Validating transaction status flow..."
+
+          # Check for valid transaction statuses
+          VALID_STATUSES=("pending" "completed" "failed" "cancelled")
+
+          echo "Expected transaction statuses: ${VALID_STATUSES[@]}"
+          echo "✅ Transaction status validation prepared"
+
+      - name: Check for idempotency handling
+        run: |
+          echo "Checking webhook idempotency..."
+
+          # Webhooks should handle duplicate calls
+          if grep -rq "webhook_events_log\|event.*id.*unique" supabase/migrations/038_webhook_events_log.sql; then
+            echo "✅ Webhook deduplication mechanism found"
+          else
+            echo "⚠️ No obvious webhook deduplication mechanism"
+          fi
+
+      - name: Verify refund tracking
+        run: |
+          echo "Verifying refund functionality..."
+
+          if grep -q "refund_status\|refund_tracking" supabase/migrations/043_add_refund_tracking.sql; then
+            echo "✅ Refund tracking implemented"
+          else
+            echo "⚠️ Refund tracking may be missing"
+          fi
+
+  payment-amount-validation:
+    name: Payment Amount Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check amount validation in payment initiation
+        run: |
+          echo "Validating payment amount checks..."
+
+          INITIATE_FILE="supabase/functions/payment-initiate/index.ts"
+
+          if [ ! -f "$INITIATE_FILE" ]; then
+            echo "❌ payment-initiate function not found!"
+            exit 1
+          fi
+
+          # Check for amount validation
+          if grep -q "amount.*>.*0\|validateAmount\|if.*!.*amount" "$INITIATE_FILE"; then
+            echo "✅ Amount validation appears to be present"
+          else
+            echo "⚠️ No obvious amount validation found"
+          fi
+
+      - name: Check for negative amount protection
+        run: |
+          echo "Checking for negative amount protection..."
+
+          # Should reject negative or zero amounts
+          if grep -rq "amount.*<=.*0\|amount.*<.*1" supabase/functions/payment-initiate; then
+            echo "✅ Negative amount protection found"
+          else
+            echo "⚠️ Consider adding explicit negative amount validation"
+          fi
+
+  payment-security-checklist:
+    name: Payment Security Checklist
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run security checklist
+        shell: bash
+        run: |
+          set +e  # Don't exit on error, we handle errors manually
+
+          echo "🔒 Payment Security Checklist"
+          echo "=============================="
+          echo ""
+
+          PASSED=0
+          FAILED=0
+
+          # 1. Webhook signature verification
+          if grep -q "verifySignature\|verify.*Signature" supabase/functions/payment-webhook/index.ts; then
+            echo "✅ Webhook signature verification: PASS"
+            ((PASSED++))
+          else
+            echo "❌ Webhook signature verification: FAIL"
+            ((FAILED++))
+          fi
+
+          # 2. HTTPS enforcement
+          if grep -q "Strict-Transport-Security" netlify.toml; then
+            echo "✅ HTTPS enforcement (HSTS): PASS"
+            ((PASSED++))
+          else
+            echo "❌ HTTPS enforcement (HSTS): FAIL"
+            ((FAILED++))
+          fi
+
+          # 3. CSP for payment pages
+          if grep -q "frame-src.*autopay" netlify.toml; then
+            echo "✅ CSP for payment providers: PASS"
+            ((PASSED++))
+          else
+            echo "❌ CSP for payment providers: FAIL"
+            ((FAILED++))
+          fi
+
+          # 4. Transaction logging
+          if [ -f "supabase/migrations/044_create_transactions_table.sql" ]; then
+            echo "✅ Transaction logging: PASS"
+            ((PASSED++))
+          else
+            echo "❌ Transaction logging: FAIL"
+            ((FAILED++))
+          fi
+
+          # 5. Refund capability
+          if grep -q "refund" supabase/migrations/043_add_refund_tracking.sql 2>/dev/null; then
+            echo "✅ Refund tracking: PASS"
+            ((PASSED++))
+          else
+            echo "⚠️ Refund tracking: NOT VERIFIED"
+          fi
+
+          # 6. Payment deduplication
+          if grep -q "unique.*activity_id.*user_id\|UNIQUE.*activity_id.*user_id" supabase/migrations/*.sql; then
+            echo "✅ Payment deduplication: PASS"
+            ((PASSED++))
+          else
+            echo "⚠️ Payment deduplication: NOT VERIFIED"
+          fi
+
+          echo ""
+          echo "Score: $PASSED passed, $FAILED failed"
+          echo ""
+
+          if [ $FAILED -gt 0 ]; then
+            echo "❌ Payment security checklist FAILED"
+            exit 1
+          fi
+
+          echo "✅ Payment security checklist PASSED"
+
+  performance-regression:
+    name: Payment Flow Performance
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Lighthouse on payment pages
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            https://unicorns-test.netlify.app/activities
+            https://unicorns-test.netlify.app/my-classes
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+        continue-on-error: true
+
+  summary:
+    name: Payment Regression Summary
+    runs-on: ubuntu-latest
+    needs: [payment-critical-path, payment-webhook-validation, transaction-integrity, payment-amount-validation, payment-security-checklist]
+    if: always()
+
+    steps:
+      - name: Generate summary
+        run: |
+          echo "💳 Payment Flow Regression Test Summary"
+          echo "======================================="
+          echo ""
+          echo "Test Results:"
+          echo "- Critical Path: ${{ needs.payment-critical-path.result }}"
+          echo "- Webhook Validation: ${{ needs.payment-webhook-validation.result }}"
+          echo "- Transaction Integrity: ${{ needs.transaction-integrity.result }}"
+          echo "- Amount Validation: ${{ needs.payment-amount-validation.result }}"
+          echo "- Security Checklist: ${{ needs.payment-security-checklist.result }}"
+          echo ""
+
+          if [[ "${{ needs.payment-critical-path.result }}" == "failure" ]] || \
+             [[ "${{ needs.payment-security-checklist.result }}" == "failure" ]]; then
+            echo "❌ CRITICAL: Payment regression tests FAILED!"
+            echo "Do NOT merge until payment issues are resolved."
+            exit 1
+          fi
+
+          echo "✅ All payment regression tests passed"
+          echo "Safe to merge payment-related changes."

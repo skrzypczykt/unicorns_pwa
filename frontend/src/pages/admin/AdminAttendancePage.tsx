@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase/client'
 import { useNavigate } from 'react-router-dom'
+import { useRequireAdmin } from '../../hooks/useRequireAuth'
+import { AccessDenied } from '../../components/AccessDenied'
 
 interface Activity {
   id: string
@@ -53,6 +55,7 @@ interface AttendanceSummary {
 
 const AdminAttendancePage = () => {
   const navigate = useNavigate()
+  const { isLoading: authLoading, isAuthorized } = useRequireAdmin()
 
   // Filters
   const [activityTypes, setActivityTypes] = useState<ActivityType[]>([])
@@ -413,7 +416,7 @@ const AdminAttendancePage = () => {
     return new Date(dateString) > new Date()
   }
 
-  if (loading && activityTypes.length === 0) {
+  if (authLoading || (loading && activityTypes.length === 0)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
@@ -422,6 +425,10 @@ const AdminAttendancePage = () => {
         </div>
       </div>
     )
+  }
+
+  if (!isAuthorized) {
+    return <AccessDenied />
   }
 
   return (

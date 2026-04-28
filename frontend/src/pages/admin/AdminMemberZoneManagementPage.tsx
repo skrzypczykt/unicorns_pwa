@@ -1,7 +1,10 @@
 import { useNavigate } from 'react-router-dom'
+import { useRequireAdmin } from '../../hooks/useRequireAuth'
+import { AccessDenied } from '../../components/AccessDenied'
 
 const AdminMemberZoneManagementPage = () => {
   const navigate = useNavigate()
+  const { isLoading: authLoading, isAuthorized } = useRequireAdmin()
 
   const managementSections = [
     {
@@ -33,6 +36,21 @@ const AdminMemberZoneManagementPage = () => {
       color: 'from-orange-500 to-orange-600'
     }
   ]
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-8xl mb-4 animate-bounce">🦄</div>
+          <p className="text-purple-600">Ładowanie...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthorized) {
+    return <AccessDenied />
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 py-8">

@@ -15,7 +15,6 @@ export class PaymentService {
   }
 
   async initiatePayment(request: PaymentRequest): Promise<PaymentResponse> {
-    console.log(`[Payment] Initiating payment via ${this.provider.name}`)
     return await this.provider.initiatePayment(request)
   }
 

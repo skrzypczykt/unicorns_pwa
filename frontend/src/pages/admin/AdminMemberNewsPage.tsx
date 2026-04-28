@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../supabase/client'
+import { useRequireAdmin } from '../../hooks/useRequireAuth'
+import { AccessDenied } from '../../components/AccessDenied'
 
 interface News {
   id: string
@@ -16,6 +18,7 @@ interface News {
 
 const AdminMemberNewsPage = () => {
   const navigate = useNavigate()
+  const { isLoading: authLoading, isAuthorized } = useRequireAdmin()
   const [news, setNews] = useState<News[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -164,7 +167,7 @@ const AdminMemberNewsPage = () => {
     })
   }
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center">
         <div className="text-center">
@@ -175,6 +178,20 @@ const AdminMemberNewsPage = () => {
     )
   }
 
+  if (!isAuthorized) {
+    return <AccessDenied />
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-8xl mb-4 animate-bounce">📰</div>
+          <p className="text-purple-600">Ładowanie...</p>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-200 via-white to-pink-200 py-8 px-4">
       <div className="max-w-6xl mx-auto">

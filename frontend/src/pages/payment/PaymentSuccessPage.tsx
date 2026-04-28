@@ -33,8 +33,7 @@ export default function PaymentSuccessPage() {
       // Timeout: jeśli pending >60s, uznaj za failed
       const elapsed = Date.now() - (pendingStartTime || Date.now())
       if (elapsed > 60000) { // 60 sekund
-        console.log('Payment timeout - pending for >60s, treating as failed')
-        setPaymentDetails({
+                setPaymentDetails({
           ...paymentDetails,
           status: 'failed'
         })
@@ -42,8 +41,7 @@ export default function PaymentSuccessPage() {
       }
 
       const interval = setInterval(() => {
-        console.log('Auto-refreshing payment status...')
-        verifyPayment()
+                verifyPayment()
       }, 3000)
 
       return () => clearInterval(interval)
@@ -64,8 +62,7 @@ export default function PaymentSuccessPage() {
         return
       }
 
-      console.log('Verifying payment for orderId:', orderId)
-
+      
       // OrderID is transaction.id (UUID without dashes)
       // Find transaction and get registration_id with timeout
       const txPromise = supabase
@@ -93,8 +90,7 @@ export default function PaymentSuccessPage() {
         return
       }
 
-      console.log('Transaction found:', transaction)
-
+      
       if (!transaction.registration_id) {
         console.error('Transaction has no registration_id')
         setPaymentDetails({
@@ -133,8 +129,7 @@ export default function PaymentSuccessPage() {
         return
       }
 
-      console.log('Registration found:', registration)
-
+      
       const activity = Array.isArray(registration.activities)
         ? registration.activities[0]
         : registration.activities

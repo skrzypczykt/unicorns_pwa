@@ -181,6 +181,119 @@ See `PAYMENT_TESTING.md` for full details.
 - Payment webhooks verify signature/hash from provider
 - CSP headers configured in `netlify.toml`
 
+## Architecture Patterns
+
+### Component Organization
+
+**Size Limits:**
+- Keep components under 300 lines (enforced via code review)
+- Split large components into: hooks, sub-components, utils
+- Use composition over prop drilling
+
+**Current Refactoring Targets:**
+- `AdminActivitiesPage`: 2,266 lines → split into modules
+- `ActivitiesPage`: 1,470 lines → split into modules
+
+### State Management
+
+**Installed but Underutilized:**
+- Zustand: state management (installed, minimal usage)
+- React Query: data fetching & caching (installed, partial usage)
+
+**Current Pattern:**
+- Direct Supabase queries in components (34 files)
+- Local useState for UI state
+- useEffect for data fetching
+
+**Target Pattern:**
+- Zustand stores for global state (user, activities, registrations)
+- React Query hooks for server state
+- Data access layer for query abstraction
+
+### Data Access Layer (Planned)
+
+**Problem:**
+- 34 files with direct `supabase.from()` queries
+- Duplicated query logic across components
+- Hard to test, mock, or optimize
+
+**Solution:**
+```typescript
+// services/activities.ts
+export const activitiesService = {
+  getActivities: () => supabase.from('activities').select('*'),
+  createActivity: (data) => supabase.from('activities').insert(data),
+  // ... centralized queries
+}
+```
+
+### Authentication
+
+**Current Pattern:**
+- `useRequireAuth` hook (centralized in v0.6.0)
+- Auto-redirect to /login if unauthenticated
+- Role-based access in components
+
+**Security:**
+- Client-side checks are UX-only (not security boundary)
+- Server-side validation in Edge Functions (JWT verification)
+- RLS policies enforce database-level security
+
+### Error Handling
+
+**Global Boundary:**
+- `ErrorBoundary` component (added v0.6.0)
+- Catches React errors, prevents white screen
+- Shows user-friendly error message
+
+**Edge Function Errors:**
+- Return structured JSON: `{ error: string, details?: any }`
+- Client displays error toast/alert
+- Never expose internal error details to users
+
+### Testing Strategy
+
+**E2E Tests (Playwright):**
+- Tagged with `@payment`, `@admin`, `@user`
+- Graceful skip conditions for unimplemented UI (v0.6.8-0.6.10)
+- Run in CI via GitHub Actions
+
+**Unit Tests (Vitest):**
+- Utils and hooks (partial coverage)
+- Target: 80% coverage on business logic
+
+**Payment Regression:**
+- Dedicated CI workflow (`payment-regression.yml`)
+- Runs on every PR touching payment code
+- Tests critical flows: PBL, BLIK, Cards, Webhooks
+
+### Code Quality Metrics
+
+**Achieved (v0.6.0-0.6.10):**
+- ✅ console.log: 74 → 3 (95% reduction)
+- ✅ Auth duplication: 41 → 1 hook (98% reduction)
+- ✅ Code duplication: ~15% → ~8%
+- ✅ Security scans: 0 → 3 workflows
+
+**Targets:**
+- Components > 300 lines: 2 → 0
+- Code duplication: 8% → <5%
+- E2E test pass rate: ~15% → 80%
+- TypeScript `any`: some → 0
+
+### Performance Considerations
+
+**Current Issues:**
+- No code splitting (single bundle)
+- Some N+1 queries in activity listings
+- No image optimization
+
+**Planned Optimizations:**
+- Route-based code splitting
+- React Query for deduplication
+- Virtual scrolling for long lists
+- Image lazy loading
+
 ## Code Style
 
 - Use TypeScript strict mode
