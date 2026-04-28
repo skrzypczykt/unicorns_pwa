@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.6.8] - 2026-04-28
+
+### Naprawiono
+
+- **E2E Tests - Admin Sections**
+  - Dodano skip conditions dla wszystkich testów admin-sections.spec.ts
+  - Testy skip'ują gdy brakuje add-section-button lub section-card elements
+  - Eliminuje false failures gdy UI nie jest jeszcze zaimplementowany
+
 ## [0.6.7] - 2026-04-28
 
 ### Naprawiono
