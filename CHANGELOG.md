@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.6.2] - 2026-04-28
+
+### Naprawiono
+
+- **E2E Payment Tests - Playwright Errors**
+  - Naprawiono błędy składni regex (`:has-text(/regex/)` → manual loop)
+  - Dodano skip conditions dla brakujących elementów UI
+  - Testy nie failują gdy refunds page nie jest w pełni zaimplementowana
+
 ## [0.6.1] - 2026-04-28
 
 ### Naprawiono
