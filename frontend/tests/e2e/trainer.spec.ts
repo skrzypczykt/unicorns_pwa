@@ -273,7 +273,7 @@ test.describe('Panel Trenera (Trainer Panel)', () => {
 
     // Kliknij na zakończone zajęcia
     const completedClass = page.locator('[data-testid="trainer-class-row"]')
-      .filter({ has: page.locator('[data-testid="class-status"]:has-text(/zakończone/i)') })
+      .filter({ has: page.locator('[data-testid="class-status"]', { hasText: /zakończone/i }) })
       .first()
 
     if (await completedClass.count() === 0) {

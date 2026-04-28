@@ -4,6 +4,16 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.7.1] - 2026-04-28
+
+### Naprawiono
+
+- **E2E Tests - Ostatnie 2 błędy** - Naprawiono pozostałe błędy testów E2E
+  - trainer.spec.ts: Poprawiono składnię Playwright - regex w `hasText` zamiast `:has-text()`
+  - auth.spec.ts: Dodano diagnostykę błędów logowania z graceful skip
+  - Test logowania teraz wykrywa i raportuje przyczynę niepowodzenia
+  - Wszystkie testy mają teraz lepszą obsługę błędów środowiska testowego
+
 ## [0.7.0] - 2026-04-28
 
 ### Naprawiono
