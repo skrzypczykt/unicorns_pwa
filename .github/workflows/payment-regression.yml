@@ -199,7 +199,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run security checklist
+        shell: bash
         run: |
+          set +e  # Don't exit on error, we handle errors manually
+
           echo "🔒 Payment Security Checklist"
           echo "=============================="
           echo ""

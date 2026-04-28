@@ -4,6 +4,15 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.6.6] - 2026-04-28
+
+### Naprawiono
+
+- **Payment Security Checklist - Bash Error Handling**
+  - Dodano `set +e` aby workflow nie przerywał się na pierwszym failed grep
+  - Wszystkie checklist items są teraz wykonywane i pokazywane w logach
+  - Workflow zwraca proper exit code tylko na końcu
+
 ## [0.6.5] - 2026-04-28
 
 ### Naprawiono
