@@ -282,13 +282,22 @@ test.describe('Security - Panel Admina Użytkownicy', () => {
     await loginUser(page, TEST_USERS.regular.email, TEST_USERS.regular.password)
 
     // Próba dostępu do panelu
-    await page.goto('/admin/users')
+    await page.goto('/admin/users', { waitUntil: 'networkidle' })
 
-    // Powinno przekierować lub pokazać błąd
-    await expect(page.locator('text=/Brak dostępu/i')).toBeVisible()
+    // Czekaj na zakończenie ładowania auth
+    await page.waitForTimeout(1000)
 
-    // LUB sprawdź redirect
-    expect(page.url()).not.toContain('/admin/users')
+    // Sprawdź czy pokazuje się komunikat o braku dostępu LUB nastąpił redirect
+    const accessDenied = page.locator('text=/Brak dostępu/i')
+    const isAccessDeniedVisible = await accessDenied.isVisible().catch(() => false)
+
+    if (!isAccessDeniedVisible) {
+      // Jeśli nie ma komunikatu, sprawdź czy nastąpił redirect
+      expect(page.url()).not.toContain('/admin/users')
+    } else {
+      // Jeśli jest komunikat, to test przeszedł
+      await expect(accessDenied).toBeVisible()
+    }
   })
 
   test.skip('Blokada dostępu dla trenera', async ({ page }) => {
@@ -296,9 +305,21 @@ test.describe('Security - Panel Admina Użytkownicy', () => {
     await loginUser(page, TEST_USERS.trainer.email, TEST_USERS.trainer.password)
 
     // Próba dostępu
-    await page.goto('/admin/users')
+    await page.goto('/admin/users', { waitUntil: 'networkidle' })
 
-    // Trenerzy NIE powinni mieć dostępu do zarządzania użytkownikami
-    await expect(page.locator('text=/Brak dostępu/i')).toBeVisible()
+    // Czekaj na zakończenie ładowania auth
+    await page.waitForTimeout(1000)
+
+    // Sprawdź czy pokazuje się komunikat o braku dostępu LUB nastąpił redirect
+    const accessDenied = page.locator('text=/Brak dostępu/i')
+    const isAccessDeniedVisible = await accessDenied.isVisible().catch(() => false)
+
+    if (!isAccessDeniedVisible) {
+      // Jeśli nie ma komunikatu, sprawdź czy nastąpił redirect
+      expect(page.url()).not.toContain('/admin/users')
+    } else {
+      // Jeśli jest komunikat, to test przeszedł
+      await expect(accessDenied).toBeVisible()
+    }
   })
 })
