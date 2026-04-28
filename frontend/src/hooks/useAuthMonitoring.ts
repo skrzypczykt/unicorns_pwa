@@ -44,11 +44,9 @@ export const useAuthMonitoring = ({
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('[Auth Monitor] Event:', event, 'Session:', !!session)
 
         // Wylogowanie
         if (event === 'SIGNED_OUT') {
-          console.log('[Auth Monitor] User signed out')
           onUserUpdate(null)
           onProfileUpdate(null)
           previousRoleRef.current = null
@@ -100,7 +98,6 @@ export const useAuthMonitoring = ({
 
         // Błąd użytkownika (np. invalid token)
         if (event === 'USER_DELETED') {
-          console.log('[Auth Monitor] User deleted')
           await supabase.auth.signOut()
           alert('Twoje konto zostało usunięte.')
           navigate('/login')

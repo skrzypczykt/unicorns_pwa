@@ -30,7 +30,6 @@ const SimpleLoginPage = () => {
           setError(signInError.message)
         }
       } else {
-        console.log('Logged in:', data)
         window.location.reload() // Refresh to show authenticated state
       }
     } catch (err) {

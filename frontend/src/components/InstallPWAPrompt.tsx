@@ -27,7 +27,6 @@ const InstallPWAPrompt = () => {
     const standalone = isInStandaloneMode()
     setIsStandalone(standalone)
 
-    console.log('[PWA] isStandalone:', standalone)
 
     // Wykryj iOS
     const checkIsIOS = () => {
@@ -65,12 +64,10 @@ const InstallPWAPrompt = () => {
       const dismissedTime = dismissed ? parseInt(dismissed) : null
       const now = Date.now()
 
-      console.log('[PWA iOS] dismissed:', dismissedTime, 'now:', now, 'should show:', !dismissedTime || dismissedTime < now)
 
       // Jeśli nie było dismissed lub minął czas
       if (!dismissedTime || dismissedTime < now) {
         setShowPrompt(true)
-        console.log('[PWA iOS] Showing prompt')
         // Wyczyść stare dismissed
         if (dismissedTime && dismissedTime < now) {
           localStorage.removeItem('pwa-install-dismissed-ios')

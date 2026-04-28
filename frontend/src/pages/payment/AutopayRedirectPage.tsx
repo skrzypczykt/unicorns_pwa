@@ -6,33 +6,10 @@ export default function AutopayRedirectPage() {
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
-    // Debug - wypisz wszystkie parametry przed submit
-    console.log('=== AUTOPAY REDIRECT DEBUG ===')
-    console.log('Gateway URL:', gatewayUrl)
-    console.log('ServiceID:', serviceId)
-    console.log('OrderID:', orderId)
-    console.log('Amount:', amount)
-    console.log('CustomerEmail:', customerEmail)
-    console.log('GatewayID:', gatewayId || '(not set)')
-    console.log('AuthorizationCode:', authorizationCode ? `${authorizationCode.length} chars` : '(not set)')
-    console.log('Hash:', hash)
-    console.log('Form exists:', !!formRef.current)
-    console.log('FULL FORM ACTION URL:', formRef.current?.action)
-
     // Auto-submit po załadowaniu
     const timer = setTimeout(() => {
-      console.log('Attempting form submit...')
       if (formRef.current) {
-        console.log('Final form.action before submit:', formRef.current.action)
-        console.log('All form inputs:')
-        const formData = new FormData(formRef.current)
-        for (const [key, value] of formData.entries()) {
-          console.log(`  ${key}: ${value}`)
-        }
         formRef.current.submit()
-        console.log('Form submitted!')
-      } else {
-        console.error('FORM REF IS NULL!')
       }
     }, 500)
 
