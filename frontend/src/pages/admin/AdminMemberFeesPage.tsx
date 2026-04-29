@@ -1,20 +1,23 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../../supabase/client'
 import { useRequireAdmin } from '../../hooks/useRequireAuth'
 import { AccessDenied } from '../../components/AccessDenied'
+import {
+  getCurrentUser,
+  getMemberUsers,
+  getBalancesForUsers,
+  chargeMembershipFee,
+  processMembershipPayment,
+  grantFeeExemption,
+  revokeFeeExemption,
+  updateUserProfile,
+  type UserProfile,
+  type MembershipFeePlan
+} from '../../supabase/repositories'
+import { supabase } from '../../supabase/client'
 
-interface Member {
-  id: string
-  display_name: string
-  email: string
-  membership_fee_plan: 'monthly' | 'yearly'
-  last_membership_charge: string | null
+interface Member extends UserProfile {
   balance: number
-  membership_fee_exempt: boolean
-  exemption_reason: string | null
-  exemption_granted_by: string | null
-  exemption_granted_at: string | null
 }
 
 const AdminMemberFeesPage = () => {
@@ -46,27 +49,9 @@ const AdminMemberFeesPage = () => {
 
   const checkAdminAndFetchMembers = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        navigate('/login')
-        return
-      }
-
-      const { data: profile } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-      if (profile?.role !== 'admin') {
-        navigate('/')
-        return
-      }
-
       await fetchMembers()
     } catch (error) {
-      console.error('Error checking admin:', error)
-      navigate('/')
+      console.error('Error fetching members:', error)
     } finally {
       setLoading(false)
     }
@@ -74,7 +59,7 @@ const AdminMemberFeesPage = () => {
 
   const fetchMembers = async () => {
     try {
-      // Get membership activity type
+      // Get membership activity type ID (hardcoded name "Członkostwo")
       const { data: membershipType } = await supabase
         .from('activity_types')
         .select('id')
@@ -89,30 +74,25 @@ const AdminMemberFeesPage = () => {
       setMembershipTypeId(membershipType.id)
 
       // Fetch all association members
-      const { data: usersData, error: usersError } = await supabase
-        .from('users')
-        .select('id, display_name, email, membership_fee_plan, last_membership_charge, membership_fee_exempt, exemption_reason, exemption_granted_by, exemption_granted_at')
-        .eq('is_association_member', true)
-        .order('display_name')
+      const usersResult = await getMemberUsers()
+      if (usersResult.error) {
+        console.error('Failed to fetch members:', usersResult.error)
+        return
+      }
 
-      if (usersError) throw usersError
-
-      if (!usersData) return
+      const usersData = usersResult.data
+      const userIds = usersData.map(u => u.id)
 
       // Fetch balances for all members
-      const { data: balancesData } = await supabase
-        .from('user_section_balances')
-        .select('user_id, balance')
-        .eq('activity_type_id', membershipType.id)
-        .in('user_id', usersData.map(u => u.id))
+      const balancesResult = await getBalancesForUsers(userIds, membershipType.id)
 
       // Combine data
       const membersWithBalances = usersData.map(user => {
-        const balanceRecord = balancesData?.find(b => b.user_id === user.id)
+        const balanceRecord = balancesResult.data.find(b => b.user_id === user.id)
         return {
           ...user,
           balance: balanceRecord?.balance || 0
-        }
+        } as Member
       })
 
       setMembers(membersWithBalances)
@@ -138,77 +118,6 @@ const AdminMemberFeesPage = () => {
     setFilteredMembers(filtered)
   }
 
-  const handleChargeFee = async (userId: string, plan: 'monthly' | 'yearly') => {
-    const fee = plan === 'monthly' ? -15.00 : -160.00
-    const description = plan === 'monthly' ? 'Składka miesięczna' : 'Składka roczna'
-
-    if (!confirm(`Czy na pewno chcesz naliczyć składkę ${Math.abs(fee)} zł dla tego członka?`)) return
-
-    if (!membershipTypeId) {
-      alert('❌ Brak ID typu aktywności Członkostwo')
-      return
-    }
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      // Get current balance
-      const { data: balanceData } = await supabase
-        .from('user_section_balances')
-        .select('balance')
-        .eq('user_id', userId)
-        .eq('activity_type_id', membershipTypeId)
-        .single()
-
-      const balanceBefore = balanceData?.balance || 0
-      const balanceAfter = balanceBefore + fee
-
-      // Update balance
-      if (balanceData) {
-        await supabase
-          .from('user_section_balances')
-          .update({ balance: balanceAfter })
-          .eq('user_id', userId)
-          .eq('activity_type_id', membershipTypeId)
-      } else {
-        // Create balance record if doesn't exist
-        await supabase
-          .from('user_section_balances')
-          .insert({
-            user_id: userId,
-            activity_type_id: membershipTypeId,
-            balance: balanceAfter
-          })
-      }
-
-      // Create transaction
-      await supabase
-        .from('balance_transactions')
-        .insert({
-          user_id: userId,
-          amount: fee,
-          balance_before: balanceBefore,
-          balance_after: balanceAfter,
-          type: 'membership_fee_charge',
-          activity_type_id: membershipTypeId,
-          description,
-          created_by: user.id
-        })
-
-      // Update last charge date
-      await supabase
-        .from('users')
-        .update({ last_membership_charge: new Date().toISOString() })
-        .eq('id', userId)
-
-      alert('✅ Składka naliczona')
-      await fetchMembers()
-    } catch (error: any) {
-      console.error('Error charging fee:', error)
-      alert('❌ Błąd: ' + error.message)
-    }
-  }
 
   const handleAddPayment = async (userId: string) => {
     const amountStr = prompt('Podaj kwotę wpłaty (zł):')
@@ -226,50 +135,19 @@ const AdminMemberFeesPage = () => {
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
 
-      // Get current balance
-      const { data: balanceData } = await supabase
-        .from('user_section_balances')
-        .select('balance')
-        .eq('user_id', userId)
-        .eq('activity_type_id', membershipTypeId)
-        .single()
+      // Use repository to process membership payment (atomic operation)
+      const result = await processMembershipPayment(
+        userId,
+        membershipTypeId,
+        amount,
+        'Wpłata na składkę członkowską',
+        userResult.authUser.id
+      )
 
-      const balanceBefore = balanceData?.balance || 0
-      const balanceAfter = balanceBefore + amount
-
-      // Update balance
-      if (balanceData) {
-        await supabase
-          .from('user_section_balances')
-          .update({ balance: balanceAfter })
-          .eq('user_id', userId)
-          .eq('activity_type_id', membershipTypeId)
-      } else {
-        await supabase
-          .from('user_section_balances')
-          .insert({
-            user_id: userId,
-            activity_type_id: membershipTypeId,
-            balance: balanceAfter
-          })
-      }
-
-      // Create transaction
-      await supabase
-        .from('balance_transactions')
-        .insert({
-          user_id: userId,
-          amount: amount,
-          balance_before: balanceBefore,
-          balance_after: balanceAfter,
-          type: 'membership_fee_payment',
-          activity_type_id: membershipTypeId,
-          description: 'Wpłata składki członkowskiej',
-          created_by: user.id
-        })
+      if (result.error) throw result.error
 
       alert('✅ Wpłata dodana')
       await fetchMembers()
@@ -301,76 +179,47 @@ const AdminMemberFeesPage = () => {
   const handleChargeAll = async () => {
     if (!confirm('Czy na pewno chcesz naliczyć składkę WSZYSTKIM członkom (oprócz zwolnionych)?')) return
 
-    let successCount = 0
-    let errorCount = 0
-    let skippedCount = 0
-
-    for (const member of members) {
-      // Skip exempt members
-      if (member.membership_fee_exempt) {
-        skippedCount++
-        continue
-      }
-      try {
-        const fee = member.membership_fee_plan === 'monthly' ? -15.00 : -160.00
-        const description = member.membership_fee_plan === 'monthly' ? 'Składka miesięczna' : 'Składka roczna'
-
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user || !membershipTypeId) continue
-
-        const { data: balanceData } = await supabase
-          .from('user_section_balances')
-          .select('balance')
-          .eq('user_id', member.id)
-          .eq('activity_type_id', membershipTypeId)
-          .single()
-
-        const balanceBefore = balanceData?.balance || 0
-        const balanceAfter = balanceBefore + fee
-
-        if (balanceData) {
-          await supabase
-            .from('user_section_balances')
-            .update({ balance: balanceAfter })
-            .eq('user_id', member.id)
-            .eq('activity_type_id', membershipTypeId)
-        } else {
-          await supabase
-            .from('user_section_balances')
-            .insert({
-              user_id: member.id,
-              activity_type_id: membershipTypeId,
-              balance: balanceAfter
-            })
-        }
-
-        await supabase
-          .from('balance_transactions')
-          .insert({
-            user_id: member.id,
-            amount: fee,
-            balance_before: balanceBefore,
-            balance_after: balanceAfter,
-            type: 'membership_fee_charge',
-            activity_type_id: membershipTypeId,
-            description,
-            created_by: user.id
-          })
-
-        await supabase
-          .from('users')
-          .update({ last_membership_charge: new Date().toISOString() })
-          .eq('id', member.id)
-
-        successCount++
-      } catch (error) {
-        console.error(`Error charging member ${member.id}:`, error)
-        errorCount++
-      }
+    const userResult = await getCurrentUser()
+    if (userResult.error || !userResult.authUser || !membershipTypeId) {
+      alert('❌ Błąd autoryzacji')
+      return
     }
 
-    alert(`✅ Naliczono składki: ${successCount} udanych${skippedCount > 0 ? `, ${skippedCount} pominiętych (zwolnieni)` : ''}${errorCount > 0 ? `, ${errorCount} błędów` : ''}`)
-    await fetchMembers()
+    // Prepare bulk charges using repository pattern
+    const charges = members
+      .filter(m => !m.membership_fee_exempt)
+      .map(member => {
+        const fee = member.membership_fee_plan === 'monthly' ? 15.00 : 160.00
+        const description = member.membership_fee_plan === 'monthly' ? 'Składka miesięczna' : 'Składka roczna'
+        return {
+          userId: member.id,
+          activityTypeId: membershipTypeId,
+          amount: fee,
+          description,
+          createdBy: userResult.authUser.id
+        }
+      })
+
+    const skippedCount = members.filter(m => m.membership_fee_exempt).length
+
+    try {
+      // Use repository bulk charge function
+      const result = await bulkChargeMembershipFees(charges)
+
+      const successCount = result.data.succeeded.length
+      const errorCount = result.data.failed.length
+
+      // Update last charge dates for successful charges
+      for (const userId of result.data.succeeded) {
+        await updateUserProfile(userId, { last_membership_charge: new Date().toISOString() })
+      }
+
+      alert(`✅ Naliczono składki: ${successCount} udanych${skippedCount > 0 ? `, ${skippedCount} pominiętych (zwolnieni)` : ''}${errorCount > 0 ? `, ${errorCount} błędów` : ''}`)
+      await fetchMembers()
+    } catch (error: any) {
+      console.error('Error bulk charging fees:', error)
+      alert('❌ Błąd: ' + error.message)
+    }
   }
 
   const handleGrantExemption = async () => {
@@ -380,27 +229,26 @@ const AdminMemberFeesPage = () => {
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
 
-      await supabase
-        .from('users')
-        .update({
-          membership_fee_exempt: true,
-          exemption_reason: exemptionData.reason,
-          exemption_granted_by: user.id,
-          exemption_granted_at: new Date().toISOString()
-        })
-        .eq('id', exemptionModal.userId)
+      // Use repository to grant fee exemption
+      const result = await grantFeeExemption(
+        exemptionModal.userId,
+        exemptionData.reason,
+        userResult.authUser.id
+      )
 
-      // Opcjonalnie: zapisz w historii
+      if (result.error) throw result.error
+
+      // Optionally: save in history
       await supabase
         .from('membership_exemption_history')
         .insert({
           user_id: exemptionModal.userId,
           action: 'granted',
           reason: exemptionData.reason,
-          granted_by: user.id
+          granted_by: userResult.authUser.id
         })
 
       alert('✅ Członek zwolniony ze składki')
@@ -417,27 +265,21 @@ const AdminMemberFeesPage = () => {
     if (!confirm('Na pewno chcesz cofnąć zwolnienie ze składki?')) return
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
 
-      await supabase
-        .from('users')
-        .update({
-          membership_fee_exempt: false,
-          exemption_reason: null,
-          exemption_granted_by: null,
-          exemption_granted_at: null
-        })
-        .eq('id', userId)
+      // Use repository to revoke fee exemption
+      const result = await revokeFeeExemption(userId)
+      if (result.error) throw result.error
 
-      // Opcjonalnie: zapisz w historii
+      // Optionally: save in history
       await supabase
         .from('membership_exemption_history')
         .insert({
           user_id: userId,
           action: 'revoked',
           reason: null,
-          granted_by: user.id
+          granted_by: userResult.authUser.id
         })
 
       alert('✅ Zwolnienie cofnięte')

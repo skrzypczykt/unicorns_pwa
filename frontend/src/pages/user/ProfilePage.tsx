@@ -43,7 +43,9 @@ const ProfilePage = () => {
 
   const fetchProfile = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
+      const user = userResult.authUser
       if (!user) return
 
       const { data, error } = await supabase
@@ -61,7 +63,9 @@ const ProfilePage = () => {
 
   const fetchTransactions = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
+      const user = userResult.authUser
       if (!user) return
 
       const { data, error } = await supabase

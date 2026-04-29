@@ -58,7 +58,9 @@ const TrainerClassesPage = () => {
 
   const fetchTrainerActivities = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
+      const user = userResult.authUser
       if (!user) return
 
       // Get both scheduled and completed activities (last 7 days and future)
@@ -219,7 +221,9 @@ const TrainerClassesPage = () => {
 
     setMarking(registrationId)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
+      const user = userResult.authUser
       if (!user) {
         alert('Musisz być zalogowany')
         return

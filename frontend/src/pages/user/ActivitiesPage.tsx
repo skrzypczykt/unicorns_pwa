@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../../supabase/client'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../../supabase/client'
+import {
+  getCurrentUser,
+  getCurrentSession,
+  getActivitiesInWeek,
+  getSpecialEvents,
+  getUserRegistrations,
+  getActiveRegistrations,
+  type Activity as RepositoryActivity
+} from '../../supabase/repositories'
 import { formatDuration } from '../../utils/formatDuration'
 import { getActivityImage } from '../../data/activityImages'
 import PaymentChoiceModal from '../../components/PaymentChoiceModal'
@@ -84,8 +93,8 @@ const ActivitiesPage = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setIsLoggedIn(!!user)
+      const userResult = await getCurrentUser()
+      setIsLoggedIn(!!userResult.authUser)
     }
     checkAuth()
   }, [])
@@ -128,28 +137,19 @@ const ActivitiesPage = () => {
 
   const fetchActivities = async () => {
     try {
-      // Filtruj regularne zajęcia do najbliższych 7 dni
+      // Fetch regular activities for the next 7 days using repository
       const now = new Date()
       const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
 
-      const { data, error } = await supabase
-        .from('activities')
-        .select(`
-          *,
-          activity_types (
-            whatsapp_group_url
-          )
-        `)
-        .eq('status', 'scheduled')
-        .eq('is_special_event', false)
-        .eq('is_recurring', false)
-        .is('parent_activity_id', null)
-        .gte('date_time', now.toISOString())
-        .lte('date_time', sevenDaysLater.toISOString())
-        .order('date_time', { ascending: true })
+      const result = await getActivitiesInWeek(now.toISOString(), sevenDaysLater.toISOString())
+      if (result.error) {
+        console.error('Failed to fetch activities:', result.error)
+        return
+      }
 
-      if (error) throw error
-      setActivities(data || [])
+      // Filter for non-special events (regular classes)
+      const regularActivities = result.data.filter(a => !a.is_special_event)
+      setActivities(regularActivities as Activity[])
     } catch (error) {
       console.error('Error fetching activities:', error)
     } finally {
@@ -159,28 +159,23 @@ const ActivitiesPage = () => {
 
   const fetchSpecialEvents = async () => {
     try {
-      // Wydarzenia specjalne - 60 dni do przodu
+      // Fetch special events using repository
+      const result = await getSpecialEvents()
+      if (result.error) {
+        console.error('Failed to fetch special events:', result.error)
+        return
+      }
+
+      // Filter for next 60 days
       const now = new Date()
       const sixtyDaysLater = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000)
 
-      const { data, error } = await supabase
-        .from('activities')
-        .select(`
-          *,
-          activity_types (
-            whatsapp_group_url
-          )
-        `)
-        .eq('status', 'scheduled')
-        .eq('is_special_event', true)
-        .eq('is_recurring', false)
-        .is('parent_activity_id', null)
-        .gte('date_time', now.toISOString())
-        .lte('date_time', sixtyDaysLater.toISOString())
-        .order('date_time', { ascending: true })
+      const filteredEvents = result.data.filter(event => {
+        const eventDate = new Date(event.date_time)
+        return eventDate >= now && eventDate <= sixtyDaysLater
+      })
 
-      if (error) throw error
-      setSpecialEvents(data || [])
+      setSpecialEvents(filteredEvents as Activity[])
     } catch (error) {
       console.error('Error fetching special events:', error)
     }
@@ -188,29 +183,26 @@ const ActivitiesPage = () => {
 
   const fetchUserRegistrations = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
 
-      const { data, error } = await supabase
-        .from('registrations')
-        .select('id, activity_id, can_cancel_until, payment_status')
-        .eq('user_id', user.id)
-        .in('status', ['registered', 'attended'])  // Include attended status
-        .neq('payment_status', 'pending')  // Don't show pending payments as registered
-
-      if (error) throw error
+      const result = await getUserRegistrations(userResult.authUser.id, true) // excludePending = true
+      if (result.error) {
+        console.error('Failed to fetch user registrations:', result.error)
+        return
+      }
 
       const registrations: Record<string, {
         registrationId: string
         canCancelUntil: string
-        paymentStatus: string
+        paymentProcessed: boolean
       }> = {}
 
-      data?.forEach(r => {
+      result.data.forEach(r => {
         registrations[r.activity_id] = {
           registrationId: r.id,
           canCancelUntil: r.can_cancel_until,
-          paymentStatus: r.payment_status
+          paymentProcessed: r.payment_status === 'paid'
         }
       })
 
@@ -222,18 +214,19 @@ const ActivitiesPage = () => {
 
   const fetchParticipantCounts = async () => {
     try {
-      const { data, error } = await supabase
-        .from('registrations')
-        .select('activity_id')
-        .in('status', ['registered', 'attended'])
+      // Get all activity IDs we need counts for
+      const allActivityIds = [...activities, ...specialEvents].map(a => a.id)
 
-      if (error) throw error
-
-      // Policz rejestracje dla każdej aktywności
+      // Fetch counts for each activity
       const counts: Record<string, number> = {}
-      data?.forEach(reg => {
-        counts[reg.activity_id] = (counts[reg.activity_id] || 0) + 1
-      })
+      for (const activityId of allActivityIds) {
+        const result = await getActiveRegistrations(activityId)
+        if (result.error) {
+          console.error(`Failed to fetch registrations for ${activityId}:`, result.error)
+          continue
+        }
+        counts[activityId] = result.data.length
+      }
 
       setParticipantCounts(counts)
     } catch (error) {
@@ -242,8 +235,8 @@ const ActivitiesPage = () => {
   }
 
   const handleRegisterClick = async (activityId: string) => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
+    const userResult = await getCurrentUser()
+    if (userResult.error || !userResult.authUser) {
       setShowLoginModal(true)
       return
     }
@@ -268,7 +261,7 @@ const ActivitiesPage = () => {
   const handleSlidePanelRegister = async () => {
     if (!selectedActivity) return
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const userResult = await getCurrentUser(); if (userResult.error || !userResult.authUser) { setShowLoginModal(true); return }; const user = userResult.authUser
     if (!user) {
       setShowLoginModal(true)
       return
@@ -297,7 +290,7 @@ const ActivitiesPage = () => {
   const handleRegister = async (activityId: string, cost: number, cancellationHours: number) => {
     setRegistering(activityId)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const userResult = await getCurrentUser(); if (userResult.error || !userResult.authUser) { setShowLoginModal(true); return }; const user = userResult.authUser
       if (!user) {
         setShowLoginModal(true)
         setRegistering(null)
@@ -361,7 +354,7 @@ const ActivitiesPage = () => {
     skipMessages: boolean = false
   ): Promise<string | null> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const userResult = await getCurrentUser(); if (userResult.error || !userResult.authUser) { setShowLoginModal(true); return }; const user = userResult.authUser
       if (!user) return null
 
       const allActivities = [...activities, ...specialEvents]
@@ -505,7 +498,7 @@ const ActivitiesPage = () => {
 
     try {
       // 0. Usuń stare niepotwierdzone rejestracje dla tego użytkownika i aktywności
-      const { data: { user } } = await supabase.auth.getUser()
+      const userResult = await getCurrentUser(); if (userResult.error || !userResult.authUser) { setShowLoginModal(true); return }; const user = userResult.authUser
       if (user) {
         await supabase
           .from('registrations')
@@ -530,7 +523,7 @@ const ActivitiesPage = () => {
       }
 
       // 2. Inicjuj płatność przez Edge Function
-      const { data: { session } } = await supabase.auth.getSession()
+      const sessionResult = await getCurrentSession(); if (sessionResult.error || !sessionResult.session) return; const session = sessionResult.session
 
       if (!session?.access_token) {
         throw new Error('Brak sesji użytkownika - zaloguj się ponownie')

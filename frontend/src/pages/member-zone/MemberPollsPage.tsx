@@ -1,35 +1,25 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../../supabase/client'
+import {
+  getCurrentUser,
+  getPollsWithOptions,
+  getUserPollVote,
+  getPollResults,
+  castVote,
+  type PollWithOptions,
+  type PollOptionResult
+} from '../../supabase/repositories'
 import PollCard from '../../components/member-zone/PollCard'
 
-interface PollOption {
-  id: string
-  option_text: string
-  display_order: number
-}
-
-interface Poll {
-  id: string
-  title: string
-  description: string | null
-  end_date: string
-  poll_type: 'resolution' | 'survey' | 'other'
-  options: PollOption[]
-}
-
-interface PollResults {
-  option_id: string
-  option_text: string
-  vote_count: number
-}
+// Local interface for poll with options (compatible with repository type)
+type Poll = PollWithOptions
 
 const MemberPollsPage = () => {
   const navigate = useNavigate()
   const [activePolls, setActivePolls] = useState<Poll[]>([])
   const [archivedPolls, setArchivedPolls] = useState<Poll[]>([])
   const [userVotes, setUserVotes] = useState<Record<string, { option_id: string }>>({})
-  const [pollResults, setPollResults] = useState<Record<string, PollResults[]>>({})
+  const [pollResults, setPollResults] = useState<Record<string, PollOptionResult[]>>({})
   const [showArchived, setShowArchived] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -39,25 +29,20 @@ const MemberPollsPage = () => {
 
   const checkMembershipAndFetchPolls = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
+      // Get current user with profile
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) {
         navigate('/login')
         return
       }
 
       // Check if user is association member
-      const { data: profile } = await supabase
-        .from('users')
-        .select('is_association_member')
-        .eq('id', user.id)
-        .single()
-
-      if (!profile?.is_association_member) {
+      if (!userResult.profile?.is_association_member) {
         navigate('/')
         return
       }
 
-      await fetchPolls(user.id)
+      await fetchPolls(userResult.authUser.id)
     } catch (error) {
       console.error('Error fetching polls:', error)
     } finally {
@@ -66,33 +51,14 @@ const MemberPollsPage = () => {
   }
 
   const fetchPolls = async (userId: string) => {
-    // Fetch all polls
-    const { data: pollsData } = await supabase
-      .from('association_polls')
-      .select('*')
-      .order('end_date', { ascending: false })
+    // Fetch all polls with options using repository
+    const pollsResult = await getPollsWithOptions(false) // false = include archived
+    if (pollsResult.error) {
+      console.error('Failed to fetch polls:', pollsResult.error)
+      return
+    }
 
-    if (!pollsData) return
-
-    // Fetch options for all polls
-    const { data: optionsData } = await supabase
-      .from('association_poll_options')
-      .select('*')
-      .in('poll_id', pollsData.map(p => p.id))
-
-    // Fetch user's votes
-    const { data: votesData } = await supabase
-      .from('association_poll_votes')
-      .select('poll_id, option_id')
-      .eq('user_id', userId)
-
-    // Map options to polls
-    const pollsWithOptions = pollsData.map(poll => ({
-      ...poll,
-      options: (optionsData || [])
-        .filter(opt => opt.poll_id === poll.id)
-        .sort((a, b) => a.display_order - b.display_order)
-    }))
+    const pollsWithOptions = pollsResult.data
 
     // Separate active and archived
     const now = new Date()
@@ -102,26 +68,27 @@ const MemberPollsPage = () => {
     setActivePolls(active)
     setArchivedPolls(archived)
 
-    // Map user votes
+    // Fetch user votes for all polls
     const votesMap: Record<string, { option_id: string }> = {}
-    votesData?.forEach(vote => {
-      votesMap[vote.poll_id] = { option_id: vote.option_id }
-    })
+    for (const poll of pollsWithOptions) {
+      const voteResult = await getUserPollVote(poll.id, userId)
+      if (!voteResult.error && voteResult.data) {
+        votesMap[poll.id] = { option_id: voteResult.data.option_id }
+      }
+    }
     setUserVotes(votesMap)
 
     // Fetch results for polls user voted on or archived polls
-    const resultsToFetch = pollsData.filter(poll =>
+    const resultsToFetch = pollsWithOptions.filter(poll =>
       votesMap[poll.id] || new Date(poll.end_date) <= now
     )
 
-    const resultsMap: Record<string, PollResults[]> = {}
+    const resultsMap: Record<string, PollOptionResult[]> = {}
     for (const poll of resultsToFetch) {
       try {
-        const { data: results } = await supabase.rpc('get_poll_results', {
-          poll_uuid: poll.id
-        })
-        if (results) {
-          resultsMap[poll.id] = results
+        const resultsResponse = await getPollResults(poll.id)
+        if (!resultsResponse.error && resultsResponse.data) {
+          resultsMap[poll.id] = resultsResponse.data.options
         }
       } catch (err) {
         console.error(`Error fetching results for poll ${poll.id}:`, err)
@@ -132,29 +99,31 @@ const MemberPollsPage = () => {
 
   const handleVote = async (pollId: string, optionId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
 
-      const { error } = await supabase
-        .from('association_poll_votes')
-        .insert({
-          poll_id: pollId,
-          option_id: optionId,
-          user_id: user.id
-        })
+      const voteResult = await castVote({
+        poll_id: pollId,
+        option_id: optionId,
+        user_id: userResult.authUser.id
+      })
 
-      if (error) throw error
+      if (voteResult.error) {
+        // Check for duplicate vote error
+        if ((voteResult.error as any).code === '23505') {
+          alert('⚠️ Już oddałeś głos w tym głosowaniu')
+        } else {
+          alert('❌ Wystąpił błąd podczas głosowania')
+        }
+        return
+      }
 
       // Refresh polls to update UI
-      await fetchPolls(user.id)
+      await fetchPolls(userResult.authUser.id)
       alert('✅ Głos został zapisany!')
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error voting:', error)
-      if (error.code === '23505') {
-        alert('⚠️ Już oddałeś głos w tym głosowaniu')
-      } else {
-        alert('❌ Wystąpił błąd podczas głosowania')
-      }
+      alert('❌ Wystąpił błąd podczas głosowania')
     }
   }
 
