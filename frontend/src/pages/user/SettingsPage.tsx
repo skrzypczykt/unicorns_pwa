@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../../supabase/client'
 import { useNavigate } from 'react-router-dom'
 import { useInstallPWA } from '../../hooks/useInstallPWA'
 import { usePushNotifications } from '../../hooks/usePushNotifications'
 import PWADebugPanel from '../../components/PWADebugPanel'
-
-interface UserProfile {
-  id: string
-  email: string
-  display_name: string
-  role: string
-}
+import {
+  getCurrentUser,
+  getUserRegistrations,
+  getAllUserTransactions,
+  type UserProfile
+} from '../../supabase/repositories'
+import { supabase } from '../../supabase/client'
 
 interface NotificationSettings {
   push_enabled: boolean
@@ -51,17 +50,12 @@ const SettingsPage = () => {
 
   const fetchProfile = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, email, display_name, role')
-        .eq('id', user.id)
-        .single()
-
-      if (error) throw error
-      setProfile(data)
+      const result = await getCurrentUser()
+      if (result.error || !result.profile) {
+        console.error('Error fetching profile:', result.error)
+        return
+      }
+      setProfile(result.profile)
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
@@ -133,19 +127,18 @@ const SettingsPage = () => {
     if (!confirm('Czy chcesz pobrać wszystkie swoje dane w formacie JSON?')) return
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
 
       // Pobierz wszystkie dane użytkownika
-      const [profileRes, registrationsRes, transactionsRes] = await Promise.all([
-        supabase.from('users').select('*').eq('id', user.id).single(),
-        supabase.from('registrations').select('*, activities(*)').eq('user_id', user.id),
-        supabase.from('balance_transactions').select('*').eq('user_id', user.id)
+      const [registrationsRes, transactionsRes] = await Promise.all([
+        getUserRegistrations(userResult.authUser.id, false),
+        getAllUserTransactions(userResult.authUser.id)
       ])
 
       const exportData = {
         export_date: new Date().toISOString(),
-        profile: profileRes.data,
+        profile: userResult.profile,
         registrations: registrationsRes.data,
         transactions: transactionsRes.data,
         notification_settings: notificationSettings

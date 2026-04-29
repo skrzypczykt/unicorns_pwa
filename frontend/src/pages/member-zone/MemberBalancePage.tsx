@@ -1,21 +1,20 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../../supabase/client'
+import {
+  getCurrentUser,
+  getUserBalance,
+  getUserTransactions,
+  updateUserProfile,
+  type BalanceTransaction,
+  type MembershipFeePlan
+} from '../../supabase/repositories'
 
-interface Transaction {
-  id: string
-  amount: number
-  type: string
-  description: string | null
-  balance_before: number
-  balance_after: number
-  created_at: string
-}
+type Transaction = BalanceTransaction
 
 const MemberBalancePage = () => {
   const navigate = useNavigate()
   const [balance, setBalance] = useState<number>(0)
-  const [plan, setPlan] = useState<'monthly' | 'yearly'>('monthly')
+  const [plan, setPlan] = useState<MembershipFeePlan>('monthly')
   const [lastCharge, setLastCharge] = useState<string | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
@@ -27,59 +26,33 @@ const MemberBalancePage = () => {
 
   const fetchMembershipData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) {
         navigate('/login')
         return
       }
-      setUserId(user.id)
 
       // Check if user is association member
-      const { data: profile } = await supabase
-        .from('users')
-        .select('is_association_member, membership_fee_plan, last_membership_charge')
-        .eq('id', user.id)
-        .single()
-
-      if (!profile?.is_association_member) {
+      if (!userResult.profile?.is_association_member) {
         navigate('/')
         return
       }
 
-      setPlan(profile.membership_fee_plan || 'monthly')
-      setLastCharge(profile.last_membership_charge)
+      setUserId(userResult.authUser.id)
+      setPlan(userResult.profile.membership_fee_plan || 'monthly')
+      setLastCharge(userResult.profile.last_membership_charge)
 
-      // Get membership activity type
-      const { data: membershipType } = await supabase
-        .from('activity_types')
-        .select('id')
-        .eq('name', 'Członkostwo')
-        .single()
-
-      if (!membershipType) {
-        console.error('Membership activity type not found')
-        return
+      // Fetch balance (getUserBalance finds membership activity type internally)
+      const balanceResult = await getUserBalance(userResult.authUser.id)
+      if (!balanceResult.error && balanceResult.data) {
+        setBalance(balanceResult.data.balance)
       }
 
-      // Fetch balance
-      const { data: balanceData } = await supabase
-        .from('user_section_balances')
-        .select('balance')
-        .eq('user_id', user.id)
-        .eq('activity_type_id', membershipType.id)
-        .single()
-
-      setBalance(balanceData?.balance || 0)
-
       // Fetch transaction history
-      const { data: transactionsData } = await supabase
-        .from('balance_transactions')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('activity_type_id', membershipType.id)
-        .order('created_at', { ascending: false })
-
-      setTransactions(transactionsData || [])
+      const transactionsResult = await getUserTransactions(userResult.authUser.id, { activityType: 'membership' })
+      if (!transactionsResult.error) {
+        setTransactions(transactionsResult.data)
+      }
     } catch (error) {
       console.error('Error fetching membership data:', error)
     } finally {
@@ -87,16 +60,12 @@ const MemberBalancePage = () => {
     }
   }
 
-  const handlePlanChange = async (newPlan: 'monthly' | 'yearly') => {
+  const handlePlanChange = async (newPlan: MembershipFeePlan) => {
     if (!userId) return
 
     try {
-      const { error } = await supabase
-        .from('users')
-        .update({ membership_fee_plan: newPlan })
-        .eq('id', userId)
-
-      if (error) throw error
+      const result = await updateUserProfile(userId, { membership_fee_plan: newPlan })
+      if (result.error) throw result.error
 
       setPlan(newPlan)
       alert(`✅ Plan zmieniony na ${newPlan === 'monthly' ? 'miesięczny' : 'roczny'}`)

@@ -1,20 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../../supabase/client'
 import { useRequireAdmin } from '../../hooks/useRequireAuth'
 import { AccessDenied } from '../../components/AccessDenied'
+import {
+  getCurrentUser,
+  getDocuments,
+  createDocument,
+  updateDocument,
+  deleteDocument,
+  type AssociationDocument,
+  type DocumentCategory
+} from '../../supabase/repositories'
 
-interface Document {
-  id: string
-  title: string
-  description: string | null
-  document_url: string
-  category: 'statute' | 'resolution' | 'report' | 'other'
-  uploaded_by: string
-  upload_date: string
-  file_size_kb: number | null
-  created_at: string
-}
+type Document = AssociationDocument
 
 const AdminMemberDocumentsPage = () => {
   const navigate = useNavigate()
@@ -27,7 +25,7 @@ const AdminMemberDocumentsPage = () => {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [documentUrl, setDocumentUrl] = useState('')
-  const [category, setCategory] = useState<'statute' | 'resolution' | 'report' | 'other'>('other')
+  const [category, setCategory] = useState<DocumentCategory>('other')
   const [fileSizeKb, setFileSizeKb] = useState('')
 
   useEffect(() => {
@@ -36,42 +34,20 @@ const AdminMemberDocumentsPage = () => {
 
   const checkAdminAndFetchDocuments = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        navigate('/login')
-        return
-      }
-
-      const { data: profile } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-      if (profile?.role !== 'admin') {
-        navigate('/')
-        return
-      }
-
       await fetchDocuments()
     } catch (error) {
-      console.error('Error checking admin:', error)
-      navigate('/')
+      console.error('Error fetching documents:', error)
     } finally {
       setLoading(false)
     }
   }
 
   const fetchDocuments = async () => {
-    const { data, error } = await supabase
-      .from('association_documents')
-      .select('*')
-      .order('upload_date', { ascending: false })
-
-    if (error) {
-      console.error('Error fetching documents:', error)
+    const result = await getDocuments()
+    if (result.error) {
+      console.error('Failed to fetch documents:', result.error)
     } else {
-      setDocuments(data || [])
+      setDocuments(result.data)
     }
   }
 
@@ -101,8 +77,8 @@ const AdminMemberDocumentsPage = () => {
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
 
       const documentData = {
         title: title.trim(),
@@ -110,25 +86,18 @@ const AdminMemberDocumentsPage = () => {
         document_url: documentUrl.trim(),
         category,
         file_size_kb: fileSizeKb ? parseInt(fileSizeKb) : null,
-        uploaded_by: user.id
+        uploaded_by: userResult.authUser.id
       }
 
       if (editingId) {
         // Update
-        const { error } = await supabase
-          .from('association_documents')
-          .update(documentData)
-          .eq('id', editingId)
-
-        if (error) throw error
+        const result = await updateDocument(editingId, documentData)
+        if (result.error) throw result.error
         alert('✅ Dokument zaktualizowany')
       } else {
         // Insert
-        const { error } = await supabase
-          .from('association_documents')
-          .insert(documentData)
-
-        if (error) throw error
+        const result = await createDocument(documentData)
+        if (result.error) throw result.error
         alert('✅ Dokument dodany')
       }
 
@@ -144,12 +113,8 @@ const AdminMemberDocumentsPage = () => {
     if (!confirm('Czy na pewno chcesz usunąć ten dokument?')) return
 
     try {
-      const { error } = await supabase
-        .from('association_documents')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
+      const result = await deleteDocument(id)
+      if (result.error) throw result.error
 
       alert('✅ Dokument usunięty')
       await fetchDocuments()

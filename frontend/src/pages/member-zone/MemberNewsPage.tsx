@@ -1,20 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../../supabase/client'
+import { getCurrentUser, getAllNews } from '../../supabase/repositories'
+import type { AssociationNews } from '../../supabase/repositories'
 import NewsCard from '../../components/member-zone/NewsCard'
-
-interface News {
-  id: string
-  title: string
-  content: string
-  published_at: string
-  is_pinned: boolean
-  expires_at: string | null
-}
 
 const MemberNewsPage = () => {
   const navigate = useNavigate()
-  const [news, setNews] = useState<News[]>([])
+  const [news, setNews] = useState<AssociationNews[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -23,33 +15,27 @@ const MemberNewsPage = () => {
 
   const checkMembershipAndFetchNews = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
+      // Get current user with profile
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) {
         navigate('/login')
         return
       }
 
       // Check if user is association member
-      const { data: profile } = await supabase
-        .from('users')
-        .select('is_association_member')
-        .eq('id', user.id)
-        .single()
-
-      if (!profile?.is_association_member) {
+      if (!userResult.profile?.is_association_member) {
         navigate('/')
         return
       }
 
-      // Fetch all news (pinned first, then by date)
-      const { data: newsData, error } = await supabase
-        .from('association_news')
-        .select('*')
-        .order('is_pinned', { ascending: false })
-        .order('published_at', { ascending: false })
+      // Fetch all news using repository
+      const newsResult = await getAllNews()
+      if (newsResult.error) {
+        console.error('Failed to fetch news:', newsResult.error)
+        return
+      }
 
-      if (error) throw error
-      setNews(newsData || [])
+      setNews(newsResult.data)
     } catch (error) {
       console.error('Error fetching news:', error)
     } finally {

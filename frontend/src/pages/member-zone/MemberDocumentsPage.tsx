@@ -1,21 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../../supabase/client'
+import { getCurrentUser, getDocuments, type AssociationDocument, type DocumentCategory } from '../../supabase/repositories'
 import DocumentCard from '../../components/member-zone/DocumentCard'
-
-interface Document {
-  id: string
-  title: string
-  description: string | null
-  document_url: string
-  category: 'statute' | 'resolution' | 'report' | 'other'
-  upload_date: string
-}
 
 const MemberDocumentsPage = () => {
   const navigate = useNavigate()
-  const [documents, setDocuments] = useState<Document[]>([])
-  const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([])
+  const [documents, setDocuments] = useState<AssociationDocument[]>([])
+  const [filteredDocuments, setFilteredDocuments] = useState<AssociationDocument[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [loading, setLoading] = useState(true)
 
@@ -33,33 +24,28 @@ const MemberDocumentsPage = () => {
 
   const checkMembershipAndFetchDocuments = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
+      // Get current user with profile
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) {
         navigate('/login')
         return
       }
 
       // Check if user is association member
-      const { data: profile } = await supabase
-        .from('users')
-        .select('is_association_member')
-        .eq('id', user.id)
-        .single()
-
-      if (!profile?.is_association_member) {
+      if (!userResult.profile?.is_association_member) {
         navigate('/')
         return
       }
 
-      // Fetch all documents
-      const { data: docsData, error } = await supabase
-        .from('association_documents')
-        .select('*')
-        .order('upload_date', { ascending: false })
+      // Fetch all documents using repository
+      const docsResult = await getDocuments()
+      if (docsResult.error) {
+        console.error('Failed to fetch documents:', docsResult.error)
+        return
+      }
 
-      if (error) throw error
-      setDocuments(docsData || [])
-      setFilteredDocuments(docsData || [])
+      setDocuments(docsResult.data)
+      setFilteredDocuments(docsResult.data)
     } catch (error) {
       console.error('Error fetching documents:', error)
     } finally {
