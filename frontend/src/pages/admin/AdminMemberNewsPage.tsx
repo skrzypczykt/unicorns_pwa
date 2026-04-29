@@ -1,20 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../../supabase/client'
 import { useRequireAdmin } from '../../hooks/useRequireAuth'
 import { AccessDenied } from '../../components/AccessDenied'
+import {
+  getCurrentUser,
+  getAllNews,
+  createNews,
+  updateNews,
+  deleteNews,
+  type AssociationNews
+} from '../../supabase/repositories'
 
-interface News {
-  id: string
-  title: string
-  content: string
-  author_id: string
-  published_at: string
-  expires_at: string | null
-  is_pinned: boolean
-  created_at: string
-  updated_at: string
-}
+type News = AssociationNews
 
 const AdminMemberNewsPage = () => {
   const navigate = useNavigate()
@@ -35,43 +32,20 @@ const AdminMemberNewsPage = () => {
 
   const checkAdminAndFetchNews = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        navigate('/login')
-        return
-      }
-
-      const { data: profile } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-      if (profile?.role !== 'admin') {
-        navigate('/')
-        return
-      }
-
       await fetchNews()
     } catch (error) {
-      console.error('Error checking admin:', error)
-      navigate('/')
+      console.error('Error fetching news:', error)
     } finally {
       setLoading(false)
     }
   }
 
   const fetchNews = async () => {
-    const { data, error } = await supabase
-      .from('association_news')
-      .select('*')
-      .order('is_pinned', { ascending: false })
-      .order('published_at', { ascending: false })
-
-    if (error) {
-      console.error('Error fetching news:', error)
+    const result = await getAllNews()
+    if (result.error) {
+      console.error('Failed to fetch news:', result.error)
     } else {
-      setNews(data || [])
+      setNews(result.data)
     }
   }
 
@@ -99,33 +73,26 @@ const AdminMemberNewsPage = () => {
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
 
       const newsData = {
         title: title.trim(),
         content: content.trim(),
         expires_at: expiresAt || null,
         is_pinned: isPinned,
-        author_id: user.id
+        author_id: userResult.authUser.id
       }
 
       if (editingId) {
         // Update
-        const { error } = await supabase
-          .from('association_news')
-          .update(newsData)
-          .eq('id', editingId)
-
-        if (error) throw error
+        const result = await updateNews(editingId, newsData)
+        if (result.error) throw result.error
         alert('✅ Ogłoszenie zaktualizowane')
       } else {
         // Insert
-        const { error } = await supabase
-          .from('association_news')
-          .insert(newsData)
-
-        if (error) throw error
+        const result = await createNews(newsData)
+        if (result.error) throw result.error
         alert('✅ Ogłoszenie dodane')
       }
 
@@ -141,12 +108,8 @@ const AdminMemberNewsPage = () => {
     if (!confirm('Czy na pewno chcesz usunąć to ogłoszenie?')) return
 
     try {
-      const { error } = await supabase
-        .from('association_news')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
+      const result = await deleteNews(id)
+      if (result.error) throw result.error
 
       alert('✅ Ogłoszenie usunięte')
       await fetchNews()

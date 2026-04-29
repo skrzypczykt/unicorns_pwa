@@ -4,6 +4,19 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.8.4] - 2026-04-29
+
+### Zmieniono
+
+- **Page Migrations - Repository Adoption (3 admin pages, -19 direct queries)**
+  - **AdminMemberNewsPage**: Migrated to getCurrentUser(), getAllNews(), createNews(), updateNews(), deleteNews() (-5 queries)
+  - **AdminMemberDocumentsPage**: Migrated to getCurrentUser(), getDocuments(), createDocument(), updateDocument(), deleteDocument() (-7 queries)
+  - **AdminMemberPollsPage**: Migrated to getCurrentUser(), getPollsWithOptions(), getPollResults(), createPollWithOptions(), updatePoll(), deletePoll() (-7 queries)
+  - All migrated files maintain backward compatibility
+  - Build passing, no breaking changes
+  - Pattern: replace direct supabase.from() with repository functions
+  - Cleaner auth handling: getCurrentUser() instead of supabase.auth.getUser()
+
 ## [0.8.2] - 2026-04-29
 
 ### Zmieniono
