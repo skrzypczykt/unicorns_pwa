@@ -302,6 +302,28 @@ If you need a new query pattern:
 3. Export from `index.ts`
 4. Use it across all pages that need it
 
+**Migration Progress:**
+
+**✅ Migrated (5 files, 22 queries eliminated):**
+- MemberNewsPage → getAllNews(), getCurrentUser()
+- MemberDocumentsPage → getDocuments(), getCurrentUser()
+- ActivitiesPage → getActivitiesInWeek(), getSpecialEvents(), getUserRegistrations(), getActiveRegistrations(), getCurrentUser(), getCurrentSession()
+- MemberPollsPage → getPollsWithOptions(), getUserPollVote(), getPollResults(), castVote(), getCurrentUser()
+
+**🚧 High Priority (4 files, 58 queries):**
+- AdminMemberFeesPage (23 queries) - balances, users, sections
+- AdminAttendancePage (12 queries) - activities, registrations, users, balances
+- AdminActivitiesPage (12 queries) - activities, registrations, users, sections
+- TrainerClassesPage (9 queries) - activities, registrations, balances
+
+**📋 Remaining (23 files, 91 queries):**
+- Admin pages: AdminMemberPollsPage (9), AdminSectionsPage (8), AdminMemberNewsPage (5), AdminMemberDocumentsPage (5), AdminUsersPage (4), AdminReportsPage (3), AdminRefundsPage (3), AdminPaymentsPage (2)
+- Member zone: MemberBalancePage (5), MemberZonePage (4), MemberNewsPage (2), MemberDocumentsPage (2)
+- User pages: SettingsPage (4), ActivityParticipantsPage (3), ProfilePage (2), NotificationsPage (2), MyClassesPage (2), EditProfilePage (2), AccountPage (2)
+- Other: PaymentSuccessPage (2), RegisterPage (1)
+
+**Total Progress: 5/30 files (17%), 22/171 queries (13%)**
+
 ### Authentication
 
 **Current Pattern:**
