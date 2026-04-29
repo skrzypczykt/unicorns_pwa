@@ -4,6 +4,17 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.8.1] - 2026-04-29
+
+### Dodano
+
+- **Registrations Repository** - Centralizacja zapytań o rejestracje (520 linii)
+  - 7 funkcji READ: getUserRegistrations, getActivityRegistrations, getActiveRegistrations, etc.
+  - 7 funkcji WRITE: createRegistration, updateRegistrationStatus, cancelRegistration, etc.
+  - 2 funkcje COMPLEX: bulkUpdateAttendance, cancelActivityRegistrations
+  - Pełne wsparcie dla statusów rejestracji i płatności
+  - Funkcje z rozszerzonymi typami (RegistrationWithUser, RegistrationWithActivity)
+
 ## [0.8.0] - 2026-04-28
 
 ### Dodano
