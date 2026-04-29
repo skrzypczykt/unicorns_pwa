@@ -4,6 +4,17 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.8.5] - 2026-04-29
+
+### Zmieniono
+
+- **Member Zone Migrations - Repository Adoption (2 pages, -8 direct queries)**
+  - **MemberBalancePage**: Migrated to getCurrentUser(), getUserBalance(), getUserTransactions(), updateUserProfile() (-4 queries)
+  - **MemberZonePage**: Migrated to getCurrentUser(), getUserBalance(), getRecentNews() (-4 queries)
+  - Cleaner auth and data fetching patterns
+  - Reduced code duplication significantly (85 → 49 lines in MemberBalancePage)
+  - Build passing, no breaking changes
+
 ## [0.8.4] - 2026-04-29
 
 ### Zmieniono

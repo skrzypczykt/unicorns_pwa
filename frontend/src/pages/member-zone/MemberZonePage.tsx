@@ -1,23 +1,22 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../../supabase/client'
 import NewsCard from '../../components/member-zone/NewsCard'
 import MembershipBalanceWidget from '../../components/member-zone/MembershipBalanceWidget'
+import {
+  getCurrentUser,
+  getUserBalance,
+  getRecentNews,
+  type AssociationNews,
+  type MembershipFeePlan
+} from '../../supabase/repositories'
 
-interface News {
-  id: string
-  title: string
-  content: string
-  published_at: string
-  is_pinned: boolean
-  expires_at: string | null
-}
+type News = AssociationNews
 
 const MemberZonePage = () => {
   const navigate = useNavigate()
   const [recentNews, setRecentNews] = useState<News[]>([])
   const [membershipBalance, setMembershipBalance] = useState<number>(0)
-  const [membershipPlan, setMembershipPlan] = useState<'monthly' | 'yearly'>('monthly')
+  const [membershipPlan, setMembershipPlan] = useState<MembershipFeePlan>('monthly')
   const [lastCharge, setLastCharge] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -27,55 +26,32 @@ const MemberZonePage = () => {
 
   const fetchData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) {
         navigate('/login')
         return
       }
 
-      // Fetch user profile for membership plan
-      const { data: profile } = await supabase
-        .from('users')
-        .select('membership_fee_plan, last_membership_charge, is_association_member')
-        .eq('id', user.id)
-        .single()
-
-      if (!profile?.is_association_member) {
-        // Not a member - redirect
+      // Check if user is association member
+      if (!userResult.profile?.is_association_member) {
         navigate('/')
         return
       }
 
-      setMembershipPlan(profile.membership_fee_plan || 'monthly')
-      setLastCharge(profile.last_membership_charge)
+      setMembershipPlan(userResult.profile.membership_fee_plan || 'monthly')
+      setLastCharge(userResult.profile.last_membership_charge)
 
       // Fetch membership balance
-      const { data: membershipType } = await supabase
-        .from('activity_types')
-        .select('id')
-        .eq('name', 'Członkostwo')
-        .single()
-
-      if (membershipType) {
-        const { data: balanceData } = await supabase
-          .from('user_section_balances')
-          .select('balance')
-          .eq('user_id', user.id)
-          .eq('activity_type_id', membershipType.id)
-          .single()
-
-        setMembershipBalance(balanceData?.balance || 0)
+      const balanceResult = await getUserBalance(userResult.authUser.id)
+      if (!balanceResult.error && balanceResult.data) {
+        setMembershipBalance(balanceResult.data.balance)
       }
 
       // Fetch recent news (3 most recent)
-      const { data: newsData } = await supabase
-        .from('association_news')
-        .select('*')
-        .order('is_pinned', { ascending: false })
-        .order('published_at', { ascending: false })
-        .limit(3)
-
-      setRecentNews(newsData || [])
+      const newsResult = await getRecentNews(3)
+      if (!newsResult.error) {
+        setRecentNews(newsResult.data)
+      }
     } catch (error) {
       console.error('Error fetching member zone data:', error)
     } finally {
