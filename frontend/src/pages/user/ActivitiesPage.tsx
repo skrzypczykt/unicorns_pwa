@@ -8,8 +8,6 @@ import {
   getSpecialEvents,
   getUserRegistrations,
   getActiveRegistrations,
-  createRegistration,
-  cancelRegistration,
   type Activity as RepositoryActivity
 } from '../../supabase/repositories'
 import { formatDuration } from '../../utils/formatDuration'
@@ -242,7 +240,6 @@ const ActivitiesPage = () => {
       setShowLoginModal(true)
       return
     }
-    const user = userResult.authUser
     // Show flip card
     setFlippedCard(activityId)
   }

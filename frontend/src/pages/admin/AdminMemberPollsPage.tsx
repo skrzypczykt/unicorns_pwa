@@ -9,7 +9,6 @@ import {
   createPollWithOptions,
   updatePoll,
   deletePoll,
-  createPollOption,
   type PollWithOptions,
   type PollOptionResult,
   type PollType

@@ -118,42 +118,6 @@ const AdminMemberFeesPage = () => {
     setFilteredMembers(filtered)
   }
 
-  const handleChargeFee = async (userId: string, plan: MembershipFeePlan) => {
-    const fee = plan === 'monthly' ? 15.00 : 160.00
-    const description = plan === 'monthly' ? 'Składka miesięczna' : 'Składka roczna'
-
-    if (!confirm(`Czy na pewno chcesz naliczyć składkę ${fee} zł dla tego członka?`)) return
-
-    if (!membershipTypeId) {
-      alert('❌ Brak ID typu aktywności Członkostwo')
-      return
-    }
-
-    try {
-      const userResult = await getCurrentUser()
-      if (userResult.error || !userResult.authUser) return
-
-      // Use repository to charge membership fee (atomic operation)
-      const result = await chargeMembershipFee(
-        userId,
-        membershipTypeId,
-        fee,
-        description,
-        userResult.authUser.id
-      )
-
-      if (result.error) throw result.error
-
-      // Update last charge date
-      await updateUserProfile(userId, { last_membership_charge: new Date().toISOString() })
-
-      alert('✅ Składka naliczona')
-      await fetchMembers()
-    } catch (error: any) {
-      console.error('Error charging fee:', error)
-      alert('❌ Błąd: ' + error.message)
-    }
-  }
 
   const handleAddPayment = async (userId: string) => {
     const amountStr = prompt('Podaj kwotę wpłaty (zł):')

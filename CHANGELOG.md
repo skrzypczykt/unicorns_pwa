@@ -4,6 +4,16 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.8.9] - 2026-04-29
+
+### Fixed
+
+- **CodeQL Security Warnings**: Removed unused imports and variables
+  - AdminMemberFeesPage: Removed unused handleChargeFee function
+  - AdminMemberPollsPage: Removed unused createPollOption import
+  - ActivitiesPage: Removed unused imports (createRegistration, cancelRegistration) and user variable
+  - All CodeQL warnings resolved
+
 ## [0.8.8] - 2026-04-29
 
 ### Zmieniono
