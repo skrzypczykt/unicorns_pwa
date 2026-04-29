@@ -23,9 +23,9 @@ export * from './base'
 // Domain repositories
 export * from './activities'
 export * from './registrations'
+export * from './users'
 
 // TODO: Add remaining repositories
-// export * from './users'
 // export * from './balances'
 // export * from './sections'
 // export * from './association'

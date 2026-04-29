@@ -4,6 +4,19 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.8.2] - 2026-04-29
+
+### Dodano
+
+- **Users Repository** - Centralizacja zapytań o użytkowników (577 linii)
+  - 2 funkcje AUTH: getCurrentUser, getCurrentSession - integracja Supabase Auth z profilami użytkowników
+  - 7 funkcji READ: getUserById, getUserByEmail, getTrainers, getMemberUsers, getAllUsers, searchUsers, getExemptUsers
+  - 10 funkcji WRITE: createUser, updateUserProfile, updateUserRole, toggleMemberStatus, updateUserBalance, grantFeeExemption, revokeFeeExemption, updateGdprConsent, acceptSportsTerms
+  - Pełne wsparcie dla ról użytkowników (user, trainer, admin, external_trainer)
+  - Zarządzanie statusem członkostwa w stowarzyszeniu (association_member_since)
+  - Funkcje dla zwolnień z opłat (exemption_reason, exemption_granted_by)
+  - Tracking zgód GDPR i regulaminu sportowego
+
 ## [0.8.1] - 2026-04-29
 
 ### Dodano
