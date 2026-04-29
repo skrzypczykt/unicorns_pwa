@@ -378,7 +378,8 @@ const AdminActivitiesPage = () => {
         // Jeśli cykliczne, generuj instancje
         if (formData.is_recurring && newActivity) {
           try {
-            const { data: { session } } = await supabase.auth.getSession()
+            const sessionResult = await getCurrentSession()
+      const session = sessionResult.session
 
             const response = await fetch(
               `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-recurring-activities`,
@@ -419,7 +420,9 @@ const AdminActivitiesPage = () => {
             sendToAll: formData.is_special_event
           })
 
-          const { data: { user } } = await supabase.auth.getUser()
+          const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
+      const user = userResult.authUser
 
           try {
             const response = await fetch(
@@ -463,7 +466,8 @@ const AdminActivitiesPage = () => {
           console.log('[Email] Calling send-email-notification')
 
           try {
-            const { data: { session } } = await supabase.auth.getSession()
+            const sessionResult = await getCurrentSession()
+      const session = sessionResult.session
 
             const emailResponse = await fetch(
               `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email-notification`,
@@ -519,7 +523,8 @@ const AdminActivitiesPage = () => {
 
   const sendEventUpdateNotifications = async (activity: any) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const sessionResult = await getCurrentSession()
+      const session = sessionResult.session
 
       // Wyślij powiadomienia push
       const pushResponse = await fetch(
@@ -710,7 +715,8 @@ const AdminActivitiesPage = () => {
       // Wyślij powiadomienia jeśli użytkownik wybrał
       if (sendNotification && cancelParticipantsCount > 0) {
         try {
-          const { data: { session } } = await supabase.auth.getSession()
+          const sessionResult = await getCurrentSession()
+      const session = sessionResult.session
 
           // Wyślij powiadomienia push
           const pushResponse = await fetch(

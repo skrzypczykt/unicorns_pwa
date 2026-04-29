@@ -29,7 +29,9 @@ const EditProfilePage = () => {
 
   const fetchProfile = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
+      const user = userResult.authUser
       if (!user) {
         navigate('/login')
         return
@@ -63,7 +65,9 @@ const EditProfilePage = () => {
     setSaving(true)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
+      const user = userResult.authUser
       if (!user) return
 
       // Auto-generate display_name jeśli puste

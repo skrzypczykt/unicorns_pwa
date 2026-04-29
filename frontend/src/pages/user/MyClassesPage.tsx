@@ -85,7 +85,9 @@ const MyClassesPage = () => {
 
   const fetchMyRegistrations = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
+      const user = userResult.authUser
       if (!user) return
 
       const { data, error } = await supabase
@@ -152,7 +154,8 @@ const MyClassesPage = () => {
 
     try {
       // Pobierz sesję użytkownika
-      const { data: { session } } = await supabase.auth.getSession()
+      const sessionResult = await getCurrentSession()
+      const session = sessionResult.session
 
       if (!session?.access_token) {
         throw new Error('Brak sesji użytkownika - zaloguj się ponownie')

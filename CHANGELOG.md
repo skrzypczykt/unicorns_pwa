@@ -4,6 +4,16 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.8.7] - 2026-04-29
+
+### Zmieniono
+
+- **Repository Migrations - Batch Auth Replacements (7 files, -16 auth queries)**
+  - **ProfilePage, MyClassesPage, EditProfilePage, AccountPage, TrainerClassesPage, NotificationsPage, AdminActivitiesPage**: All migrated to use getCurrentUser() and getCurrentSession() instead of direct supabase.auth calls
+  - Consistent auth pattern across all pages
+  - Better error handling with getCurrentUser()
+  - Build passing, no breaking changes
+
 ## [0.8.6] - 2026-04-29
 
 ### Zmieniono
