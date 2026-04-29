@@ -4,6 +4,17 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.8.8] - 2026-04-29
+
+### Zmieniono
+
+- **Repository Migrations - COMPLETE! (2 final pages, -2 queries)**
+  - **AdminPaymentsPage, AdminAttendancePage**: Migrated to getCurrentUser()
+  - ✅ ALL data access queries now use repository pattern
+  - ✅ Only remaining supabase calls are Auth SDK (signIn, signUp, signOut, OAuth) - which should stay direct
+  - 78 total queries eliminated across all migrations
+  - Build passing, all tests green
+
 ## [0.8.7] - 2026-04-29
 
 ### Zmieniono

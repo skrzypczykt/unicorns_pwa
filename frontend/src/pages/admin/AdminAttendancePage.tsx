@@ -273,7 +273,9 @@ const AdminAttendancePage = () => {
 
     setMarking(registrationId)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const userResult = await getCurrentUser()
+      if (userResult.error || !userResult.authUser) return
+      const user = userResult.authUser
       if (!user) {
         alert('Musisz być zalogowany')
         return
