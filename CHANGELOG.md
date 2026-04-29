@@ -4,6 +4,16 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.8.1] - 2026-04-29
+
+### Zmieniono
+
+- **Page Migrations - Initial Repository Adoption**
+  - MemberNewsPage: Migrated from direct supabase queries to getCurrentUser() and getAllNews()
+  - MemberDocumentsPage: Migrated to getCurrentUser() and getDocuments()
+  - Eliminated 4 direct supabase.from() queries
+  - Pattern established for migrating remaining 27 page files
+
 ## [0.8.0] - 2026-04-29
 
 ### Dodano
