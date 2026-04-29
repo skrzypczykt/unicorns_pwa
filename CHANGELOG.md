@@ -4,6 +4,17 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.8.6] - 2026-04-29
+
+### Zmieniono
+
+- **Repository Migrations - High Priority Pages (2 files, -13 direct queries)**
+  - **SettingsPage**: Migrated to getCurrentUser(), getUserRegistrations(), getAllUserTransactions() (-7 queries)
+  - **AdminMemberFeesPage**: Migrated to getCurrentUser(), getMemberUsers(), getBalancesForUsers(), chargeMembershipFee(), processMembershipPayment(), grantFeeExemption(), revokeFeeExemption(), updateUserProfile(), bulkChargeMembershipFees() (-6 queries)
+  - Used atomic transaction functions from balances repository
+  - Bulk charging now uses repository pattern
+  - Build passing, no breaking changes
+
 ## [0.8.5] - 2026-04-29
 
 ### Zmieniono
