@@ -4,6 +4,20 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.8.3] - 2026-04-29
+
+### Dodano
+
+- **Balances Repository** - Centralizacja zapytań o salda i transakcje (480 linii)
+  - 5 funkcji READ (Balances): getUserBalance, getUserBalances, getBalancesForUsers, getBalanceWithTransactions
+  - 3 funkcje READ (Transactions): getUserTransactions, getAllUserTransactions
+  - 2 funkcje WRITE: createTransaction, upsertUserBalance
+  - 6 funkcji COMPLEX: processTransaction, chargeMembershipFee, processMembershipPayment, deductClassCost, bulkChargeMembershipFees
+  - Pełne wsparcie dla user_section_balances i balance_transactions
+  - Atomowe operacje transakcji (fetch balance → insert transaction → update balance)
+  - Filtry transakcji (activity type, transaction type, date range)
+  - Obsługa opłat członkowskich i płatności za zajęcia
+
 ## [0.8.0] - 2026-04-28
 
 ### Dodano

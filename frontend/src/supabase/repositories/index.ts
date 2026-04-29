@@ -22,10 +22,10 @@ export * from './base'
 
 // Domain repositories
 export * from './activities'
+export * from './balances'
 
 // TODO: Add remaining repositories
 // export * from './registrations'
 // export * from './users'
-// export * from './balances'
 // export * from './sections'
 // export * from './association'
