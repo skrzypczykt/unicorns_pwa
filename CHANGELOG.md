@@ -4,6 +4,18 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.8.4] - 2026-04-29
+
+### Dodano
+
+- **Sections Repository** - Centralizacja zapytań o sekcje/activity types (280 linii)
+  - 5 funkcji READ: getSections, getAllSections, getSectionsWithTrainer, getSectionById, getSectionWithTrainerById
+  - 5 funkcji WRITE: createSection, updateSection, deleteSection, updateSectionWhatsApp, updateSectionDefaultTrainer
+  - Typy pomocnicze: SectionListItem (dla dropdowns), SectionWithTrainer (z danymi trenera)
+  - Pełne wsparcie dla activity_types table
+  - Zarządzanie default_trainer_id i whatsapp_group_url
+  - Konsolidacja zapytań z 8 plików (admin pages, member zone, filters)
+
 ## [0.8.0] - 2026-04-28
 
 ### Dodano
