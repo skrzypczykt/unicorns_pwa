@@ -4,6 +4,20 @@ Wszystkie ważne zmiany w projekcie Unicorns PWA.
 
 Format bazuje na [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/).
 
+## [0.8.5] - 2026-04-29
+
+### Dodano
+
+- **Association Repository** - Centralizacja zapytań o member zone (530 linii)
+  - **News**: 5 funkcji (getActiveNews, getRecentNews, getAllNews, createNews, updateNews, deleteNews)
+  - **Documents**: 4 funkcje (getDocuments, createDocument, updateDocument, deleteDocument)
+  - **Polls**: 10 funkcji (getPolls, getPollWithOptions, getPollsWithOptions, getPollResults, getUserPollVote, createPoll, createPollOption, updatePoll, deletePoll, castVote)
+  - **Complex**: createPollWithOptions - atomowe tworzenie głosowania z opcjami
+  - Pełne wsparcie dla association_news, association_documents, association_polls, association_poll_options, association_poll_votes
+  - Integracja z RPC function get_poll_results dla wyników głosowania
+  - Typy pomocnicze: PollWithOptions, PollWithResults, PollOptionResult
+  - Konsolidacja zapytań z 8 plików (admin pages, member zone pages)
+
 ## [0.8.0] - 2026-04-28
 
 ### Dodano
